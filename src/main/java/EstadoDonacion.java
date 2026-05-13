@@ -1,0 +1,9 @@
+public enum EstadoDonacion {
+    EN_DEPOSITO,
+    ASIGNACION_REALIZADA,
+    LISTA_ENTREGA,
+    EN_TRASLADO,
+    ENTREGADA,
+    ENTREGA_FALLIDA,
+    VENCIDA
+}
