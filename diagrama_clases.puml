@@ -1,0 +1,187 @@
+@startuml
+!theme plain
+
+skinparam linetype ortho
+
+abstract class Donante{
+    tipoDoc: TipoDocumento
+    documento: String
+    nombre_razon_social: String
+    email: String
+    telefono: String
+    --
+    donar()
+    getContacto()
+}
+
+class PersonaHumana{
+    medioPredeterminado: Contacto
+    --
+    getContacto()
+}
+
+class PersonaJuridica{
+    representantes: [PersonaHumana]
+    --
+    getContacto()
+}
+
+class Contacto{
+    contacto: String
+    tipo: TipoContacto
+    --
+}
+
+class EntidadBeneficiaria{
+    razonSocial: String
+    direccion: String
+    telefono: String
+    correosRepresentantes: [String]
+    --
+    registrarNecesidadExtra()
+    registrarNecesidadRecurrente()
+}
+
+abstract class Necesidad{
+    entidad: EntidadBeneficiaria
+    subcategoria: Subcategoria
+    cantidad: Int
+    descripcion: String
+    --
+    actualizar()
+    resolver()
+}
+
+class NecesidadExtra{
+    --
+    actualizar()
+    resolver()
+}
+
+class NecesidadRecurrente{
+    fechaInicio: Date
+    fechaFin: Date
+    --
+    actualizar()
+    resolver()
+}
+
+class Notificacion{
+    destinatarios: [Contacto]
+    mensaje: String
+    estado: EstadoNotificacion
+    --
+    enviar()
+}
+
+enum EstadoNotificacion{
+    PENDIENTE,
+    ENVIADA
+}
+
+'Donacion del donante
+class DonacionEntrante{
+    donante : Donante
+    descripcion : String
+    bienes : [Bien]
+}
+
+'Fragentacion de la donacionEntrante
+class DonacionIndependiente{
+    donacionRaiz: DonacionEntrante
+    donante: Donante
+    descripcion: String
+    subcategoria: Subcategoria
+    bien: Bien
+    --
+}
+
+'Donacion hacia entidades
+class DonacionRealizada{
+    estado: Estado
+    entidad: EntidadBeneficiaria
+    subcategoria_unidad:HashMap
+}
+
+enum EstadoDonacion
+
+
+enum TipoContacto{
+    EMAIL,
+    TELEFONO,
+    WHATSAPP
+}
+
+class Subcategoria{
+    nombre: String
+    tipo: Categoria
+    requiereEstado: Bool
+    requiereVencimiento: Bool
+}
+
+class Bien{
+    subcategoria: Subcategoria
+    cantidad: Integer
+    unidad: String
+    estado: EstadoBien
+    vencimiento: Date
+}
+
+enum EstadoBien{
+    NUEVO,
+    USADO
+}
+
+enum Categoria
+
+
+class SistemaDonaciones{
+    map_subcategoria_cantidad : HashMap
+    necesidades: [Necesidad]
+    --
+    cargarDonacion()
+    categorizarBienes()
+    cargarNecesidad()
+    actualizares()
+    enviarNotificacion()
+}
+
+
+Donante <|-- PersonaJuridica
+Donante <|-- PersonaHumana
+Donante ..> SistemaDonaciones
+Donante ..> DonacionEntrante
+Donante ..> Bien
+PersonaHumana --> Contacto
+Donante <-- DonacionEntrante
+PersonaJuridica --> "*" PersonaHumana
+
+Subcategoria --> Categoria
+Bien --> Subcategoria
+Bien --> EstadoBien
+
+DonacionIndependiente --> EstadoDonacion
+DonacionEntrante --> "*" Bien
+DonacionIndependiente --> Bien
+
+SistemaDonaciones ..> DonacionEntrante
+SistemaDonaciones --> "*" DonacionIndependiente
+SistemaDonaciones --> "*" Necesidad
+SistemaDonaciones ..> Notificacion
+SistemaDonaciones ..> DonacionRealizada
+
+EntidadBeneficiaria ..> SistemaDonaciones
+EntidadBeneficiaria ..> Necesidad
+EntidadBeneficiaria --> Contacto
+EntidadBeneficiaria --> DonacionRealizada
+
+NecesidadExtra --|> Necesidad
+NecesidadRecurrente --|> Necesidad
+Necesidad --> EntidadBeneficiaria
+
+Notificacion --> Donante
+Notificacion --> EstadoNotificacion
+Notificacion --> Contacto
+Contacto --> TipoContacto
+
+@enduml
