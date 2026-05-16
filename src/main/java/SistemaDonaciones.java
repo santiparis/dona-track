@@ -1,21 +1,21 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SistemaDonaciones {
 
-  private final List<Donacion> donaciones = new ArrayList<>();
+  private final List<DonacionRecibida> donaciones = new ArrayList<>();
   private final List<DonacionIndependiente> donacionesIndependientes = new ArrayList<>();
   private final List<EntidadBeneficiaria> entidades = new ArrayList<>();
-  private final List<Necesidad> necesidades = new ArrayList<>();
+  private final List<Necesidad> necesidadesExtra = new ArrayList<>();
+  private final List<Necesidad> necesidadesRecu = new ArrayList<>();
 
 
 
 
-  public List<DonacionIndependiente> segmentarEnIndependientes(Donacion donacion){
+  public List<DonacionIndependiente> segmentarEnIndependientes(DonacionRecibida donacionRecibida){
 
-    List<Bien> bienes = donacion.getBienes();
+    List<Bien> bienes = donacionRecibida.getBienes();
     HashMap<String, Integer> mapIndependientes = new HashMap<>();
     for(Bien bien : bienes){
       mapIndependientes.put(bien.getSubcategoria().nombre(), bien.getCantidad());
@@ -30,15 +30,15 @@ public class SistemaDonaciones {
 
 
 
-  public List<DonacionIndependiente> registrarDonacion(Donacion donacion) {
-    donaciones.add(donacion);
-    List<DonacionIndependiente> generadas = segmentarEnIndependientes(donacion);
+  public List<DonacionIndependiente> registrarDonacion(DonacionRecibida donacionRecibida) {
+    donaciones.add(donacionRecibida);
+    List<DonacionIndependiente> generadas = segmentarEnIndependientes(donacionRecibida);
     donacionesIndependientes.addAll(generadas);
     return generadas;
   }
 
 /*
-  private List<DonacionIndependiente> segmentarEnIndependientes(Donacion donacion) {
+  private List<DonacionIndependiente> segmentarEnIndependientes(DonacionRecibida donacion) {
 
     Map<Subcategoria, List<Bien>> agrupados = new HashMap<>();
     for (Bien bien : donacion.getBienes()) {
@@ -62,12 +62,17 @@ public class SistemaDonaciones {
     entidades.add(entidad);
   }
 
-  public void registrarNecesidad(Necesidad necesidad) {
-    necesidades.add(necesidad);
+  public void registrarNecesidadExtra(Necesidad necesidad) {
+    necesidadesExtra.add(necesidad);
+  }
+  public void registrarNecesidadRecu(Necesidad necesidad) {
+    necesidadesRecu.add(necesidad);
   }
 
-  public List<Donacion> getDonaciones() { return donaciones; }
+  public List<DonacionRecibida> getDonaciones() { return donaciones; }
   public List<DonacionIndependiente> getDonacionesIndependientes() { return donacionesIndependientes; }
   public List<EntidadBeneficiaria> getEntidades() { return entidades; }
-  public List<Necesidad> getNecesidades() { return necesidades; }
+  public List<Necesidad> getNecesidadesExtra() { return necesidadesExtra; }
+  public List<Necesidad> getNecesidadesRecu() { return necesidadesRecu; }
+
 }

@@ -1,11 +1,11 @@
 import java.util.List;
 
-public class Donacion {
+public class DonacionRecibida {
     private final Donante donante;
     private final String descripcion;
     private final List<Bien> bienes;
 
-    public Donacion(
+    public DonacionRecibida(
             Donante donante,
             String descripcion,
             List<Bien> bienes

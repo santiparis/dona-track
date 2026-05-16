@@ -79,7 +79,7 @@ enum EstadoNotificacion{
     ENVIADA
 }
 
-'Donacion del donante
+'DonacionRecibida del donante
 class DonacionEntrante{
     donante : Donante
     descripcion : String
@@ -96,7 +96,7 @@ class DonacionIndependiente{
     --
 }
 
-'Donacion hacia entidades
+'DonacionRecibida hacia entidades
 class DonacionRealizada{
     estado: Estado
     entidad: EntidadBeneficiaria
