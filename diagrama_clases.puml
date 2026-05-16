@@ -79,11 +79,12 @@ enum EstadoNotificacion{
     ENVIADA
 }
 
-'DonacionRecibida del donante
+'DonacionEntrante del donante
 class DonacionEntrante{
     donante : Donante
     descripcion : String
     bienes : [Bien]
+    donaciones_ind: [Donacion_ind]
 }
 
 'Fragentacion de la donacionEntrante
@@ -96,7 +97,7 @@ class DonacionIndependiente{
     --
 }
 
-'DonacionRecibida hacia entidades
+'DonacionEntrante hacia entidades
 class DonacionRealizada{
     estado: Estado
     entidad: EntidadBeneficiaria
@@ -137,7 +138,9 @@ enum Categoria
 
 class SistemaDonaciones{
     map_subcategoria_cantidad : HashMap
-    necesidades: [Necesidad]
+    necesidadesExtra: [Necesidad]
+    necesidadesRecu: [Necesidad]
+
     --
     cargarDonacion()
     categorizarBienes()
@@ -160,12 +163,13 @@ Subcategoria --> Categoria
 Bien --> Subcategoria
 Bien --> EstadoBien
 
-DonacionIndependiente --> EstadoDonacion
+
 DonacionEntrante --> "*" Bien
-DonacionIndependiente --> Bien
+DonacionEntrante --> "*" DonacionIndependiente
+
+DonacionIndependiente --> "*" Bien
 
 SistemaDonaciones ..> DonacionEntrante
-SistemaDonaciones --> "*" DonacionIndependiente
 SistemaDonaciones --> "*" Necesidad
 SistemaDonaciones ..> Notificacion
 SistemaDonaciones ..> DonacionRealizada
