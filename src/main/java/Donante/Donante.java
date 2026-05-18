@@ -3,19 +3,21 @@ package Donante;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Donante {
+public abstract class Donante {
     private final TipoDoc tipoDoc;
     private final String documento;
     private String nombre;
-    private List<TipoContacto> contactos;
-    private TipoContacto medioPredeterminado;
+    private List<Contacto> contactos;
+    private Contacto medioPredeterminado;
+    private Usuario usuario;
 
     public Donante(
             TipoDoc tipoDoc,
             String documento,
             String nombre,
-            List<TipoContacto> contactos,
-            TipoContacto medioPredeterminado
+            List<Contacto> contactos,
+            Contacto medioPredeterminado,
+            Usuario usuario
             ) {
         this.tipoDoc = tipoDoc;
         this.documento = documento;
@@ -23,6 +25,7 @@ public class Donante {
         this.contactos = new ArrayList<>(contactos);
         //TODO: Validar lista de contactos no vacia
         this.medioPredeterminado = medioPredeterminado;
+        this.usuario = usuario;
     }
 
     public TipoDoc getTipoDoc() {
@@ -37,11 +40,19 @@ public class Donante {
         return this.nombre;
     }
 
-    public List<TipoContacto> getContactos() {
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public List<Contacto> getContactos() {
         return contactos;
     }
 
-    public TipoContacto getMedioPredeterminado() {
+    public Contacto getMedioPredeterminado() {
         return medioPredeterminado;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 }

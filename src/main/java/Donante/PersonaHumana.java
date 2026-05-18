@@ -16,10 +16,11 @@ public class PersonaHumana extends Donante {
         String documento,
         Genero genero,
         String direccion,
-        List<TipoContacto> contactos,
-        TipoContacto medioPredeterminado
+        List<Contacto> contactos,
+        Contacto medioPredeterminado,
+        Usuario usuario
     ) {
-        super(tipoDoc, documento, nombre, contactos, medioPredeterminado);
+        super(tipoDoc, documento, nombre, contactos, medioPredeterminado, usuario);
         this.apellido = apellido;
         this.edad = edad;
         this.genero = genero;

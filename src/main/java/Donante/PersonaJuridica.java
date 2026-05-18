@@ -14,10 +14,11 @@ public class PersonaJuridica extends Donante {
             RazonSocial razonSocial,
             String rubro,
             List<PersonaHumana> representantesHabilitados,
-            List<TipoContacto> contactos,
-            TipoContacto medioPredeterminado
+            List<Contacto> contactos,
+            Contacto medioPredeterminado,
+            Usuario usuario
     ) {
-        super(tipoDoc, documento, nombre, contactos, medioPredeterminado);
+        super(tipoDoc, documento, nombre, contactos, medioPredeterminado, usuario);
         this.razonSocial = razonSocial;
         this.rubro = rubro;
         this.representantesHabilitados = representantesHabilitados;
