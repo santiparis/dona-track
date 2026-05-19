@@ -1,6 +1,6 @@
 package cargaCSV;
 
-import Donante.*;
+import donante.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +72,7 @@ public class ImportadorDonantesCSVTest {
 
         assertNotNull(donante.getContactos());
         // El archivo grande puede tener o no teléfono para esta persona, seamos flexibles
-        assertTrue(donante.getContactos().size() >= 1, "Debería tener al menos 1 contacto (email).");
+        assertFalse(donante.getContactos().isEmpty(), "Debería tener al menos 1 contacto (email).");
 
         Optional<Contacto> emailOpt = donante.getContactos().stream()
                 .filter(c -> c.getTipo() == TipoContacto.EMAIL)

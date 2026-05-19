@@ -1,7 +1,7 @@
-package Donante;
+package donante;
 
 public enum Genero {
     MASCULINO,
-    FEMININO,
+    FEMENINO,
     NO_BINARIO
 }
