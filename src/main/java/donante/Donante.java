@@ -1,17 +1,18 @@
-package Donante;
+package donante;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.UnknownNullability;
 
 public abstract class Donante {
     private final TipoDoc tipoDoc;
-    private final String documento;
+    private String documento;
     private String nombre;
     private List<Contacto> contactos;
     private Contacto medioPredeterminado;
     private Usuario usuario;
 
-    public Donante(
+    Donante(
             TipoDoc tipoDoc,
             String documento,
             String nombre,
@@ -23,7 +24,9 @@ public abstract class Donante {
         this.documento = documento;
         this.nombre = nombre;
         this.contactos = new ArrayList<>(contactos);
-        //TODO: Validar lista de contactos no vacia
+        if (contactos.isEmpty()) {
+            throw new IllegalArgumentException("La lista de contactos no puede ser nula o vacía.");
+        }
         this.medioPredeterminado = medioPredeterminado;
         this.usuario = usuario;
     }
@@ -55,4 +58,15 @@ public abstract class Donante {
     public Usuario getUsuario() {
         return usuario;
     }
+
+  public String getEmail() {
+    return contactos.get(0).getValor();
+  }
+
+  public void actualizarDatos(Donante donante) {
+        this.nombre = donante.getNombre();
+        this.documento = donante.getDocumento();
+        this.contactos = donante.getContactos();
+        this.medioPredeterminado = donante.getMedioPredeterminado();
+  }
 }

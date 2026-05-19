@@ -1,4 +1,4 @@
-package Donante;
+package donante;
 
 public class Contacto {
     private TipoContacto tipo;
