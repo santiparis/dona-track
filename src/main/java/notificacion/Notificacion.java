@@ -1,18 +1,25 @@
 package notificacion;
 
-public class Notificacion {
-    private final String destinatario;
+import donante.Contacto;
+
+/**
+ * Clase interna que modela los datos de una notificación.
+ * Su visibilidad es de paquete para que solo pueda ser gestionada
+ * por el ServicioDeNotificacion.
+ */
+class Notificacion {
+    private final Contacto contacto;
     private final String mensaje;
     private EstadoNotificacion estado;
 
-    public Notificacion(String destinatario, String mensaje) {
-        this.destinatario = destinatario;
+    Notificacion(Contacto contacto, String mensaje) {
+        this.contacto = contacto;
         this.mensaje = mensaje;
         this.estado = EstadoNotificacion.PENDIENTE;
     }
 
-    public String getDestinatario() {
-        return destinatario;
+    public Contacto getContacto() {
+        return contacto;
     }
 
     public String getMensaje() {
@@ -23,11 +30,11 @@ public class Notificacion {
         return estado;
     }
 
-    public void marcarComoCompletada() {
+    void marcarComoCompletada() {
         this.estado = EstadoNotificacion.COMPLETADA;
     }
 
-    public void marcarComoFallida() {
+    void marcarComoFallida() {
         this.estado = EstadoNotificacion.FALLIDA;
     }
 }
