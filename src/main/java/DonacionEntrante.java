@@ -29,7 +29,7 @@ public class DonacionEntrante {
       this.donaciones_independientes = new ArrayList<>();
 
       for(Bien bien : bienes){
-        DonacionIndependiente donacionIndependiente = new DonacionIndependiente(bien.getSubcategoria(),bien.getCantidad(),bien.getUnidad());
+        DonacionIndependiente donacionIndependiente = new DonacionIndependiente(bien);
         donaciones_independientes.add(donacionIndependiente);
       }
       return donaciones_independientes;

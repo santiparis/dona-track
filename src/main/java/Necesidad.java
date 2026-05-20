@@ -1,35 +1,39 @@
-abstract class Necesidad {
+import java.util.HashMap;
+import java.util.List;
+
+public abstract class Necesidad {
     private final EntidadBeneficiaria entidad;
-    private final Subcategoria subcategoria;
-    private final Integer cantidad;
     private final String descripcion;
+    private final List<Bien> bienes;
 
     public Necesidad(
             EntidadBeneficiaria entidad,
-            Subcategoria subcategoria,
-            Integer cantidad,
-            String descripcion
+            String descripcion,
+            List<Bien> bienes
     ) {
         this.entidad = entidad;
-        this.subcategoria = subcategoria;
-        this.cantidad = cantidad;
         this.descripcion = descripcion;
+        this.bienes = bienes;
     }
 
     public EntidadBeneficiaria getEntidad() {
         return this.entidad;
     }
 
-    public Subcategoria getSubcategoria() {
-        return this.subcategoria;
-    }
-
-    public Integer getCantidad() {
-        return this.cantidad;
-    }
-
     public String getDescripcion() {
         return this.descripcion;
+    }
+
+    public List<Bien> getBienes() {
+        return this.bienes;
+    }
+
+    public HashMap<Subcategoria, Integer> getCantidades() {
+        HashMap<Subcategoria, Integer> cantidades = new HashMap<>();
+        for(Bien bien : this.bienes) {
+            cantidades.put(bien.getSubcategoria(), bien.getCantidad());
+        }
+        return cantidades;
     }
 
     public void actualizar() {}
