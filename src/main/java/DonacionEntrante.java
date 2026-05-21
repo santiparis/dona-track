@@ -47,7 +47,7 @@ public class DonacionEntrante {
         return this.bienes;
     }
 
-  public List<DonacionIndependiente> getDonaciones_independientes() {
+  public List<DonacionIndependiente> getDonacionesIndependientes() {
     return donaciones_independientes;
   }
 }

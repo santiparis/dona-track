@@ -1,4 +1,5 @@
 import java.util.Date;
+import java.util.List;
 
 public class NecesidadRecurrente extends Necesidad {
     private final Date fechaInicio;
@@ -8,14 +9,13 @@ public class NecesidadRecurrente extends Necesidad {
 
     public NecesidadRecurrente(
             EntidadBeneficiaria entidad,
-            Subcategoria subcategoria,
-            Integer cantidad,
             String descripcion,
+            List<Bien> bienes,
             Date fechaInicio,
             Date fechaFin,
             Periodo periodo
     ) {
-        super(entidad, subcategoria, cantidad, descripcion);
+        super(entidad, descripcion, bienes);
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.periodo = periodo;

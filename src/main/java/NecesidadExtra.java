@@ -1,6 +1,8 @@
+import java.util.List;
+
 public class NecesidadExtra extends Necesidad {
-    public NecesidadExtra(EntidadBeneficiaria entidad, Subcategoria subcategoria, Integer cantidad, String descripcion) {
-        super(entidad, subcategoria, cantidad, descripcion);
+    public NecesidadExtra(EntidadBeneficiaria entidad, String descripcion, List<Bien> bienes) {
+        super(entidad, descripcion, bienes);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class SistemaDonaciones {
 
 
   public void ingresarDonacion(DonacionEntrante donacion){
-    List<DonacionIndependiente> lista_ind = donacion.getDonaciones_independientes();
+    List<DonacionIndependiente> lista_ind = donacion.getDonacionesIndependientes();
     for(DonacionIndependiente donacion_ind : lista_ind){
       Subcategoria subcategoria_bien_donado = donacion_ind.getBien().getSubcategoria();
       if(stock_donaciones.get(subcategoria_bien_donado) == null){
@@ -89,5 +89,13 @@ public class SistemaDonaciones {
       }
     }
     return suplido;
+  }
+
+  public void agregarNecesidad(Necesidad necesidad) {
+    this.necesidades.add(necesidad);
+  }
+
+  public List<Necesidad> getNecesidades() {
+    return this.necesidades;
   }
 }
