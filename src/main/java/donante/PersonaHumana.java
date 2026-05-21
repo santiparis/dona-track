@@ -1,4 +1,4 @@
-package Donante;
+package donante;
 
 import java.util.List;
 
@@ -41,5 +41,11 @@ public class PersonaHumana extends Donante {
 
     public String getDireccion() {
         return direccion;
+    }
+
+    @Override
+    public void actualizarDatos(Donante donante){
+        super.actualizarDatos(donante);
+        this.apellido = ((PersonaHumana) donante).getApellido();
     }
 }

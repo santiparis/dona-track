@@ -1,4 +1,4 @@
-package Donante;
+package donante;
 
 public enum TipoDoc {
     DNI,

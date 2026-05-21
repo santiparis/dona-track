@@ -1,6 +1,6 @@
 package cargaCSV;
 
-import Donante.*;
+import donante.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -50,7 +50,7 @@ public class ImportadorDonantesCSV {
             String emailStr = record.get("Email");
             String telefonoStr = record.get("Teléfono");
             String nombreCompleto = record.get("Nombre/Razón Social");
-            // Esta línea puede lanzar IllegalArgumentException si el valor no es un enum válido
+            // Asumimos que el CSV tiene valores validos para TipoDoc
             TipoDoc tipoDoc = TipoDoc.valueOf(record.get("Donante.TipoDoc"));
             String documento = record.get("Documento");
 
