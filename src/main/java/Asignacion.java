@@ -4,12 +4,15 @@ import java.util.List;
 public class Asignacion {
     private final Necesidad necesidad;
     private final List<Bien> bienes;
-    private final EstadoDonacion estado;
+    private EstadoAsignacion estado;
+    private String justificacionEntregaFallida;
+    private final List<RegistroCambioEstado<EstadoAsignacion>> historialEstados = new ArrayList<>();
 
-    public Asignacion(Necesidad necesidad, EstadoDonacion estado) {
+    public Asignacion(Necesidad necesidad, EstadoAsignacion estado) {
         this.necesidad = necesidad;
         this.bienes = new ArrayList<>();
         this.estado = estado;
+        this.historialEstados.add(new RegistroCambioEstado<>(null, estado, new java.util.Date(), null));
     }
 
     public void agregarBien(Bien nuevoBien) {
@@ -24,7 +27,31 @@ public class Asignacion {
         return necesidad;
     }
 
-    public EstadoDonacion getEstado() {
+    public EstadoAsignacion getEstado() {
         return estado;
+    }
+
+    public void setEstado(EstadoAsignacion estado) {
+        this.setEstado(estado, null);
+    }
+
+    public void setEstado(EstadoAsignacion estado, String justificacion) {
+        if (estado == EstadoAsignacion.ENTREGA_FALLIDA && (justificacion == null || justificacion.isBlank())) {
+            throw new IllegalArgumentException("La entrega fallida requiere una justificación");
+        }
+        EstadoAsignacion estadoAnterior = this.estado;
+        this.estado = estado;
+        if (estado == EstadoAsignacion.ENTREGA_FALLIDA) {
+            this.justificacionEntregaFallida = justificacion;
+        }
+        this.historialEstados.add(new RegistroCambioEstado<>(estadoAnterior, estado, new java.util.Date(), justificacion));
+    }
+
+    public String getJustificacionEntregaFallida() {
+        return justificacionEntregaFallida;
+    }
+
+    public List<RegistroCambioEstado<EstadoAsignacion>> getHistorialEstados() {
+        return historialEstados;
     }
 }

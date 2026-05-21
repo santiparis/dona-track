@@ -1,37 +1,112 @@
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Iterator;
 
 public class SistemaDonaciones {
 
-  //pensar como implementar fifo
   private HashMap<Subcategoria, List<DonacionIndependiente>> stock_donaciones = new HashMap<>();
+  private List<DonacionIndependiente> donaciones_vencidas = new ArrayList<>();
   private List<Asignacion> asignaciones = new ArrayList<>();
   private List<Necesidad> necesidades = new ArrayList<>();
+  private List<EntidadBeneficiaria> entidadesBeneficiarias = new ArrayList<>();
 
-  //incompleto
-//  public void donar(Donante donante, DonacionEntrante donacionEntrante) {
-//
-//    segmentarEnStock(donacionEntrante);
-//  }
-//
-//  public void segmentarEnStock(DonacionEntrante donacionEntrante) {
-//
-//    List<Bien> bienes = donacionEntrante.getBienes();
-//    for (Bien bien : bienes) {
-//      //si stock > 0, sumo lo que entra
-//      stock_donaciones.put(bien.getSubcategoria().nombre(), stock_donaciones.getOrDefault(bien.getSubcategoria().nombre(), 0) + bien.getCantidad());
-//    }
-//
-//  }
+  public void actualizarEstadoDelSistema() {
+    this.actualizarDonacionesVencidas();
+    this.actualizarNecesidades();
+  }
+
+  public void cargarDonacion(DonacionEntrante donacionEntrante) {
+    for (DonacionIndependiente donacion : donacionEntrante.getDonacionesIndependientes()) {
+      Subcategoria subcategoria = donacion.getBien().getSubcategoria();
+      stock_donaciones.putIfAbsent(subcategoria, new ArrayList<>());
+      stock_donaciones.get(subcategoria).add(donacion);
+    }
+  }
+
+  public void registrarNecesidad(Necesidad necesidad) {
+    this.necesidades.add(necesidad);
+    necesidad.getEntidad().registrarNecesidad(necesidad);
+  }
+
+  public void registrarEntidadBeneficiaria(EntidadBeneficiaria entidadBeneficiaria) {
+    if (!this.entidadesBeneficiarias.contains(entidadBeneficiaria)) {
+      this.entidadesBeneficiarias.add(entidadBeneficiaria);
+    }
+  }
+
+  public List<EntidadBeneficiaria> getEntidadesBeneficiarias() {
+    return this.entidadesBeneficiarias;
+  }
+
+  public List<Asignacion> getAsignaciones() {
+    return this.asignaciones;
+  }
+
+  public List<Necesidad> getNecesidades() {
+    return this.necesidades;
+  }
+
+  public List<DonacionIndependiente> getDonacionesVencidas() {
+    return this.donaciones_vencidas;
+  }
+
+  public void cambiarEstadoAsignacion(int indice, EstadoAsignacion nuevoEstado) {
+    this.cambiarEstadoAsignacion(indice, nuevoEstado, null);
+  }
+
+  public void cambiarEstadoAsignacion(int indice, EstadoAsignacion nuevoEstado, String justificacion) {
+    Asignacion asignacion = this.asignaciones.get(indice);
+    asignacion.setEstado(nuevoEstado, justificacion);
+    if (nuevoEstado == EstadoAsignacion.ENTREGADA) {
+      this.cerrarNecesidadRecurrente(asignacion.getNecesidad());
+    }
+  }
+
+  public void actualizarDonacionesVencidas() {
+    Date fechaActual = new Date();
+    for (Subcategoria subcategoria : this.stock_donaciones.keySet()) {
+      if (subcategoria.requiereVencimiento()) {
+        Iterator<DonacionIndependiente> iterator = this.stock_donaciones.get(subcategoria).iterator();
+        while (iterator.hasNext()) {
+          DonacionIndependiente donacion = iterator.next();
+          if (donacion.getBien().getVencimiento().before(fechaActual)) {
+            donacion.setEstado(EstadoDonacionIndependiente.VENCIDA);
+            this.donaciones_vencidas.add(donacion);
+            iterator.remove();
+          }
+        }
+      }
+    }
+  }
 
   public void actualizarNecesidades() {
     HashMap<Subcategoria, Integer> cantidadSubcategorias = this.getBienesDisponibles();
-    for (Necesidad necesidad : this.necesidades) {
-      if (this.sePuedeSuplir(necesidad, cantidadSubcategorias)) {
-        this.suplirNecesidad(necesidad, cantidadSubcategorias);
-        this.necesidades.remove(necesidad);
+    List<Necesidad> nuevasNecesidades = new ArrayList<>();
+    Iterator<Necesidad> iterator = this.necesidades.iterator();
+    while (iterator.hasNext()) {
+      Necesidad necesidad = iterator.next();
+      if (necesidad instanceof NecesidadRecurrente necesidadRecurrente && necesidadRecurrente.estaVencida()) {
+        necesidad.resolver().ifPresent(nuevasNecesidades::add);
+        iterator.remove();
+        continue;
       }
+      if (this.hayStockParaSuplirParcialmente(necesidad, cantidadSubcategorias)) {
+        this.suplirNecesidadParcialmente(necesidad, cantidadSubcategorias);
+        if (!necesidad.estaSatisfecha()) {
+          continue;
+        }
+        necesidad.resolver().ifPresent(nuevasNecesidades::add);
+        iterator.remove();
+      }
+    }
+    this.necesidades.addAll(nuevasNecesidades);
+  }
+
+  private void cerrarNecesidadRecurrente(Necesidad necesidad) {
+    if (this.necesidades.remove(necesidad)) {
+      necesidad.resolver().ifPresent(this.necesidades::add);
     }
   }
 
@@ -46,42 +121,60 @@ public class SistemaDonaciones {
     return stock;
   }
 
-  private boolean sePuedeSuplir(Necesidad necesidad, HashMap<Subcategoria, Integer> cantidades) {
-    HashMap<Subcategoria, Integer> cantidadesNecesitadas = necesidad.getCantidades();
-    for (Subcategoria key : cantidadesNecesitadas.keySet()) {
-      if (cantidadesNecesitadas.get(key) > cantidades.get(key)) {
-        return false;
+  private boolean hayStockParaSuplirParcialmente(Necesidad necesidad, HashMap<Subcategoria, Integer> cantidades) {
+    HashMap<Subcategoria, Integer> cantidadesPendientes = necesidad.getCantidadesPendientes();
+    for (Subcategoria key : cantidadesPendientes.keySet()) {
+      if (cantidades.getOrDefault(key, 0) > 0) {
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
-  private HashMap<Subcategoria, Integer> suplirNecesidad(Necesidad necesidad, HashMap<Subcategoria, Integer> cantidades) {
-    Asignacion asignacion = new Asignacion(necesidad, EstadoDonacion.ASIGNACION_REALIZADA);
+  private HashMap<Subcategoria, Integer> suplirNecesidadParcialmente(Necesidad necesidad, HashMap<Subcategoria, Integer> cantidades) {
+    Asignacion asignacion = new Asignacion(necesidad, EstadoAsignacion.ASIGNACION_REALIZADA);
+    boolean huboAsignacion = false;
     for (Bien bien : necesidad.getBienes()) {
-      int cantidadNecesitada = bien.getCantidad();
+      int cantidadNecesitada = necesidad.getCantidadPendiente(bien);
+      if (cantidadNecesitada == 0) {
+        continue;
+      }
       Subcategoria subcategoria = bien.getSubcategoria();
       int cantidad = this.asignarDonacion(cantidadNecesitada, subcategoria, necesidad);
-      cantidades.put(subcategoria, Integer.valueOf(cantidadNecesitada - cantidad));
-      asignacion.agregarBien(bien);
+      if (cantidad > 0) {
+        cantidades.put(subcategoria, cantidades.get(subcategoria) - cantidad);
+        necesidad.registrarSuplido(bien, cantidad);
+        asignacion.agregarBien(bien.conCantidad(cantidad));
+        huboAsignacion = true;
+      }
     }
-    this.asignaciones.add(asignacion);
+    if (huboAsignacion) {
+      this.asignaciones.add(asignacion);
+    }
     return cantidades;
   }
 
   private int asignarDonacion(int cantidad, Subcategoria subcategoria, Necesidad necesidad) {
     int suplido = 0;
     while (suplido < cantidad) {
-      DonacionIndependiente donacion = stock_donaciones.get(subcategoria).stream().findFirst().orElseThrow();
-      if(donacion.getDisponible() > cantidad - suplido) {
-        donacion.usar(Integer.valueOf(cantidad - suplido));
-        donacion.agregarAsignacion(new AsignacionItem<>(necesidad, Integer.valueOf(cantidad - suplido)));
+      List<DonacionIndependiente> donaciones = stock_donaciones.get(subcategoria);
+      if (donaciones == null) {
+        return suplido;
+      }
+      DonacionIndependiente donacion = donaciones.stream()
+              .filter(donacionIndependiente -> donacionIndependiente.getDisponible() > 0)
+              .findFirst()
+              .orElse(null);
+      if (donacion == null) {
+        return suplido;
+      }
+      int cantidadAUsar = Math.min(donacion.getDisponible(), cantidad - suplido);
+      donacion.agregarAsignacion(new AsignacionItem<>(necesidad, cantidadAUsar));
+      donacion.usar(cantidadAUsar);
+      donacion.actualizarEstadoSegunUso(necesidad);
+      suplido += cantidadAUsar;
+      if(donacion.getDisponible() > 0) {
         break;
-      } else {
-        Integer disponible = donacion.getDisponible();
-        suplido += disponible;
-        donacion.agregarAsignacion(new AsignacionItem<>(necesidad, disponible));
-        donacion.usar(disponible);
       }
     }
     return suplido;

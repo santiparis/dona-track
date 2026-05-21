@@ -25,14 +25,28 @@ public class DonacionEntrante {
     }
 
     List<DonacionIndependiente> segmentarEnIndependientes(List<Bien> bienes){
+        List<Bien> bienesSegmentados = new ArrayList<>();
 
-      this.donaciones_independientes = new ArrayList<>();
+        for(Bien bien : bienes){
+            Bien bienExistente = bienesSegmentados.stream()
+                    .filter(bienSegmentado -> bienSegmentado.comparteSegmentoCon(bien))
+                    .findFirst()
+                    .orElse(null);
 
-      for(Bien bien : bienes){
-        DonacionIndependiente donacionIndependiente = new DonacionIndependiente(bien);
-        donaciones_independientes.add(donacionIndependiente);
-      }
-      return donaciones_independientes;
+            if (bienExistente == null) {
+                bienesSegmentados.add(bien);
+            } else {
+                bienesSegmentados.remove(bienExistente);
+                bienesSegmentados.add(bienExistente.conCantidad(bienExistente.getCantidad() + bien.getCantidad()));
+            }
+        }
+
+        this.donaciones_independientes = new ArrayList<>();
+        for(Bien bien : bienesSegmentados){
+            DonacionIndependiente donacionIndependiente = new DonacionIndependiente(bien);
+            donaciones_independientes.add(donacionIndependiente);
+        }
+        return donaciones_independientes;
     }
 
     public Donante getDonante() {
@@ -45,5 +59,9 @@ public class DonacionEntrante {
 
     public List<Bien> getBienes() {
         return this.bienes;
+    }
+
+    public List<DonacionIndependiente> getDonacionesIndependientes() {
+        return this.donaciones_independientes;
     }
 }
