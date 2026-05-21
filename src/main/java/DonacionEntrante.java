@@ -46,4 +46,8 @@ public class DonacionEntrante {
     public List<Bien> getBienes() {
         return this.bienes;
     }
+
+  public List<DonacionIndependiente> getDonaciones_independientes() {
+    return donaciones_independientes;
+  }
 }

@@ -1,3 +1,5 @@
+import Donante.Donante;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,21 +11,19 @@ public class SistemaDonaciones {
   private List<Asignacion> asignaciones = new ArrayList<>();
   private List<Necesidad> necesidades = new ArrayList<>();
 
-  //incompleto
-//  public void donar(Donante donante, DonacionEntrante donacionEntrante) {
-//
-//    segmentarEnStock(donacionEntrante);
-//  }
-//
-//  public void segmentarEnStock(DonacionEntrante donacionEntrante) {
-//
-//    List<Bien> bienes = donacionEntrante.getBienes();
-//    for (Bien bien : bienes) {
-//      //si stock > 0, sumo lo que entra
-//      stock_donaciones.put(bien.getSubcategoria().nombre(), stock_donaciones.getOrDefault(bien.getSubcategoria().nombre(), 0) + bien.getCantidad());
-//    }
-//
-//  }
+
+
+  public void ingresarDonacion(DonacionEntrante donacion){
+    List<DonacionIndependiente> lista_ind = donacion.getDonaciones_independientes();
+    for(DonacionIndependiente donacion_ind : lista_ind){
+      Subcategoria subcategoria_bien_donado = donacion_ind.getBien().getSubcategoria();
+      if(stock_donaciones.get(subcategoria_bien_donado) == null){
+        stock_donaciones.put(subcategoria_bien_donado, new ArrayList<>());
+      }
+      stock_donaciones.get(subcategoria_bien_donado).add(donacion_ind);
+
+    }
+  }
 
   public void actualizarNecesidades() {
     HashMap<Subcategoria, Integer> cantidadSubcategorias = this.getBienesDisponibles();
