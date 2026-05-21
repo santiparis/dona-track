@@ -63,6 +63,8 @@ public abstract class Donante {
     return contactos.get(0).getValor();
   }
 
+  public boolean tieneUsuario() { return this.getUsuario() != null; }
+
   public void actualizarDatos(Donante donante) {
         this.nombre = donante.getNombre();
         this.documento = donante.getDocumento();

@@ -14,7 +14,8 @@ public class SistemaDonaciones {
 
   //incompleto
   public void donar(Donante donante, DonacionEntrante donacionEntrante){
-
+    if(!donante.tieneUsuario()) {
+    }
     segmentarEnStock(donacionEntrante);
   }
 
