@@ -4,7 +4,7 @@ import java.util.List;
 
 public class PersonaJuridica extends Donante {
     private final RazonSocial razonSocial;
-    private final String rubro;
+    private String rubro;
     private List<PersonaHumana> representantesHabilitados;
 
     public PersonaJuridica(
@@ -34,5 +34,16 @@ public class PersonaJuridica extends Donante {
 
     public List<PersonaHumana> getRepresentantesHabilitados() {
         return representantesHabilitados;
+    }
+
+    @Override
+    public void actualizarseDesde(Donante donanteConNuevosDatos) {
+        if (donanteConNuevosDatos instanceof PersonaJuridica nuevosDatos) {
+          super.actualizarDatosComunes(nuevosDatos);
+            this.rubro = nuevosDatos.getRubro();
+            this.representantesHabilitados = nuevosDatos.getRepresentantesHabilitados();
+        } else {
+            throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaJuridica con datos de " + donanteConNuevosDatos.getClass().getSimpleName());
+        }
     }
 }

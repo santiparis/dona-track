@@ -37,6 +37,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-# Archivo de configuración del asistente de IA. Mantener local.
-agents.md

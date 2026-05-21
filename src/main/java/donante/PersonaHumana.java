@@ -44,8 +44,15 @@ public class PersonaHumana extends Donante {
     }
 
     @Override
-    public void actualizarDatos(Donante donante){
-        super.actualizarDatos(donante);
-        this.apellido = ((PersonaHumana) donante).getApellido();
+    public void actualizarseDesde(Donante donanteConNuevosDatos) {
+        if (donanteConNuevosDatos instanceof PersonaHumana nuevosDatos) {
+          super.actualizarDatosComunes(nuevosDatos);
+            this.apellido = nuevosDatos.getApellido();
+            this.edad = nuevosDatos.getEdad();
+            this.genero = nuevosDatos.getGenero();
+            this.direccion = nuevosDatos.getDireccion();
+        } else {
+            throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaHumana con datos de " + donanteConNuevosDatos.getClass().getSimpleName());
+        }
     }
 }

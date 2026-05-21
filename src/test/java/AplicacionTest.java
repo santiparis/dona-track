@@ -1,8 +1,10 @@
 import donante.Contacto;
 import donante.Donante;
 import donante.Genero;
+import donante.RazonSocial;
 import donante.TipoContacto;
 import donante.Usuario;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,10 +19,110 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AplicacionTest {
     private Aplicacion aplicacion;
+    private PersonaHumana donanteHumano;
+    private PersonaJuridica donanteJuridico;
 
     @BeforeEach
     void setUp() {
         aplicacion = new Aplicacion();
+        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        Usuario usuario = new Usuario("user", "pass");
+        donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
+        donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
+    }
+
+    @Test
+    void sePuedeAgregarUnaPersonaHumana() {
+        // Arrange
+        assertEquals(0, aplicacion.getDonantes().size());
+
+        // Act
+        aplicacion.agregarDonante(donanteHumano);
+
+        // Assert
+        assertEquals(1, aplicacion.getDonantes().size());
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("12345678");
+        assertTrue(donanteRecuperado.isPresent());
+        assertEquals("Nombre", donanteRecuperado.get().getNombre());
+    }
+
+    @Test
+    void sePuedeAgregarUnaPersonaJuridica() {
+        // Arrange
+        assertEquals(0, aplicacion.getDonantes().size());
+
+        // Act
+        aplicacion.agregarDonante(donanteJuridico);
+
+        // Assert
+        assertEquals(1, aplicacion.getDonantes().size());
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("30-12345678-9");
+        assertTrue(donanteRecuperado.isPresent());
+        assertEquals("Empresa S.A.", donanteRecuperado.get().getNombre());
+    }
+
+    @Test
+    void sePuedeActualizarUnaPersonaHumana() {
+        // Arrange
+        aplicacion.agregarDonante(donanteHumano);
+        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        Usuario usuario = new Usuario("user", "pass");
+        PersonaHumana donanteActualizado = new PersonaHumana("NombreActualizado", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
+        
+        // Act
+        aplicacion.actualizarDonante("12345678", donanteActualizado);
+
+        // Assert
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("12345678");
+        assertTrue(donanteRecuperado.isPresent());
+        assertEquals("NombreActualizado", donanteRecuperado.get().getNombre());
+    }
+
+    @Test
+    void sePuedeActualizarUnaPersonaJuridica() {
+        // Arrange
+        aplicacion.agregarDonante(donanteJuridico);
+        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        Usuario usuario = new Usuario("user", "pass");
+        PersonaJuridica donanteActualizado = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa Actualizada S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
+
+        // Act
+        aplicacion.actualizarDonante("30-12345678-9", donanteActualizado);
+
+        // Assert
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("30-12345678-9");
+        assertTrue(donanteRecuperado.isPresent());
+        assertEquals("Empresa Actualizada S.A.", donanteRecuperado.get().getNombre());
+    }
+
+    @Test
+    void sePuedeEliminarUnaPersonaHumana() {
+        // Arrange
+        aplicacion.agregarDonante(donanteHumano);
+        assertEquals(1, aplicacion.getDonantes().size());
+
+        // Act
+        aplicacion.eliminarDonante("12345678");
+
+        // Assert
+        assertEquals(0, aplicacion.getDonantes().size());
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("12345678");
+        assertTrue(donanteRecuperado.isEmpty());
+    }
+
+    @Test
+    void sePuedeEliminarUnaPersonaJuridica() {
+        // Arrange
+        aplicacion.agregarDonante(donanteJuridico);
+        assertEquals(1, aplicacion.getDonantes().size());
+
+        // Act
+        aplicacion.eliminarDonante("30-12345678-9");
+
+        // Assert
+        assertEquals(0, aplicacion.getDonantes().size());
+        Optional<Donante> donanteRecuperado = aplicacion.buscarDonantePorDocumento("30-12345678-9");
+        assertTrue(donanteRecuperado.isEmpty());
     }
 
     @Test

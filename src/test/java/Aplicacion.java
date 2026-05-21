@@ -29,14 +29,29 @@ public class Aplicacion {
   public void importarDonantesDesdeCSV(String pathArchivo) throws IOException {
     ImportadorDonantesCSV importadorDonantesCSV = new ImportadorDonantesCSV(pathArchivo);
       List<Donante> donantesPotenciales = importadorDonantesCSV.procesar();
-      for (Donante donante : donantesPotenciales) {
-          Optional<Donante> donanteExistente = buscarDonantePorEmail(donante.getEmail());
-          if (donanteExistente.isPresent()) {
-            Donante donanteAActualizar = donanteExistente.get();
-            donanteAActualizar.actualizarDatos(donante);
+      for (Donante donantePotencial : donantesPotenciales) {
+          Optional<Donante> donanteExistenteOpt = buscarDonantePorEmail(donantePotencial.getEmail());
+          if (donanteExistenteOpt.isPresent()) {
+            Donante donanteAActualizar = donanteExistenteOpt.get();
+            donanteAActualizar.actualizarseDesde(donantePotencial);
           } else {
-              donantes.add(donante);
+              donantes.add(donantePotencial);
           }
       }
+  }
+
+  public Optional<Donante> buscarDonantePorDocumento(String documento) {
+    return donantes.stream()
+        .filter(d -> d.getDocumento().equals(documento))
+        .findFirst();
+  }
+
+  public void actualizarDonante(String documento, Donante donanteConNuevosDatos) {
+    buscarDonantePorDocumento(documento)
+        .ifPresent(existente -> existente.actualizarseDesde(donanteConNuevosDatos));
+  }
+
+  public void eliminarDonante(String documento) {
+    donantes.removeIf(d -> d.getDocumento().equals(documento));
   }
 }
