@@ -7,14 +7,14 @@ public class ServicioDeNotificacion {
 
     public void enviar(Contacto contacto, String mensaje) {
         EstrategiaDeNotificacion estrategia = crearEstrategia(contacto.getTipo());
-        if (estrategia == null) {
-            System.err.println("ADVERTENCIA: No se encontró una estrategia de notificación para el tipo: " + contacto.getTipo());
-            return;
-        }
-
         Notificacion notificacion = new Notificacion(contacto, mensaje);
-        Notificador notificador = new Notificador(estrategia);
-        notificador.enviar(notificacion);
+        boolean exito = estrategia.enviar(notificacion);
+
+        if (exito) {
+            notificacion.marcarComoCompletada();
+        } else {
+            notificacion.marcarComoFallida();
+        }
     }
 
     private EstrategiaDeNotificacion crearEstrategia(TipoContacto tipo) {
