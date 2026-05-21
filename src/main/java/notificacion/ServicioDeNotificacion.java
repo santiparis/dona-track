@@ -1,9 +1,22 @@
 package notificacion;
 
 import donante.Contacto;
+import donante.Donante;
 import donante.TipoContacto;
+import java.util.Optional;
 
 public class ServicioDeNotificacion {
+
+    public void enviarEmailDeBienvenida(Donante donante) {
+        Optional<Contacto> contactoEmail = donante.getContactos().stream()
+                .filter(c -> c.getTipo() == TipoContacto.EMAIL)
+                .findFirst();
+
+        contactoEmail.ifPresent(contacto -> {
+            String mensaje = "¡Hola " + donante.getNombre() + "! Te damos la bienvenida a dona-track. Gracias por unirte.";
+            this.enviar(contacto, mensaje);
+        });
+    }
 
     public void enviar(Contacto contacto, String mensaje) {
         EstrategiaDeNotificacion estrategia = crearEstrategia(contacto.getTipo());

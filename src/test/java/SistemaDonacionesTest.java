@@ -1,10 +1,10 @@
-import Donante.Contacto;
-import Donante.Donante;
-import Donante.Genero;
-import Donante.PersonaHumana;
-import Donante.TipoContacto;
-import Donante.TipoDoc;
-import Donante.Usuario;
+import donante.Contacto;
+import donante.Donante;
+import donante.Genero;
+import donante.PersonaHumana;
+import donante.TipoContacto;
+import donante.TipoDoc;
+import donante.Usuario;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -433,7 +433,7 @@ public class SistemaDonacionesTest {
                 30,
                 TipoDoc.DNI,
                 "12345678",
-                Genero.FEMININO,
+                Genero.FEMENINO,
                 "Calle falsa 123",
                 List.of(email),
                 email,
