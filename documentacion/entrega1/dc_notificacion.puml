@@ -1,0 +1,73 @@
+@startuml
+
+
+
+enum EstadoNotificacion << enumeration >> {
+  PENDIENTE
+  COMPLETADA
+  FALLIDA
+}
+
+interface EstrategiaDeNotificacion {
+  + enviar(Notificacion): boolean
+}
+class Notificacion {
+  - final contacto: Contacto
+  - final mensaje: String
+  - estado: EstadoNotificacion
+  + Notificacion(Contacto, String)
+  + getContacto(): Contacto
+  + getMensaje(): String
+  + getEstado(): EstadoNotificacion
+  ~ marcarComoCompletada(): void
+  ~ marcarComoFallida(): void
+}
+class NotificacionPorEmail {
+  + NotificacionPorEmail()
+  + enviar(Notificacion): boolean
+}
+class NotificacionPorSMS {
+  + NotificacionPorSMS()
+  + enviar(Notificacion): boolean
+}
+class NotificacionPorWhatsApp {
+  + NotificacionPorWhatsApp()
+  + enviar(Notificacion): boolean
+}
+class ServicioDeNotificacion {
+  + ServicioDeNotificacion()
+  - crearEstrategia(TipoContacto): EstrategiaDeNotificacion
+  + enviar(Contacto, String): void
+}
+
+' Clases externas al paquete notificacion, pero con las que se relaciona
+class Contacto {
+  - tipo: TipoContacto
+  - valor: String
+  ' ... otros métodos y atributos no relevantes para esta vista ...
+}
+enum TipoContacto{
+  WHATSAPP
+  SMS
+  EMAIL
+  TELEFONO
+}
+
+' Relaciones
+
+' Realizaciones (Implementaciones) de EstrategiaDeNotificacion
+NotificacionPorEmail      ..|>  EstrategiaDeNotificacion : implementa
+NotificacionPorSMS        ..|>  EstrategiaDeNotificacion : implementa
+NotificacionPorWhatsApp   ..|>  EstrategiaDeNotificacion : implementa
+
+' Asociaciones de Notificacion
+Notificacion "1" *-- "1" EstadoNotificacion : tiene estado
+Notificacion "1" --> "1" Contacto : para contacto
+Contacto "1" *-- "1" TipoContacto : es de tipo
+
+' Dependencias de ServicioDeNotificacion
+ServicioDeNotificacion ..> EstrategiaDeNotificacion : utiliza estrategia
+ServicioDeNotificacion ..> Notificacion : crea y gestiona
+ServicioDeNotificacion ..> Contacto : utiliza datos de
+ServicioDeNotificacion ..> TipoContacto : utiliza para selección
+@enduml

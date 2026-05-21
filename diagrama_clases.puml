@@ -43,6 +43,7 @@ class EntidadBeneficiaria{
 }
 
 abstract class Necesidad{
+    estado: EstadoNecesidad
     entidad: EntidadBeneficiaria
     subcategoria: Subcategoria
     cantidad: Int
@@ -88,19 +89,19 @@ class DonacionEntrante{
 }
 
 'Fragentacion de la donacionEntrante
-class DonacionIndependiente{
+class Subdonacion{
     donacionRaiz: DonacionEntrante
     donante: Donante
     descripcion: String
-    subcategoria: Subcategoria
     bien: Bien
+    asignaciones: [Asignacion]
     --
 }
 
 'DonacionEntrante hacia entidades
-class DonacionRealizada{
+class Asignacion{
     estado: Estado
-    entidad: EntidadBeneficiaria
+    necesidad: Necesidad
     subcategoria_unidad:HashMap
 }
 
@@ -165,19 +166,23 @@ Bien --> EstadoBien
 
 
 DonacionEntrante --> "*" Bien
-DonacionEntrante --> "*" DonacionIndependiente
+DonacionEntrante --> "*" Subdonacion
 
-DonacionIndependiente --> "*" Bien
+
 
 SistemaDonaciones ..> DonacionEntrante
 SistemaDonaciones --> "*" Necesidad
 SistemaDonaciones ..> Notificacion
-SistemaDonaciones ..> DonacionRealizada
+SistemaDonaciones ..> Asignacion
+
+Subdonacion --> Bien
+Subdonacion --> SistemaDonaciones
+Subdonacion --> "*"Asignacion
 
 EntidadBeneficiaria ..> SistemaDonaciones
 EntidadBeneficiaria ..> Necesidad
 EntidadBeneficiaria --> Contacto
-EntidadBeneficiaria --> DonacionRealizada
+EntidadBeneficiaria --> Asignacion
 
 NecesidadExtra --|> Necesidad
 NecesidadRecurrente --|> Necesidad

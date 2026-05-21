@@ -31,16 +31,16 @@ public class ServicioDeNotificacionTest {
 
     @Test
     void testEnviarSMS() {
-        Contacto contacto = new Contacto(TipoContacto.SMS, "123456789");
+        Contacto contacto = new Contacto(TipoContacto.SMS, "1123456789");
         servicioDeNotificacion.enviar(contacto, "Mensaje de prueba por SMS");
-        assertTrue(outContent.toString().contains("Simulando envío de SMS al teléfono: 123456789"));
+        assertTrue(outContent.toString().contains("Simulando envío de SMS al teléfono: 1123456789"));
     }
 
     @Test
     void testEnviarWhatsapp(){
-        Contacto contacto = new Contacto(TipoContacto.WHATSAPP, "123456789");
+        Contacto contacto = new Contacto(TipoContacto.WHATSAPP, "1123456789");
         servicioDeNotificacion.enviar(contacto, "Mensaje de prueba por Whatsapp");
-        assertTrue(outContent.toString().contains("Simulando envío de WhatsApp al teléfono: 123456789"));
+        assertTrue(outContent.toString().contains("Simulando envío de WhatsApp al teléfono: 1123456789"));
     }
 
     @AfterEach
