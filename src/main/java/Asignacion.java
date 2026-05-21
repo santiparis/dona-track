@@ -3,25 +3,23 @@ import java.util.List;
 
 public class Asignacion {
     private final Necesidad necesidad;
-    private final EstadoDonacion estado;
+    private EstadoAsignacion estado;
+    private final List<RegistroCambioEstado<EstadoAsignacion>> historialEstados = new ArrayList<>();
+    private String justificacionEntregaFallida;
 
-    public Asignacion(Necesidad necesidad, EstadoDonacion estado) {
+    public Asignacion(Necesidad necesidad, EstadoAsignacion estado) {
         this.necesidad = necesidad;
         this.estado = estado;
         this.historialEstados.add(new RegistroCambioEstado<>(null, estado, new java.util.Date(), null));
     }
 
 
-    public List<Bien> getBienes() {
-        return bienes;
-    }
-
     public Necesidad getNecesidad() {
         return necesidad;
     }
 
-    public EstadoDonacion getEstado() {
-        return estado;
+    public EstadoAsignacion getEstado() {
+        return this.estado;
     }
 
     public void setEstado(EstadoAsignacion estado) {
