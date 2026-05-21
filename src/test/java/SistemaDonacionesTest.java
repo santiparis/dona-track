@@ -433,7 +433,7 @@ public class SistemaDonacionesTest {
                 30,
                 TipoDoc.DNI,
                 "12345678",
-                Genero.FEMININO,
+                Genero.FEMENINO,
                 "Calle falsa 123",
                 List.of(email),
                 email,

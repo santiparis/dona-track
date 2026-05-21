@@ -4,16 +4,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import notificacion.ServicioDeNotificacion;
 
 public class Aplicacion {
     private final List<Donante> donantes;
+    private final ServicioDeNotificacion servicioDeNotificacion;
 
   public Aplicacion() {
         this.donantes = new ArrayList<>();
+        this.servicioDeNotificacion = new ServicioDeNotificacion();
     }
 
   public void agregarDonante(Donante donante){
       donantes.add(donante);
+      servicioDeNotificacion.enviarEmailDeBienvenida(donante);
   }
 
   public List<Donante> getDonantes() {
@@ -35,7 +39,7 @@ public class Aplicacion {
             Donante donanteAActualizar = donanteExistente.get();
             donanteAActualizar.actualizarDatos(donante);
           } else {
-              donantes.add(donante);
+              agregarDonante(donante);
           }
       }
   }

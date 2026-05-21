@@ -5,22 +5,33 @@ import donante.TipoContacto;
 import donante.Usuario;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import donante.PersonaHumana;
 import donante.PersonaJuridica;
 import donante.TipoDoc;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AplicacionTest {
     private Aplicacion aplicacion;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
     @BeforeEach
     void setUp() {
         aplicacion = new Aplicacion();
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @AfterEach
+    void restoreStreams() {
+        System.setOut(originalOut);
     }
 
     @Test
@@ -112,5 +123,24 @@ class AplicacionTest {
         assertEquals("Ana", donanteActualizado.getNombre());
         assertEquals("Navarro", donanteActualizado.getApellido());
         assertEquals("ananavarro3658@yahoo.com", donanteActualizado.getEmail());
+    }
+
+    @Test
+    void agregarDonante_EnviaEmailDeBienvenida() {
+        // Arrange
+        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "nuevo.donante@example.com"));
+        Usuario usuario = new Usuario("nuevo_user", "pass123");
+        PersonaHumana nuevoDonante = new PersonaHumana(
+                "Nuevo", "Donante", 40, TipoDoc.DNI, "40123456", Genero.MASCULINO, "Calle Nueva 456",
+                contactos, contactos.get(0), usuario
+        );
+
+        // Act
+        aplicacion.agregarDonante(nuevoDonante);
+
+        // Assert
+        assertEquals(1, aplicacion.getDonantes().size());
+        assertTrue(outContent.toString().contains("¡Hola Nuevo! Te damos la bienvenida a dona-track."));
+        assertTrue(outContent.toString().contains("Simulando envío de correo electrónico a: nuevo.donante@example.com"));
     }
 }
