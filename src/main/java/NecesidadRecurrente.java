@@ -4,6 +4,7 @@ public class NecesidadRecurrente extends Necesidad {
     private final Date fechaInicio;
     private final Date fechaFin;
     private final Periodo periodo;
+    //private final Integer periodo  //seria un multiplo de 7
 
     public NecesidadRecurrente(
             EntidadBeneficiaria entidad,
@@ -29,8 +30,11 @@ public class NecesidadRecurrente extends Necesidad {
         return this.fechaFin;
     }
 
+    //que la necesidad que se actualice
     @Override
     public void actualizar() {
+      //
+       //
         return;
     }
 

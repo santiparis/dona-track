@@ -27,12 +27,16 @@ public class SistemaDonaciones {
 
   public void actualizarNecesidades() {
     HashMap<Subcategoria, Integer> cantidadSubcategorias = this.getBienesDisponibles();
+
+    List<Necesidad> cubiertas = new ArrayList<>();
+
     for (Necesidad necesidad : this.necesidades) {
       if (this.sePuedeSuplir(necesidad, cantidadSubcategorias)) {
         this.suplirNecesidad(necesidad, cantidadSubcategorias);
-        this.necesidades.remove(necesidad);
+        cubiertas.add(necesidad);
       }
     }
+    this.necesidades.removeAll(cubiertas);
   }
 
   private HashMap<Subcategoria, Integer> getBienesDisponibles() {
@@ -49,7 +53,8 @@ public class SistemaDonaciones {
   private boolean sePuedeSuplir(Necesidad necesidad, HashMap<Subcategoria, Integer> cantidades) {
     HashMap<Subcategoria, Integer> cantidadesNecesitadas = necesidad.getCantidades();
     for (Subcategoria key : cantidadesNecesitadas.keySet()) {
-      if (cantidadesNecesitadas.get(key) > cantidades.get(key)) {
+      Integer disponible = cantidades.getOrDefault(key, 0);
+      if (cantidadesNecesitadas.get(key) > disponible) {
         return false;
       }
     }
@@ -63,7 +68,6 @@ public class SistemaDonaciones {
       Subcategoria subcategoria = bien.getSubcategoria();
       int cantidad = this.asignarDonacion(cantidadNecesitada, subcategoria, necesidad);
       cantidades.put(subcategoria, Integer.valueOf(cantidadNecesitada - cantidad));
-      asignacion.agregarBien(bien);
     }
     this.asignaciones.add(asignacion);
     return cantidades;
