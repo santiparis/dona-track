@@ -1,0 +1,19 @@
+@startuml
+
+left to right direction
+
+[Archivo CSV] as CSV
+
+node " Dominio DonaTrack" as nodo {
+[Gestion de Donaciones]
+[Gestion de Personas]
+[Gestion de Necesidades]
+[Gestion de Asignaciones]
+}
+
+[Notificaciones] as Notif
+
+CSV -down-> nodo
+nodo -right-> Notif
+
+@enduml
