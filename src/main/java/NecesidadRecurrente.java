@@ -1,3 +1,5 @@
+import donante.PersonaJuridica;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -9,7 +11,7 @@ public class NecesidadRecurrente extends Necesidad {
     private final Periodo periodo;
 
     public NecesidadRecurrente(
-            EntidadBeneficiaria entidad,
+            PersonaJuridica entidad,
             Subcategoria subcategoria,
             Integer cantidad,
             String descripcion,
@@ -24,7 +26,7 @@ public class NecesidadRecurrente extends Necesidad {
     }
 
     public NecesidadRecurrente(
-            EntidadBeneficiaria entidad,
+            PersonaJuridica entidad,
             String descripcion,
             List<Bien> bienes,
             Date fechaInicio,

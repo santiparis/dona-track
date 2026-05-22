@@ -1,4 +1,4 @@
-import donante.Donante;
+import donante.Persona;
 import cargaCSV.ImportadorDonantesCSV;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,36 +6,36 @@ import java.util.List;
 import java.util.Optional;
 
 public class Aplicacion {
-    private final List<Donante> donantes;
+    private final List<Persona> personas;
 
   public Aplicacion() {
-        this.donantes = new ArrayList<>();
+        this.personas = new ArrayList<>();
     }
 
-  public void agregarDonante(Donante donante){
-      donantes.add(donante);
+  public void agregarDonante(Persona persona){
+      personas.add(persona);
   }
 
-  public List<Donante> getDonantes() {
-      return donantes;
+  public List<Persona> getDonantes() {
+      return personas;
   }
 
-  public Optional<Donante> buscarDonantePorEmail(String email) {
-      return donantes.stream()
+  public Optional<Persona> buscarDonantePorEmail(String email) {
+      return personas.stream()
               .filter(d -> d.getEmail().equals(email))
               .findFirst();
   }
 
   public void importarDonantesDesdeCSV(String pathArchivo) throws IOException {
     ImportadorDonantesCSV importadorDonantesCSV = new ImportadorDonantesCSV(pathArchivo);
-      List<Donante> donantesPotenciales = importadorDonantesCSV.procesar();
-      for (Donante donante : donantesPotenciales) {
-          Optional<Donante> donanteExistente = buscarDonantePorEmail(donante.getEmail());
+      List<Persona> donantesPotenciales = importadorDonantesCSV.procesar();
+      for (Persona persona : donantesPotenciales) {
+          Optional<Persona> donanteExistente = buscarDonantePorEmail(persona.getEmail());
           if (donanteExistente.isPresent()) {
-            Donante donanteAActualizar = donanteExistente.get();
-            donanteAActualizar.actualizarDatos(donante);
+            Persona personaAActualizar = donanteExistente.get();
+            personaAActualizar.actualizarDatos(persona);
           } else {
-              donantes.add(donante);
+              personas.add(persona);
           }
       }
   }

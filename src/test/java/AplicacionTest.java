@@ -1,15 +1,9 @@
-import donante.Contacto;
-import donante.Donante;
-import donante.Genero;
-import donante.TipoContacto;
-import donante.Usuario;
+import donante.*;
+
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import donante.PersonaHumana;
-import donante.PersonaJuridica;
-import donante.TipoDoc;
 
 import java.io.IOException;
 
@@ -36,16 +30,16 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante existe
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
         assertTrue(donanteOpt.isPresent());
 
         // El donante es una persona humana
-        Donante donanteCreado = donanteOpt.get();
-        assertInstanceOf(PersonaHumana.class, donanteCreado);
+        Persona personaCreado = donanteOpt.get();
+        assertInstanceOf(PersonaHumana.class, personaCreado);
 
 
         // Los datos del donante son correctos
-        PersonaHumana personaHumana = (PersonaHumana) donanteCreado;
+        PersonaHumana personaHumana = (PersonaHumana) personaCreado;
         assertEquals(TipoDoc.DNI, personaHumana.getTipoDoc());
         assertEquals("28456905", personaHumana.getDocumento());
         assertEquals("Ana", personaHumana.getNombre());
@@ -66,18 +60,18 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante existe
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("santafeindustrial8180@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("santafeindustrial8180@yahoo.com");
         assertTrue(donanteOpt.isPresent());
 
         // El donante es una persona jurídica
-        Donante donanteCreado = donanteOpt.get();
-        assertInstanceOf(PersonaJuridica.class, donanteCreado);
+        Persona personaCreado = donanteOpt.get();
+        assertInstanceOf(PersonaJuridica.class, personaCreado);
 
         // Los datos del donante son correctos
-        assertEquals(TipoDoc.CUIT, donanteCreado.getTipoDoc());
-        assertEquals("30-52235350-3", donanteCreado.getDocumento());
-        assertEquals("Santa Fe Industrial Fundación", donanteCreado.getNombre());
-        assertEquals("santafeindustrial8180@yahoo.com", donanteCreado.getUsuario().getNombreUsuario());
+        assertEquals(TipoDoc.CUIT, personaCreado.getTipoDoc());
+        assertEquals("30-52235350-3", personaCreado.getDocumento());
+        assertEquals("Santa Fe Industrial Fundación", personaCreado.getNombre());
+        assertEquals("santafeindustrial8180@yahoo.com", personaCreado.getUsuario().getNombreUsuario());
     }
 
     @Test
@@ -102,7 +96,7 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante debe seguir existiendo
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
         assertTrue(donanteOpt.isPresent());
         PersonaHumana donanteActualizado = (PersonaHumana) donanteOpt.get();
 

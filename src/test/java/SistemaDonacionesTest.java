@@ -1,10 +1,4 @@
-import Donante.Contacto;
-import Donante.Donante;
-import Donante.Genero;
-import Donante.PersonaHumana;
-import Donante.TipoContacto;
-import Donante.TipoDoc;
-import Donante.Usuario;
+import donante.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -95,7 +89,7 @@ public class SistemaDonacionesTest {
         Necesidad necesidad = necesidad("Comedor", bienFideos(4));
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "Debería registrar una asignación realizada.");
@@ -116,7 +110,7 @@ public class SistemaDonacionesTest {
 
         sistema.cargarDonacion(primeraDonacion);
         sistema.cargarDonacion(segundaDonacion);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
 
         assertTimeoutPreemptively(Duration.ofSeconds(1), sistema::actualizarNecesidades,
                 "Consumir exactamente todo el stock disponible no debería dejar al sistema en loop.");
@@ -140,7 +134,7 @@ public class SistemaDonacionesTest {
         DonacionIndependiente donacion = donacionEntrante.getDonacionesIndependientes().get(0);
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad("Comedor", bienFideos(2)));
+        registrarNecesidad(sistema, necesidad("Comedor", bienFideos(2)));
         sistema.actualizarNecesidades();
 
         assertEquals(3, donacion.getDisponible(), "La donación debería conservar disponible no utilizado.");
@@ -214,7 +208,7 @@ public class SistemaDonacionesTest {
 
         sistema.cargarDonacion(donacionEntrante);
         sistema.actualizarDonacionesVencidas();
-        sistema.registrarNecesidad(necesidad("Comedor", bienLeche(new Date(System.currentTimeMillis() + 60_000))));
+        registrarNecesidad(sistema, necesidad("Comedor", bienLeche(new Date(System.currentTimeMillis() + 60_000))));
         sistema.actualizarNecesidades();
 
         assertTrue(sistema.getAsignaciones().isEmpty(),
@@ -239,7 +233,7 @@ public class SistemaDonacionesTest {
         );
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
         sistema.actualizarNecesidades();
 
         assertEquals(2, donacion.getDisponible(), "Una necesidad vencida no debería consumir stock.");
@@ -269,7 +263,7 @@ public class SistemaDonacionesTest {
         );
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "La necesidad activa debería suplirse con el stock disponible.");
@@ -288,7 +282,7 @@ public class SistemaDonacionesTest {
         DonacionEntrante donacionEntrante = new DonacionEntrante(donante(), "Fideos", List.of(bienFideos(2)));
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(new NecesidadExtra(entidad(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
+        registrarNecesidad(sistema, new NecesidadExtra(entidad(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "La necesidad extraordinaria debería suplirse.");
@@ -304,7 +298,7 @@ public class SistemaDonacionesTest {
         Necesidad necesidad = necesidad("Comedor", bienFideos(5));
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "Debería registrar una asignación parcial.");
@@ -318,7 +312,7 @@ public class SistemaDonacionesTest {
     void actualizarNecesidadesNoFallaSiFaltaLaSubcategoriaSolicitada() {
         SistemaDonaciones sistema = new SistemaDonaciones();
 
-        sistema.registrarNecesidad(necesidad("Comedor", bienFideos(1)));
+        registrarNecesidad(sistema, necesidad("Comedor", bienFideos(1)));
 
         assertDoesNotThrow(sistema::actualizarNecesidades,
                 "Una necesidad sin stock de su subcategoría no debería romper el proceso.");
@@ -332,8 +326,8 @@ public class SistemaDonacionesTest {
         DonacionIndependiente donacion = donacionEntrante.getDonacionesIndependientes().get(0);
 
         sistema.cargarDonacion(donacionEntrante);
-        sistema.registrarNecesidad(necesidad("Primer comedor", bienFideos(2)));
-        sistema.registrarNecesidad(necesidad("Segundo comedor", bienFideos(3)));
+        registrarNecesidad(sistema, necesidad("Primer comedor", bienFideos(2)));
+        registrarNecesidad(sistema, necesidad("Segundo comedor", bienFideos(3)));
         sistema.actualizarNecesidades();
 
         assertEquals(2, sistema.getAsignaciones().size(), "Debería poder resolver varias necesidades en una actualización.");
@@ -377,11 +371,11 @@ public class SistemaDonacionesTest {
     @Test
     void sistemaGestionaEntidadesBeneficiariasYNecesidades() {
         SistemaDonaciones sistema = new SistemaDonaciones();
-        EntidadBeneficiaria entidad = entidad();
+        PersonaJuridica entidad = entidad();
         Necesidad necesidad = new NecesidadExtra(entidad, "Necesidad múltiple", List.of(bienFideos(2), bienFideos(3)));
 
         sistema.registrarEntidadBeneficiaria(entidad);
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
 
         assertEquals(1, sistema.getEntidadesBeneficiarias().size(), "El sistema debería registrar entidades beneficiarias.");
         assertEquals(1, entidad.getNecesidades().size(), "La entidad debería conservar sus necesidades registradas.");
@@ -411,7 +405,7 @@ public class SistemaDonacionesTest {
                 Periodo.SEMANAL
         );
 
-        sistema.registrarNecesidad(necesidad);
+        registrarNecesidad(sistema, necesidad);
         sistema.getAsignaciones().add(new Asignacion(necesidad, EstadoAsignacion.LISTA_ENTREGA));
         sistema.cambiarEstadoAsignacion(0, EstadoAsignacion.ENTREGADA);
 
@@ -425,7 +419,97 @@ public class SistemaDonacionesTest {
                 "La siguiente necesidad debería iniciar en el próximo período.");
     }
 
-    private static Donante donante() {
+    @Test
+    void donacionAsignadaPeroNoEntregadaQueSeVenceDesasignaYReestableceLaNecesidad() {
+        SistemaDonaciones sistema = new SistemaDonaciones();
+        DonacionEntrante donacionEntrante = new DonacionEntrante(
+                donante(),
+                "Leche",
+                List.of(bienLeche(new Date(System.currentTimeMillis() - 1_000)))
+        );
+        DonacionIndependiente donacion = donacionEntrante.getDonacionesIndependientes().get(0);
+        Necesidad necesidad = necesidad("Comedor", bienLeche(new Date(System.currentTimeMillis() + 60_000)));
+
+        sistema.cargarDonacion(donacionEntrante);
+        registrarNecesidad(sistema, necesidad);
+        sistema.actualizarNecesidades();
+
+        assertEquals(1, sistema.getAsignaciones().size(),
+                "Debería haber una asignación realizada.");
+        assertEquals(EstadoAsignacion.ASIGNACION_REALIZADA, sistema.getAsignaciones().get(0).getEstado(),
+                "La asignación debería estar en estado ASIGNACION_REALIZADA.");
+        assertEquals(0, necesidad.getCantidadesPendientes().getOrDefault(Subcategoria.LECHE, 0),
+                "La necesidad debería estar completamente satisfecha.");
+        assertEquals(0, donacion.getDisponible(),
+                "La donación debería estar completamente usada.");
+
+        // Simular vencimiento de la donación
+        sistema.actualizarDonacionesVencidas();
+
+        assertEquals(EstadoDonacionIndependiente.VENCIDA, donacion.getEstado(),
+                "La donación debería estar vencida.");
+        assertEquals(0, sistema.getAsignaciones().size(),
+                "La asignación debería haber sido eliminada después del vencimiento.");
+        assertEquals(1, necesidad.getCantidadesPendientes().getOrDefault(Subcategoria.LECHE, 0),
+                "La necesidad debería volver a estar pendiente con la cantidad original.");
+    }
+
+    @Test
+    void donacionAsignadaParcialmentePeroNoEntregadaQueSeVenceDesasignaLaParte() {
+        SistemaDonaciones sistema = new SistemaDonaciones();
+        DonacionEntrante donacionEntrante = new DonacionEntrante(
+                donante(),
+                "Leche",
+                List.of(bienLeche(new Date(System.currentTimeMillis() - 1_000)))
+        );
+        DonacionIndependiente donacion = donacionEntrante.getDonacionesIndependientes().get(0);
+
+        sistema.cargarDonacion(donacionEntrante);
+        registrarNecesidad(sistema, necesidad("Comedor", bienLeche(new Date(System.currentTimeMillis() + 60_000))));
+        sistema.actualizarNecesidades();
+
+        assertEquals(1, sistema.getAsignaciones().size(), "Debería haber una asignación.");
+        assertEquals(0, donacion.getDisponible(), "La donación debería estar completamente usada.");
+
+        // Actualizar donaciones vencidas
+        sistema.actualizarDonacionesVencidas();
+
+        assertEquals(EstadoDonacionIndependiente.VENCIDA, donacion.getEstado(),
+                "La donación vencida debería estar marcada como VENCIDA.");
+        assertEquals(1, sistema.getDonacionesVencidas().size(),
+                "La donación debería moverse a donaciones vencidas.");
+        assertEquals(0, sistema.getAsignaciones().size(),
+                "La asignación debería haber sido eliminada.");
+    }
+
+    @Test
+    void donacionEntregadaQueSeVenceNoDesasigna() {
+        SistemaDonaciones sistema = new SistemaDonaciones();
+        DonacionEntrante donacionEntrante = new DonacionEntrante(
+                donante(),
+                "Leche",
+                List.of(bienLeche(new Date(System.currentTimeMillis() - 1_000)))
+        );
+        Necesidad necesidad = necesidad("Comedor", bienLeche(new Date(System.currentTimeMillis() + 60_000)));
+
+        sistema.cargarDonacion(donacionEntrante);
+        registrarNecesidad(sistema, necesidad);
+        sistema.actualizarNecesidades();
+
+        sistema.cambiarEstadoAsignacion(0, EstadoAsignacion.ENTREGADA);
+
+        assertEquals(EstadoAsignacion.ENTREGADA, sistema.getAsignaciones().get(0).getEstado(),
+                "La asignación debería estar entregada.");
+
+        sistema.actualizarDonacionesVencidas();
+
+        assertEquals(1, sistema.getAsignaciones().size(),
+                "La asignación entregada no debería desasignarse al vencerse la donación.");
+        assertEquals(EstadoAsignacion.ENTREGADA, sistema.getAsignaciones().get(0).getEstado(),
+                "El estado de la asignación no debería cambiar.");
+    }
+
+    private static Persona donante() {
         Contacto email = new Contacto(TipoContacto.EMAIL, "ana@example.com");
         return new PersonaHumana(
                 "Ana",
@@ -433,7 +517,7 @@ public class SistemaDonacionesTest {
                 30,
                 TipoDoc.DNI,
                 "12345678",
-                Genero.FEMININO,
+                Genero.FEMENINO,
                 "Calle falsa 123",
                 List.of(email),
                 email,
@@ -450,13 +534,7 @@ public class SistemaDonacionesTest {
     }
 
     private static Necesidad necesidad(String descripcion, Bien bien) {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria(
-                "Fundacion",
-                "Av Siempre Viva 742",
-                "1111-1111",
-                List.of("contacto@fundacion.org")
-        );
-        return new Necesidad(entidad, descripcion, List.of(bien)) {};
+        return new Necesidad(entidad(), descripcion, List.of(bien)) {};
     }
 
     private static NecesidadRecurrente necesidadRecurrente(
@@ -476,20 +554,33 @@ public class SistemaDonacionesTest {
         );
     }
 
-    private static EntidadBeneficiaria entidad() {
-        return new EntidadBeneficiaria(
+    private static PersonaJuridica entidad() {
+        Contacto email = new Contacto(TipoContacto.EMAIL, "contacto@fundacion.org");
+        return new PersonaJuridica(
+                TipoDoc.CUIT,
+                "30-12345678-9",
                 "Fundacion",
+                RazonSocial.ONG,
+                "Asistencia social",
                 "Av Siempre Viva 742",
                 "1111-1111",
-                List.of("contacto@fundacion.org")
+                List.of("contacto@fundacion.org"),
+                List.of(),
+                List.of(email),
+                email,
+                new Usuario("fundacion", "1234")
         );
+    }
+
+    private static void registrarNecesidad(SistemaDonaciones sistema, Necesidad necesidad) {
+        necesidad.getEntidad().registrarNecesidad(sistema, necesidad);
     }
 
     private static SistemaDonaciones sistemaConUnaAsignacion() {
         SistemaDonaciones sistema = new SistemaDonaciones();
 
         sistema.cargarDonacion(new DonacionEntrante(donante(), "Fideos", List.of(bienFideos(3))));
-        sistema.registrarNecesidad(necesidad("Comedor", bienFideos(2)));
+        registrarNecesidad(sistema, necesidad("Comedor", bienFideos(2)));
         sistema.actualizarNecesidades();
 
         return sistema;
