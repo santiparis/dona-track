@@ -26,7 +26,7 @@ public abstract class Persona {
         if (contactos.isEmpty()) {
             throw new IllegalArgumentException("La lista de contactos no puede ser nula o vacía.");
         }
-        this.medioPredeterminado = medioPredeterminado;
+        setMedioPredeterminado(medioPredeterminado);
         this.usuario = usuario;
     }
 
@@ -50,8 +50,23 @@ public abstract class Persona {
         return contactos;
     }
 
+    public void agregarContactos(List<Contacto> nuevosContactos) {
+        nuevosContactos.forEach(nuevoContacto -> {
+            if (!this.contactos.contains(nuevoContacto)) {
+                this.contactos.add(nuevoContacto);
+            }
+        });
+    }
+
     public Contacto getMedioPredeterminado() {
         return medioPredeterminado;
+    }
+
+    public void setMedioPredeterminado(Contacto medioPredeterminado) {
+        if (!this.contactos.contains(medioPredeterminado)) {
+            throw new IllegalArgumentException("El medio predeterminado debe existir en la lista de contactos.");
+        }
+        this.medioPredeterminado = medioPredeterminado;
     }
 
     public Usuario getUsuario() {
@@ -67,7 +82,7 @@ public abstract class Persona {
   protected void actualizarDatosComunes(Persona persona) {
         this.nombre = persona.getNombre();
         this.documento = persona.getDocumento();
-        this.contactos = persona.getContactos();
-        this.medioPredeterminado = persona.getMedioPredeterminado();
+        this.agregarContactos(persona.getContactos());
+        this.setMedioPredeterminado(persona.getMedioPredeterminado());
   }
 }

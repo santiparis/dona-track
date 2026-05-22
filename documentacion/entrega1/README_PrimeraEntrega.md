@@ -1,8 +1,11 @@
-# Carga CSV - Uso de Optional
+
+# Justificaciones de Diseño
+
+## Carga CSV - Uso de Optional
 
 * Usamos Optional para no utilizar null y luego filtrar en la lista.
 
-# Gestión de Donaciones
+## Gestión de Donaciones
 
 * **Principio de Responsabilidad Única (SRP)**: `DonacionEntrante` se encarga únicamente de modelar una donación con sus bienes asociados. La segmentación de bienes en donaciones independientes es un comportamiento separado que ocurre en el constructor. `DonacionIndependiente` gestiona el estado de un bien único y su disponibilidad, mientras que `SistemaDonaciones` orquesta la gestión del stock global.
 
@@ -12,7 +15,7 @@
 
 * **Arquitectura en Capas**: La capa de dominio (`DonacionEntrante`, `DonacionIndependiente`) separa el modelado de datos del comportamiento orquestado en el `SistemaDonaciones`.
 
-# Gestión de Personas
+## Gestión de Personas
 
 * **Principio de Responsabilidad Única (SRP)**: Cada clase tiene una responsabilidad clara: `Persona` define el comportamiento base, `PersonaHumana` añade atributos específicos de humanos (género, edad, dirección), y `PersonaJuridica` gestiona la información de entidades (razón social, rubro, representantes).
 
@@ -22,7 +25,7 @@
 
 * **Arquitectura Polimórfica**: El diseño permite que el sistema trabaje con referencias de `Persona` sin conocer el tipo específico (humana o jurídica), facilitando extensibilidad futura.
 
-# Gestión de Necesidades
+## Gestión de Necesidades
 
 * **Principio Abierto/Cerrado (OCP)**: `Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtra` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
 
@@ -32,7 +35,7 @@
 
 * **Arquitectura Orientada a Objetos**: El sistema de rastreo de cantidades pendientes vs. suplidas permite una lógica compleja sin conocer el tipo específico de necesidad, promoviendo la reutilización de código.
 
-# Gestión de Asignaciones
+## Gestión de Asignaciones
 
 * **Principio de Responsabilidad Única (SRP)**: `Asignacion` gestiona la asignación de bienes a una necesidad específica. `RegistroCambioEstado` se encarga únicamente de registrar el historial de cambios. `AsignacionItem` actúa como un contenedor de datos inmutable (record) para las asociaciones.
 
@@ -42,7 +45,7 @@
 
 * **Arquitectura Basada en Eventos**: Cada cambio de estado genera un registro inmutable que documenta el antes, el después, la fecha y la razón, facilitando debugging y cumplimiento normativo.
 
-# Componente Notificador
+## Componente Notificador
 
 * **Principio de Responsabilidad Única (SRP)**: La clase `Contacto` solo se ocupa de modelar y validar datos. La lógica de envío es una responsabilidad de comportamiento distinta, que está en la capa de servicio.
 
