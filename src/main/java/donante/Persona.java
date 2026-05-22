@@ -62,7 +62,7 @@ public abstract class Persona {
     return contactos.get(0).getValor();
   }
 
-  public abstract void actualizarseDesde(Donante donanteConNuevosDatos);
+  public abstract void actualizarseDesde(Persona donanteConNuevosDatos);
 
   protected void actualizarDatosComunes(Persona persona) {
         this.nombre = persona.getNombre();

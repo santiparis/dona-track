@@ -9,8 +9,6 @@ public class PersonaJuridica extends Persona {
     private String rubro;
     private List<PersonaHumana> representantesHabilitados;
     private String direccion;
-    private String telefono;
-    private List<String> correosRepresentantes;
     private final List<Object> necesidades = new ArrayList<>();
 
     public PersonaJuridica(
@@ -30,26 +28,6 @@ public class PersonaJuridica extends Persona {
         this.representantesHabilitados = representantesHabilitados;
     }
 
-    public PersonaJuridica(
-            TipoDoc tipoDoc,
-            String documento,
-            String nombre,
-            RazonSocial razonSocial,
-            String rubro,
-            String direccion,
-            String telefono,
-            List<String> correosRepresentantes,
-            List<PersonaHumana> representantesHabilitados,
-            List<Contacto> contactos,
-            Contacto medioPredeterminado,
-            Usuario usuario
-    ) {
-        this(tipoDoc, documento, nombre, razonSocial, rubro, representantesHabilitados, contactos, medioPredeterminado, usuario);
-        this.direccion = direccion;
-        this.telefono = telefono;
-        this.correosRepresentantes = correosRepresentantes;
-    }
-
     public RazonSocial getRazonSocial() {
         return razonSocial;
     }
@@ -63,7 +41,7 @@ public class PersonaJuridica extends Persona {
     }
 
     @Override
-    public void actualizarseDesde(Donante donanteConNuevosDatos) {
+    public void actualizarseDesde(Persona donanteConNuevosDatos) {
         if (donanteConNuevosDatos instanceof PersonaJuridica nuevosDatos) {
           super.actualizarDatosComunes(nuevosDatos);
             this.rubro = nuevosDatos.getRubro();
@@ -75,14 +53,6 @@ public class PersonaJuridica extends Persona {
 
     public String getDireccion() {
         return direccion;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public List<String> getCorreosRepresentantes() {
-        return correosRepresentantes;
     }
 
     public void registrarNecesidad(Object sistemaDonaciones, Object necesidad) {

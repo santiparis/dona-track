@@ -52,7 +52,7 @@ public class PersonaHumana extends Persona {
             this.genero = nuevosDatos.getGenero();
             this.direccion = nuevosDatos.getDireccion();
         } else {
-            throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaHumana con datos de " + donanteConNuevosDatos.getClass().getSimpleName());
+            throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaHumana con datos de PersonaJuridica");
         }
     }
 }

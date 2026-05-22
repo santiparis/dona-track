@@ -15,31 +15,31 @@ public class Aplicacion {
         this.servicioDeNotificacion = new ServicioDeNotificacion();
     }
 
-  public void agregarDonante(Persona persona){
+  public void agregarPersona(Persona persona){
       personas.add(persona);
       servicioDeNotificacion.enviarEmailDeBienvenida(persona);
   }
 
-  public List<Persona> getDonantes() {
+  public List<Persona> getPersonas() {
       return personas;
   }
 
-  public Optional<Persona> buscarDonantePorEmail(String email) {
+  public Optional<Persona> buscarPersonaPorEmail(String email) {
       return personas.stream()
               .filter(d -> d.getEmail().equals(email))
               .findFirst();
   }
 
-  public void importarDonantesDesdeCSV(String pathArchivo) throws IOException {
+  public void importarPersonasDesdeCSV(String pathArchivo) throws IOException {
     ImportadorDonantesCSV importadorDonantesCSV = new ImportadorDonantesCSV(pathArchivo);
       List<Persona> donantesPotenciales = importadorDonantesCSV.procesar();
       for (Persona personaPotencial : donantesPotenciales) {
-          Optional<Persona> personaExistenteOpt = buscarDonantePorEmail(donantePotencial.getEmail());
+          Optional<Persona> personaExistenteOpt = buscarPersonaPorEmail(personaPotencial.getEmail());
           if (personaExistenteOpt.isPresent()) {
             Persona personaAActualizar = personaExistenteOpt.get();
             personaAActualizar.actualizarseDesde(personaPotencial);
           } else {
-              agregarDonante(donantePotencial);
+              agregarPersona(personaPotencial);
           }
       }
   }
