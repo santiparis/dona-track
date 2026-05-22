@@ -62,7 +62,7 @@ public class DonacionEntrante {
         return this.bienes;
     }
 
-    public List<DonacionIndependiente> getDonacionesIndependientes() {
-        return this.donaciones_independientes;
-    }
+  public List<DonacionIndependiente> getDonacionesIndependientes() {
+    return donaciones_independientes;
+  }
 }

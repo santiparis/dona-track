@@ -12,6 +12,8 @@ public class NecesidadExtra extends Necesidad {
         super(entidad, descripcion, bienes);
     }
 
+
+
     @Override
     public void actualizar() {
         return;

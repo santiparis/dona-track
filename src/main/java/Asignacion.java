@@ -3,14 +3,12 @@ import java.util.List;
 
 public class Asignacion {
     private final Necesidad necesidad;
-    private final List<Bien> bienes;
     private EstadoAsignacion estado;
-    private String justificacionEntregaFallida;
     private final List<RegistroCambioEstado<EstadoAsignacion>> historialEstados = new ArrayList<>();
+    private String justificacionEntregaFallida;
 
     public Asignacion(Necesidad necesidad, EstadoAsignacion estado) {
         this.necesidad = necesidad;
-        this.bienes = new ArrayList<>();
         this.estado = estado;
         this.historialEstados.add(new RegistroCambioEstado<>(null, estado, new java.util.Date(), null));
     }
@@ -44,7 +42,7 @@ public class Asignacion {
     }
 
     public EstadoAsignacion getEstado() {
-        return estado;
+        return this.estado;
     }
 
     public void setEstado(EstadoAsignacion estado) {

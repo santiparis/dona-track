@@ -1,0 +1,18 @@
+@startuml
+
+left to right direction
+
+node "DonaTrack" {
+        [Sistema de Donaciones] as Sistema
+
+}
+
+actor Donante as A1
+actor :Entidad Beneficiaria: as A2
+actor Administrador as A3
+
+A1 --> Sistema
+A2 -up-> Sistema
+A3 -right-> Sistema
+
+@enduml

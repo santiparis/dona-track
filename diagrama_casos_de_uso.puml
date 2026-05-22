@@ -1,0 +1,28 @@
+@startuml
+
+left to right direction
+
+actor Donante as A1
+actor :Administrador Depósito: as A2
+actor :Entidad Benificiaria: as A3
+
+rectangle DonaTrack {
+
+usecase (Realizar aporte) as CU1
+usecase (Realizar registro) as CU2
+usecase (Completar formulario donación) as CU3
+usecase (Registrar totalidad bienes) as CU4
+usecase (Registrar necesidad) as CU5
+usecase (Consultar estado donación) as CU6
+
+}
+
+CU1 ..> CU2 : <<include>>
+A1 ..> CU1
+A2 ..> CU3
+CU3 <.. CU4 : <<exclude>>
+A3 ..> CU5
+CU5 ..> CU2 : <<include>>
+A1 ..> CU6
+
+@enduml
