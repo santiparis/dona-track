@@ -15,32 +15,47 @@ public class Aplicacion {
         this.servicioDeNotificacion = new ServicioDeNotificacion();
     }
 
-  public void agregarDonante(Persona persona){
+  public void agregarPersona(Persona persona){
       personas.add(persona);
       servicioDeNotificacion.enviarEmailDeBienvenida(persona);
   }
 
-  public List<Persona> getDonantes() {
+  public List<Persona> getPersonas() {
       return personas;
   }
 
-  public Optional<Persona> buscarDonantePorEmail(String email) {
+  public Optional<Persona> buscarPersonaPorEmail(String email) {
       return personas.stream()
               .filter(d -> d.getEmail().equals(email))
               .findFirst();
   }
 
-  public void importarDonantesDesdeCSV(String pathArchivo) throws IOException {
+  public void importarPersonasDesdeCSV(String pathArchivo) throws IOException {
     ImportadorDonantesCSV importadorDonantesCSV = new ImportadorDonantesCSV(pathArchivo);
       List<Persona> donantesPotenciales = importadorDonantesCSV.procesar();
-      for (Persona persona : donantesPotenciales) {
-          Optional<Persona> donanteExistente = buscarDonantePorEmail(persona.getEmail());
-          if (donanteExistente.isPresent()) {
-            Persona personaAActualizar = donanteExistente.get();
-            personaAActualizar.actualizarDatos(persona);
+      for (Persona personaPotencial : donantesPotenciales) {
+          Optional<Persona> personaExistenteOpt = buscarPersonaPorEmail(personaPotencial.getEmail());
+          if (personaExistenteOpt.isPresent()) {
+            Persona personaAActualizar = personaExistenteOpt.get();
+            personaAActualizar.actualizarseDesde(personaPotencial);
           } else {
-              personas.add(persona);
+              agregarPersona(personaPotencial);
           }
       }
+  }
+
+  public Optional<Persona> buscarPersonaPorDocumento(String documento) {
+    return personas.stream()
+        .filter(d -> d.getDocumento().equals(documento))
+        .findFirst();
+  }
+
+  public void actualizarPersona(String documento, Persona personaConNuevosDatos) {
+    buscarPersonaPorDocumento(documento)
+        .ifPresent(existente -> existente.actualizarseDesde(personaConNuevosDatos));
+  }
+
+  public void eliminarPersona(String documento) {
+    personas.removeIf(d -> d.getDocumento().equals(documento));
   }
 }

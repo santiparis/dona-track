@@ -44,8 +44,15 @@ public class PersonaHumana extends Persona {
     }
 
     @Override
-    public void actualizarDatos(Persona persona){
-        super.actualizarDatos(persona);
-        this.apellido = ((PersonaHumana) persona).getApellido();
+    public void actualizarseDesde(Persona personaConNuevosDatos) {
+        if (personaConNuevosDatos instanceof PersonaHumana nuevosDatos) {
+          super.actualizarDatosComunes(nuevosDatos);
+            this.apellido = nuevosDatos.getApellido();
+            this.edad = nuevosDatos.getEdad();
+            this.genero = nuevosDatos.getGenero();
+            this.direccion = nuevosDatos.getDireccion();
+        } else {
+            throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaHumana con datos de PersonaJuridica");
+        }
     }
 }
