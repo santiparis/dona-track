@@ -1,4 +1,7 @@
 public enum Categoria {
     ALIMENTO,
-    MUEBLE
+    MUEBLE,
+    VESTIMENTA,
+    ABRIGO,
+    DESCANSO
 }

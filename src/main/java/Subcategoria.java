@@ -1,6 +1,18 @@
 public enum Subcategoria {
     BANCOS(Categoria.MUEBLE, true, false,"Bancos"),
-    FIDEOS(Categoria.ALIMENTO, false, false,"Fideos");
+    SILLAS(Categoria.MUEBLE, true, false,"Sillas"),
+    MESAS(Categoria.MUEBLE, true, false,"Mesas"),
+    FIDEOS(Categoria.ALIMENTO, false, false,"Fideos"),
+    ARROZ(Categoria.ALIMENTO, false, false,"Arroz"),
+    LEGUMBRES(Categoria.ALIMENTO, false, false,"Legumbres"),
+    ACEITE(Categoria.ALIMENTO, false, false,"Aceite"),
+    LECHE(Categoria.ALIMENTO, false, true,"Leche"),
+    CAMPERAS(Categoria.VESTIMENTA, true, false,"Camperas"),
+    REMERAS(Categoria.VESTIMENTA, true, false,"Remeras"),
+    PANTALONES(Categoria.VESTIMENTA, true, false,"Pantalones"),
+    ROPA_INFANTIL(Categoria.VESTIMENTA, true, false,"Ropa infantil"),
+    FRAZADAS(Categoria.ABRIGO, true, false,"Frazadas"),
+    COLCHONES(Categoria.DESCANSO, true, false,"Colchones");
 
     private final Categoria categoria;
     private final boolean requiereEstado;

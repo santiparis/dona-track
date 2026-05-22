@@ -1,0 +1,343 @@
+@startuml
+!theme plain
+
+
+
+class Asignacion {
+    estado: EstadoAsignacion
+    bienes: List<Bien>
+    justificacionEntregaFallida: String
+    necesidad: Necesidad
+    historialEstados: List<RegistroCambioEstado<EstadoAsignacion>>
+    --
+    setEstado(EstadoAsignacion, String): void
+}
+
+class AsignacionItem {
+    necesidad: Necesidad
+    cantidad: int
+    --
+}
+
+class Bien {
+    descripcion: String
+    unidad: String
+    estado: EstadoBien
+    subcategoria: Subcategoria
+    vencimiento: Date
+    cantidad: Integer
+    foto: String
+    --
+    conCantidad(Integer): Bien
+    comparteSegmentoCon(Bien): boolean
+}
+
+enum Categoria  {
+    ALIMENTO
+    MUEBL
+    VESTIMENTA
+    ABRIGO
+    DESCANSO
+}
+
+class Contacto {
+    tipo: TipoContacto
+    valor: String
+    --
+}
+
+class DonacionEntrante {
+    descripcion: String
+    bienes: List<Bien>
+    donante: Persona
+    donacionesIndependientes: List<DonacionIndependiente>
+    --
+    segmentarEnIndependientes(List<Bien>): List<DonacionIndependiente>
+}
+
+class DonacionIndependiente {
+    historialEstados: List<RegistroCambioEstado<EstadoDonacionIndependiente>>
+    estado: EstadoDonacionIndependiente
+    bien: Bien
+    asignaciones: List<AsignacionItem>
+    disponible: Integer
+    --
+    actualizarEstadoSegunUso(Necesidad): void
+}
+
+enum EstadoAsignacion  {
+    ASIGNACION_REALIZADA
+    LISTA_ENTREGA
+    EN_TRASLADO
+    ENTREGADA
+    ENTREGA_FALLIDA
+}
+
+enum EstadoBien  {
+    NUEVO
+    USADO
+}
+
+enum EstadoDonacionIndependiente  {
+    EN_DEPOSITO
+    ENTREGADA
+    VENCIDA
+}
+
+enum EstadoNotificacion  {
+    PENDIENTE
+    COMPLETADA
+    FALLIDA
+}
+
+interface EstrategiaDeNotificacion  {
+    --
+    enviar(Notificacion): boolean
+}
+
+enum Genero  {
+    MASCULINO
+    FEMENINO
+    NO_BINARIO
+}
+
+class ImportadorDonantesCSV {
+    inputStream: InputStream
+    --
+    obtenerTipoDoc(CSVRecord): String
+    separarNombreYApellido(String): String[]
+    crearContactos(String, String): List<Contacto>
+    mapearDonante(CSVRecord): Optional<Persona>
+    procesar(): List<Persona>
+}
+
+class Necesidad {
+    bienes: List<Bien>
+    entidad: EntidadBeneficiaria
+    descripcion: String
+    cantidadesPendientes: HashMap<Subcategoria, Integer>
+    cantidades: HashMap<Subcategoria, Integer>
+    --
+    getCantidadPendiente(Bien): Integer
+    resolver(): Optional<Necesidad>
+    registrarSuplido(Bien, Integer): void
+    estaSatisfecha(): boolean
+    restarSuplido(Bien, Integer): void
+   
+}
+
+class NecesidadExtra {
+    --
+    resolver(): Optional<Necesidad>
+}
+
+class NecesidadRecurrente {
+    fechaInicio: Date
+    fechaFin: Date
+    periodo: Periodo
+    --
+    sumarPeriodo(Date): Date
+    estaVencida(): boolean
+    resolver(): Optional<Necesidad>
+    crearSiguientePeriodo(): NecesidadRecurrente
+}
+
+class EntidadBeneficiaria {
+    razonSocial: String
+    direccion: String
+    telefono: String
+    correosRepresentantes: List<String>
+    necesidades: List<Necesidad>
+    --
+    registrarNecesidad(Necesidad): void
+}
+
+class Notificacion {
+    mensaje: String
+    contacto: Contacto
+    estado: EstadoNotificacion
+    --
+    marcarComoCompletada(): void
+    marcarComoFallida(): void
+}
+
+class NotificacionPorEmail {
+    --
+    enviar(Notificacion): boolean
+}
+
+class NotificacionPorSMS {
+   enviar(Notificacion): boolean
+}
+
+class NotificacionPorWhatsApp {
+    --
+    enviar(Notificacion): boolean
+}
+
+enum Periodo  {
+    SEMANAL
+    MENSUAL
+}
+
+class Persona {
+    tipoDoc: TipoDoc
+    documento: String
+    usuario: Usuario
+    medioPredeterminado: Contacto
+    email: String
+    contactos: List<Contacto>
+    nombre: String
+    --
+    actualizarDatos(Persona): void
+    contactos: List<Contacto>
+   
+}
+
+class PersonaHumana {
+    direccion: String
+    genero: Genero
+    apellido: String
+    edad: Integer
+    --
+    actualizarDatos(Persona): void
+}
+
+class PersonaJuridica {
+    rubro: String
+    razonSocial: RazonSocial
+    representantesHabilitados: List<PersonaHumana>
+    --
+}
+
+enum RazonSocial  {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+}
+
+class RegistroCambioEstado<T>  {
+   estadoNuevo: T
+   fecha: Date
+   estadoAnterior: T
+   justificacion: String
+}
+
+class ServicioDeNotificacion {
+    --
+    crearEstrategia(TipoContacto): EstrategiaDeNotificacion
+    enviar(Contacto, String): void
+    enviarEmailDeBienvenida(Persona): void
+}
+
+class SistemaDonaciones {
+    asignaciones: List<Asignacion>
+    necesidades: List<Necesidad>
+    entidadesBeneficiarias: List<EntidadBeneficiaria>
+    donacionesVencidas: List<DonacionIndependiente>
+    bienesDisponibles: HashMap<Subcategoria, Integer>
+    --
+    actualizarDonacionesVencidas(): void
+    cambiarEstadoAsignacion(int, EstadoAsignacion): void
+    cambiarEstadoAsignacion(int, EstadoAsignacion, String): void
+    actualizarEstadoDelSistema(): void
+    asignarDonacion(int, Subcategoria, Necesidad): int
+    cargarDonacion(DonacionEntrante): void
+    hayStockParaSuplirParcialmente(Necesidad, HashMap<Subcategoria, Integer>): boolean
+    suplirNecesidadParcialmente(Necesidad, HashMap<Subcategoria, Integer>): HashMap<Subcategoria, Integer>
+    desasignarDonacionVencida(DonacionIndependiente): void
+    actualizarNecesidades(): void
+    registrarEntidadBeneficiaria(EntidadBeneficiaria): void
+    registrarNecesidad(Necesidad): void
+}
+
+enum Subcategoria  {
+    categoria: Categoria
+    --
+    nombre(): String
+    requiereVencimiento(): boolean
+    requiereEstado(): boolean
+}
+
+enum TipoContacto  {
+    WHATSAPP
+    SMS
+    EMAIL
+}
+
+enum TipoDoc  {
+    DNI
+    CUIT
+}
+
+class Usuario {
+    password: String
+    nombreUsuario: String
+    --
+}
+
+Asignacion --> "*" Bien
+Asignacion --> Necesidad
+Asignacion --> "*" RegistroCambioEstado
+
+AsignacionItem --> Necesidad
+AsignacionItem --> Bien
+
+Bien --> Subcategoria
+
+DonacionEntrante --> "*" Bien
+DonacionEntrante --> Persona
+DonacionEntrante --> "*" DonacionIndependiente
+
+DonacionIndependiente --> "*" RegistroCambioEstado
+DonacionIndependiente --> Bien
+DonacionIndependiente --> "*" AsignacionItem
+DonacionIndependiente ..> Necesidad
+
+EstrategiaDeNotificacion ..> Notificacion
+
+ImportadorDonantesCSV ..> Persona
+ImportadorDonantesCSV ..> Contacto
+
+Necesidad --> "*" Bien
+Necesidad --> EntidadBeneficiaria
+Necesidad --> Subcategoria
+
+NecesidadExtra --|> Necesidad
+
+NecesidadRecurrente --|> Necesidad
+
+Notificacion --> Contacto
+
+NotificacionPorEmail ..|> EstrategiaDeNotificacion
+
+NotificacionPorSMS ..|> EstrategiaDeNotificacion
+
+NotificacionPorWhatsApp ..|> EstrategiaDeNotificacion
+
+Persona --> "*" Contacto
+Persona --> Usuario
+
+PersonaHumana --|> Persona
+
+PersonaJuridica --|> Persona
+PersonaJuridica --> "*" PersonaHumana
+PersonaJuridica --> RazonSocial
+PersonaJuridica --> "*" Necesidad
+
+ServicioDeNotificacion ..> EstrategiaDeNotificacion
+ServicioDeNotificacion ..> "*" Notificacion
+ServicioDeNotificacion ..> Contacto
+ServicioDeNotificacion ..> Persona
+
+EntidadBeneficiaria --> "*" Necesidad
+
+SistemaDonaciones --> "*" Asignacion
+SistemaDonaciones --> "*" Necesidad
+SistemaDonaciones --> "*" EntidadBeneficiaria
+SistemaDonaciones --> "*" DonacionIndependiente
+SistemaDonaciones --> "*" Subcategoria
+SistemaDonaciones ..> DonacionEntrante
+
+@enduml
