@@ -282,7 +282,7 @@ public class SistemaDonacionesTest {
         DonacionEntrante donacionEntrante = new DonacionEntrante(donante(), "Fideos", List.of(bienFideos(2)));
 
         sistema.cargarDonacion(donacionEntrante);
-        registrarNecesidad(sistema, new NecesidadExtra(entidad(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
+        registrarNecesidad(sistema, new NecesidadExtra(entidadBeneficiaria(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "La necesidad extraordinaria debería suplirse.");
@@ -371,7 +371,7 @@ public class SistemaDonacionesTest {
     @Test
     void sistemaGestionaEntidadesBeneficiariasYNecesidades() {
         SistemaDonaciones sistema = new SistemaDonaciones();
-        PersonaJuridica entidad = entidad();
+        EntidadBeneficiaria entidad = entidadBeneficiaria();
         Necesidad necesidad = new NecesidadExtra(entidad, "Necesidad múltiple", List.of(bienFideos(2), bienFideos(3)));
 
         sistema.registrarEntidadBeneficiaria(entidad);
@@ -534,7 +534,7 @@ public class SistemaDonacionesTest {
     }
 
     private static Necesidad necesidad(String descripcion, Bien bien) {
-        return new Necesidad(entidad(), descripcion, List.of(bien)) {};
+        return new Necesidad(entidadBeneficiaria(), descripcion, List.of(bien)) {};
     }
 
     private static NecesidadRecurrente necesidadRecurrente(
@@ -545,7 +545,7 @@ public class SistemaDonacionesTest {
             Periodo periodo
     ) {
         return new NecesidadRecurrente(
-                entidad(),
+                entidadBeneficiaria(),
                 descripcion,
                 bienes,
                 fechaInicio,
@@ -554,23 +554,18 @@ public class SistemaDonacionesTest {
         );
     }
 
-    private static PersonaJuridica entidad() {
-        Contacto email = new Contacto(TipoContacto.EMAIL, "contacto@fundacion.org");
-        return new PersonaJuridica(
-                TipoDoc.CUIT,
-                "30-12345678-9",
+    private static EntidadBeneficiaria entidadBeneficiaria() {
+        return new EntidadBeneficiaria(
                 "Fundacion",
-                RazonSocial.ONG,
-                "Asistencia social",
-                List.of(),
-                List.of(email),
-                email,
-                new Usuario("fundacion", "1234")
+                "Av Siempre Viva 742",
+                "1111-1111",
+                List.of("contacto@fundacion.org")
         );
     }
 
     private static void registrarNecesidad(SistemaDonaciones sistema, Necesidad necesidad) {
-        necesidad.getEntidad().registrarNecesidad(sistema, necesidad);
+        necesidad.getEntidad().registrarNecesidad(necesidad);
+        sistema.registrarNecesidad(necesidad);
     }
 
     private static SistemaDonaciones sistemaConUnaAsignacion() {

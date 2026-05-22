@@ -113,7 +113,7 @@ class ImportadorDonantesCSV {
 
 class Necesidad {
     bienes: List<Bien>
-    entidad: PersonaJuridica
+    entidad: EntidadBeneficiaria
     descripcion: String
     cantidadesPendientes: HashMap<Subcategoria, Integer>
     cantidades: HashMap<Subcategoria, Integer>
@@ -140,6 +140,16 @@ class NecesidadRecurrente {
     estaVencida(): boolean
     resolver(): Optional<Necesidad>
     crearSiguientePeriodo(): NecesidadRecurrente
+}
+
+class EntidadBeneficiaria {
+    razonSocial: String
+    direccion: String
+    telefono: String
+    correosRepresentantes: List<String>
+    necesidades: List<Necesidad>
+    --
+    registrarNecesidad(Necesidad): void
 }
 
 class Notificacion {
@@ -194,16 +204,10 @@ class PersonaHumana {
 }
 
 class PersonaJuridica {
-    correosRepresentantes: List<String>
     rubro: String
-    telefono: String
-    direccion: String
-    necesidades: List<Necesidad>
     razonSocial: RazonSocial
     representantesHabilitados: List<PersonaHumana>
     --
-    registrarNecesidad(Object): void
-    registrarNecesidad(Object, Necesidad): void
 }
 
 enum RazonSocial  {
@@ -230,7 +234,7 @@ class ServicioDeNotificacion {
 class SistemaDonaciones {
     asignaciones: List<Asignacion>
     necesidades: List<Necesidad>
-    entidadesBeneficiarias: List<PersonaJuridica>
+    entidadesBeneficiarias: List<EntidadBeneficiaria>
     donacionesVencidas: List<DonacionIndependiente>
     bienesDisponibles: HashMap<Subcategoria, Integer>
     --
@@ -244,7 +248,7 @@ class SistemaDonaciones {
     suplirNecesidadParcialmente(Necesidad, HashMap<Subcategoria, Integer>): HashMap<Subcategoria, Integer>
     desasignarDonacionVencida(DonacionIndependiente): void
     actualizarNecesidades(): void
-    registrarEntidadBeneficiaria(PersonaJuridica): void
+    registrarEntidadBeneficiaria(EntidadBeneficiaria): void
     registrarNecesidad(Necesidad): void
 }
 
@@ -297,7 +301,7 @@ ImportadorDonantesCSV ..> Persona
 ImportadorDonantesCSV ..> Contacto
 
 Necesidad --> "*" Bien
-Necesidad --> PersonaJuridica
+Necesidad --> EntidadBeneficiaria
 Necesidad --> Subcategoria
 
 NecesidadExtra --|> Necesidad
@@ -327,9 +331,11 @@ ServicioDeNotificacion ..> "*" Notificacion
 ServicioDeNotificacion ..> Contacto
 ServicioDeNotificacion ..> Persona
 
+EntidadBeneficiaria --> "*" Necesidad
+
 SistemaDonaciones --> "*" Asignacion
 SistemaDonaciones --> "*" Necesidad
-SistemaDonaciones --> "*" PersonaJuridica
+SistemaDonaciones --> "*" EntidadBeneficiaria
 SistemaDonaciones --> "*" DonacionIndependiente
 SistemaDonaciones --> "*" Subcategoria
 SistemaDonaciones ..> DonacionEntrante

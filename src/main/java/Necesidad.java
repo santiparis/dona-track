@@ -1,17 +1,15 @@
-import donante.PersonaJuridica;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 public abstract class Necesidad {
-    private final PersonaJuridica entidad;
+    private final EntidadBeneficiaria entidad;
     private final String descripcion;
     private final List<Bien> bienes;
     private final HashMap<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
 
     public Necesidad(
-            PersonaJuridica entidad,
+            EntidadBeneficiaria entidad,
             String descripcion,
             List<Bien> bienes
     ) {
@@ -21,7 +19,7 @@ public abstract class Necesidad {
     }
 
     public Necesidad(
-            PersonaJuridica entidad,
+            EntidadBeneficiaria entidad,
             Subcategoria subcategoria,
             Integer cantidad,
             String descripcion
@@ -39,7 +37,7 @@ public abstract class Necesidad {
         );
     }
 
-    public PersonaJuridica getEntidad() {
+    public EntidadBeneficiaria getEntidad() {
         return this.entidad;
     }
 

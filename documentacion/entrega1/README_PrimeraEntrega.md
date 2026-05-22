@@ -17,19 +17,29 @@
 
 ## Gestión de Personas
 
-* **Principio de Responsabilidad Única (SRP)**: Cada clase tiene una responsabilidad clara: `Persona` define el comportamiento base, `PersonaHumana` añade atributos específicos de humanos (género, edad, dirección), y `PersonaJuridica` gestiona la información de entidades (razón social, rubro, representantes).
+* **Principio de Responsabilidad Única (SRP)**: Cada clase tiene una responsabilidad clara: `Persona` define el comportamiento base común (identificación, contactos), `PersonaHumana` añade atributos específicos de humanos (género, edad, dirección), y `PersonaJuridica` gestiona solo información de entidades donantes (razón social, rubro, representantes habilitados). Las entidades beneficiarias están separadas en `EntidadBeneficiaria` para mantener la separación de responsabilidades.
 
-* **Principio de Sustitución de Liskov (LSP)**: Las subclases `PersonaHumana` y `PersonaJuridica` respetan el contrato establecido por `Persona`, permitiendo que sean usadas intercambiablemente en el sistema.
+* **Principio de Sustitución de Liskov (LSP)**: Las subclases `PersonaHumana` y `PersonaJuridica` respetan el contrato establecido por `Persona`, permitiendo que sean usadas intercambiablemente en contextos de donantes.
 
 * **Patrón Template Method**: El método `actualizarDatos(Persona)` puede implementarse de manera especializada en cada subclase sin alterar el contrato general.
 
-* **Arquitectura Polimórfica**: El diseño permite que el sistema trabaje con referencias de `Persona` sin conocer el tipo específico (humana o jurídica), facilitando extensibilidad futura.
+* **Arquitectura Polimórfica**: El diseño permite que el sistema trabaje con referencias de `Persona` sin conocer el tipo específico en contextos de donación, facilitando extensibilidad futura.
+
+# Gestión de Entidades Beneficiarias
+
+* **Principio de Responsabilidad Única (SRP)**: `EntidadBeneficiaria` gestiona exclusivamente la información y necesidades de las entidades que reciben donaciones (razón social, dirección, teléfono, correos). Está completamente separada de `PersonaJuridica` que representa donantes. Esto permite que una entidad beneficiaria sea distinta de un donante aunque compartan cierta información.
+
+* **Separación de Conceptos**: Aunque `EntidadBeneficiaria` y `PersonaJuridica` pueden parecer similares superficialmente, tienen roles fundamentalmente diferentes: una es quien recibe y gestiona necesidades, la otra es quien aporta bienes. Esta distinción clarifica la semántica del dominio.
+
+* **Facilita Cambios Independientes**: Al separar estas responsabilidades, cada clase puede evolucionar independientemente. Las necesidades y el registro de beneficiarios quedan encapsulados en `EntidadBeneficiaria` sin afectar la lógica de donantes.
+
+* **Arquitectura de Roles**: El sistema implementa una arquitectura donde cada entidad juega un rol específico: Persona (base), PersonaJuridica (donante), EntidadBeneficiaria (receptor).
 
 ## Gestión de Necesidades
 
 * **Principio Abierto/Cerrado (OCP)**: `Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtra` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
 
-* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtra` se resuelve sin generar nuevas instancias.
+* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtra` se resuelve sin generar nuevas instancias. Las necesidades pertenecen siempre a una `EntidadBeneficiaria`.
 
 * **Patrón Template Method**: La clase abstracta define `resolver()` como método abstracto que cada subclase implementa según su lógica específica. Ambas también cuentan con `actualizar()` que puede ser sobrescrito.
 

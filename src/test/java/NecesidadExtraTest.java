@@ -6,16 +6,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NecesidadExtraTest {
 
-    private PersonaJuridica entidad;
+    private EntidadBeneficiaria entidad;
 
     @BeforeEach
     void setUp() {
-        Contacto email = new Contacto(TipoContacto.EMAIL, "sol@comedor.org");
-        Usuario usuario = new Usuario("sol", "pass");
-        entidad = new PersonaJuridica(
-            TipoDoc.CUIT, "30-12345678-9", "Comedor Sol", null, null,
-            java.util.List.of(), java.util.List.of(email), email, usuario
-        );
+        entidad = new EntidadBeneficiaria("Comedor Sol", "Calle 1", "1111-1111", java.util.List.of("sol@comedor.org"));
     }
 
     @Test

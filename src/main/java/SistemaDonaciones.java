@@ -11,7 +11,7 @@ public class SistemaDonaciones {
   private List<DonacionIndependiente> donaciones_vencidas = new ArrayList<>();
   private List<Asignacion> asignaciones = new ArrayList<>();
   private List<Necesidad> necesidades = new ArrayList<>();
-  private List<PersonaJuridica> entidadesBeneficiarias = new ArrayList<>();
+  private List<EntidadBeneficiaria> entidadesBeneficiarias = new ArrayList<>();
 
   public void actualizarEstadoDelSistema() {
     this.actualizarDonacionesVencidas();
@@ -30,13 +30,13 @@ public class SistemaDonaciones {
     this.necesidades.add(necesidad);
   }
 
-  public void registrarEntidadBeneficiaria(PersonaJuridica entidadBeneficiaria) {
+  public void registrarEntidadBeneficiaria(EntidadBeneficiaria entidadBeneficiaria) {
     if (!this.entidadesBeneficiarias.contains(entidadBeneficiaria)) {
       this.entidadesBeneficiarias.add(entidadBeneficiaria);
     }
   }
 
-  public List<PersonaJuridica> getEntidadesBeneficiarias() {
+  public List<EntidadBeneficiaria> getEntidadesBeneficiarias() {
     return this.entidadesBeneficiarias;
   }
 
