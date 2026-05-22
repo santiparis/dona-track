@@ -1,0 +1,66 @@
+@startuml
+
+
+class Contacto {
+  - tipo: TipoContacto
+  - valor: String
+  + Contacto(TipoContacto, String)
+  - validarValor(TipoContacto, String): void
+}
+
+abstract class Donante {
+  - tipoDoc: TipoDoc
+  - documento: String
+  - nombre: String
+  - contactos: List<Contacto>
+  - medioPredeterminado: Contacto
+  - usuario: Usuario
+  ~ Donante(...)
+  + actualizarDatos(Donante): void
+}
+
+enum Genero {
+}
+
+class PersonaHumana extends Donante {
+  - apellido: String
+  - direccion: String
+  - edad: Integer
+  - genero: Genero
+  + PersonaHumana(...)
+}
+
+class PersonaJuridica extends Donante {
+  - razonSocial: RazonSocial
+  - rubro: String
+  - representantesHabilitados: List<PersonaHumana>
+  + PersonaJuridica(...)
+}
+
+enum RazonSocial {
+}
+
+enum TipoContacto {
+}
+
+enum TipoDoc {
+}
+
+class Usuario {
+  - nombreUsuario: String
+  - password: String
+  + Usuario(String, String)
+}
+
+' --- Relaciones ---
+
+' Composición y Agregación
+Donante "1" *-- "1" Usuario : tiene
+Donante "1" *-- "1..*" Contacto : tiene
+Donante "1" *-- "1" TipoDoc : es de tipo
+PersonaHumana "1" *-- "1" Genero : tiene
+PersonaJuridica "1" *-- "1" RazonSocial : es de tipo
+PersonaJuridica "1" o-- "1..*" PersonaHumana : tiene como representantes
+Contacto "1" *-- "1" TipoContacto : es de tipo
+
+@enduml

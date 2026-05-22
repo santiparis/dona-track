@@ -2,7 +2,7 @@ package donante;
 
 import java.util.List;
 
-public class PersonaHumana extends Donante {
+public class PersonaHumana extends Persona {
     private String apellido;
     private Integer edad;
     private Genero genero;
@@ -44,8 +44,8 @@ public class PersonaHumana extends Donante {
     }
 
     @Override
-    public void actualizarseDesde(Donante donanteConNuevosDatos) {
-        if (donanteConNuevosDatos instanceof PersonaHumana nuevosDatos) {
+    public void actualizarseDesde(Persona personaConNuevosDatos) {
+        if (personaConNuevosDatos instanceof PersonaHumana nuevosDatos) {
           super.actualizarDatosComunes(nuevosDatos);
             this.apellido = nuevosDatos.getApellido();
             this.edad = nuevosDatos.getEdad();

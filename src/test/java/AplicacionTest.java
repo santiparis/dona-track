@@ -1,19 +1,15 @@
-import donante.Contacto;
-import donante.Donante;
-import donante.Genero;
-import donante.RazonSocial;
-import donante.TipoContacto;
-import donante.Usuario;
 import java.util.Collections;
+import donante.*;
+
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import donante.PersonaHumana;
-import donante.PersonaJuridica;
-import donante.TipoDoc;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,6 +17,8 @@ class AplicacionTest {
     private Aplicacion aplicacion;
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
     @BeforeEach
     void setUp() {
@@ -29,6 +27,12 @@ class AplicacionTest {
         Usuario usuario = new Usuario("user", "pass");
         donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
         donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
+        System.setOut(new PrintStream(outContent));
+      }
+
+    @AfterEach
+    void restoreStreams() {
+      System.setOut(originalOut);
     }
 
     @Test
@@ -68,7 +72,7 @@ class AplicacionTest {
         List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
         Usuario usuario = new Usuario("user", "pass");
         PersonaHumana donanteActualizado = new PersonaHumana("NombreActualizado", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
-        
+
         // Act
         aplicacion.actualizarDonante("12345678", donanteActualizado);
 
@@ -138,16 +142,16 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante existe
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
         assertTrue(donanteOpt.isPresent());
 
         // El donante es una persona humana
-        Donante donanteCreado = donanteOpt.get();
-        assertInstanceOf(PersonaHumana.class, donanteCreado);
+        Persona personaCreado = donanteOpt.get();
+        assertInstanceOf(PersonaHumana.class, personaCreado);
 
 
         // Los datos del donante son correctos
-        PersonaHumana personaHumana = (PersonaHumana) donanteCreado;
+        PersonaHumana personaHumana = (PersonaHumana) personaCreado;
         assertEquals(TipoDoc.DNI, personaHumana.getTipoDoc());
         assertEquals("28456905", personaHumana.getDocumento());
         assertEquals("Ana", personaHumana.getNombre());
@@ -168,18 +172,18 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante existe
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("santafeindustrial8180@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("santafeindustrial8180@yahoo.com");
         assertTrue(donanteOpt.isPresent());
 
         // El donante es una persona jurídica
-        Donante donanteCreado = donanteOpt.get();
-        assertInstanceOf(PersonaJuridica.class, donanteCreado);
+        Persona personaCreado = donanteOpt.get();
+        assertInstanceOf(PersonaJuridica.class, personaCreado);
 
         // Los datos del donante son correctos
-        assertEquals(TipoDoc.CUIT, donanteCreado.getTipoDoc());
-        assertEquals("30-52235350-3", donanteCreado.getDocumento());
-        assertEquals("Santa Fe Industrial Fundación", donanteCreado.getNombre());
-        assertEquals("santafeindustrial8180@yahoo.com", donanteCreado.getUsuario().getNombreUsuario());
+        assertEquals(TipoDoc.CUIT, personaCreado.getTipoDoc());
+        assertEquals("30-52235350-3", personaCreado.getDocumento());
+        assertEquals("Santa Fe Industrial Fundación", personaCreado.getNombre());
+        assertEquals("santafeindustrial8180@yahoo.com", personaCreado.getUsuario().getNombreUsuario());
     }
 
     @Test
@@ -204,7 +208,7 @@ class AplicacionTest {
         assertEquals(6, aplicacion.getDonantes().size());
 
         // El donante debe seguir existiendo
-        Optional<Donante> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
+        Optional<Persona> donanteOpt = aplicacion.buscarDonantePorEmail("ananavarro3658@yahoo.com");
         assertTrue(donanteOpt.isPresent());
         PersonaHumana donanteActualizado = (PersonaHumana) donanteOpt.get();
 
@@ -214,5 +218,24 @@ class AplicacionTest {
         assertEquals("Ana", donanteActualizado.getNombre());
         assertEquals("Navarro", donanteActualizado.getApellido());
         assertEquals("ananavarro3658@yahoo.com", donanteActualizado.getEmail());
+    }
+
+    @Test
+    void agregarDonante_EnviaEmailDeBienvenida() {
+        // Arrange
+        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "nuevo.donante@example.com"));
+        Usuario usuario = new Usuario("nuevo_user", "pass123");
+        PersonaHumana nuevoDonante = new PersonaHumana(
+                "Nuevo", "Donante", 40, TipoDoc.DNI, "40123456", Genero.MASCULINO, "Calle Nueva 456",
+                contactos, contactos.get(0), usuario
+        );
+
+        // Act
+        aplicacion.agregarDonante(nuevoDonante);
+
+        // Assert
+        assertEquals(1, aplicacion.getDonantes().size());
+        assertTrue(outContent.toString().contains("¡Hola Nuevo! Te damos la bienvenida a dona-track."));
+        assertTrue(outContent.toString().contains("Simulando envío de correo electrónico a: nuevo.donante@example.com"));
     }
 }
