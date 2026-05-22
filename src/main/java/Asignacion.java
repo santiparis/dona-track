@@ -13,6 +13,29 @@ public class Asignacion {
         this.historialEstados.add(new RegistroCambioEstado<>(null, estado, new java.util.Date(), null));
     }
 
+    public void agregarBien(Bien nuevoBien) {
+        this.bienes.add(nuevoBien);
+    }
+
+    public void reducirBienDeSubcategoria(Bien bien, Integer cantidad) {
+        Bien bienAReducir = this.bienes.stream()
+                .filter(b -> b.getSubcategoria() == bien.getSubcategoria())
+                .findFirst()
+                .orElse(null);
+        if (bienAReducir != null) {
+            int nuevaCantidad = bienAReducir.getCantidad() - cantidad;
+            if (nuevaCantidad <= 0) {
+                this.bienes.remove(bienAReducir);
+            } else {
+                this.bienes.remove(bienAReducir);
+                this.bienes.add(bienAReducir.conCantidad(nuevaCantidad));
+            }
+        }
+    }
+
+    public List<Bien> getBienes() {
+        return bienes;
+    }
 
     public Necesidad getNecesidad() {
         return necesidad;

@@ -1,4 +1,4 @@
-import donante.Donante;
+import donante.PersonaJuridica;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ public class SistemaDonaciones {
   private List<DonacionIndependiente> donaciones_vencidas = new ArrayList<>();
   private List<Asignacion> asignaciones = new ArrayList<>();
   private List<Necesidad> necesidades = new ArrayList<>();
-  private List<EntidadBeneficiaria> entidadesBeneficiarias = new ArrayList<>();
+  private List<PersonaJuridica> entidadesBeneficiarias = new ArrayList<>();
 
   public void actualizarEstadoDelSistema() {
     this.actualizarDonacionesVencidas();
@@ -28,16 +28,15 @@ public class SistemaDonaciones {
 
   public void registrarNecesidad(Necesidad necesidad) {
     this.necesidades.add(necesidad);
-    necesidad.getEntidad().registrarNecesidad(necesidad);
   }
 
-  public void registrarEntidadBeneficiaria(EntidadBeneficiaria entidadBeneficiaria) {
+  public void registrarEntidadBeneficiaria(PersonaJuridica entidadBeneficiaria) {
     if (!this.entidadesBeneficiarias.contains(entidadBeneficiaria)) {
       this.entidadesBeneficiarias.add(entidadBeneficiaria);
     }
   }
 
-  public List<EntidadBeneficiaria> getEntidadesBeneficiarias() {
+  public List<PersonaJuridica> getEntidadesBeneficiarias() {
     return this.entidadesBeneficiarias;
   }
 
@@ -73,6 +72,7 @@ public class SistemaDonaciones {
         while (iterator.hasNext()) {
           DonacionIndependiente donacion = iterator.next();
           if (donacion.getBien().getVencimiento().before(fechaActual)) {
+            this.desasignarDonacionVencida(donacion);
             donacion.setEstado(EstadoDonacionIndependiente.VENCIDA);
             this.donaciones_vencidas.add(donacion);
             iterator.remove();
@@ -80,6 +80,31 @@ public class SistemaDonaciones {
         }
       }
     }
+  }
+
+  private void desasignarDonacionVencida(DonacionIndependiente donacionVencida) {
+    for (AsignacionItem<Necesidad, Integer> item : donacionVencida.getAsignaciones()) {
+      Necesidad necesidad = item.necesidad();
+      int cantidad = item.cantidad();
+      Asignacion asignacion = this.encontrarAsignacion(necesidad);
+      if (asignacion != null && asignacion.getEstado() != EstadoAsignacion.ENTREGADA) {
+        necesidad.restarSuplido(donacionVencida.getBien(), cantidad);
+        asignacion.reducirBienDeSubcategoria(donacionVencida.getBien(), cantidad);
+        if (asignacion.getBienes().isEmpty()) {
+          this.asignaciones.remove(asignacion);
+        }
+      }
+    }
+    donacionVencida.getAsignaciones().clear();
+  }
+
+  private Asignacion encontrarAsignacion(Necesidad necesidad) {
+    for (Asignacion asignacion : this.asignaciones) {
+      if (asignacion.getNecesidad() == necesidad) {
+        return asignacion;
+      }
+    }
+    return null;
   }
 
   public void actualizarNecesidades() {

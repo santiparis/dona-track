@@ -2,9 +2,8 @@ package donante;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jetbrains.annotations.UnknownNullability;
 
-public abstract class Donante {
+public abstract class Persona {
     private final TipoDoc tipoDoc;
     private String documento;
     private String nombre;
@@ -12,7 +11,7 @@ public abstract class Donante {
     private Contacto medioPredeterminado;
     private Usuario usuario;
 
-    Donante(
+    Persona(
             TipoDoc tipoDoc,
             String documento,
             String nombre,
@@ -63,10 +62,10 @@ public abstract class Donante {
     return contactos.get(0).getValor();
   }
 
-  public void actualizarDatos(Donante donante) {
-        this.nombre = donante.getNombre();
-        this.documento = donante.getDocumento();
-        this.contactos = donante.getContactos();
-        this.medioPredeterminado = donante.getMedioPredeterminado();
+  public void actualizarDatos(Persona persona) {
+        this.nombre = persona.getNombre();
+        this.documento = persona.getDocumento();
+        this.contactos = persona.getContactos();
+        this.medioPredeterminado = persona.getMedioPredeterminado();
   }
 }

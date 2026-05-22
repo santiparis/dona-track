@@ -1,15 +1,17 @@
+import donante.PersonaJuridica;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 public abstract class Necesidad {
-    private final EntidadBeneficiaria entidad;
+    private final PersonaJuridica entidad;
     private final String descripcion;
     private final List<Bien> bienes;
     private final HashMap<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
 
     public Necesidad(
-            EntidadBeneficiaria entidad,
+            PersonaJuridica entidad,
             String descripcion,
             List<Bien> bienes
     ) {
@@ -19,7 +21,7 @@ public abstract class Necesidad {
     }
 
     public Necesidad(
-            EntidadBeneficiaria entidad,
+            PersonaJuridica entidad,
             Subcategoria subcategoria,
             Integer cantidad,
             String descripcion
@@ -37,7 +39,7 @@ public abstract class Necesidad {
         );
     }
 
-    public EntidadBeneficiaria getEntidad() {
+    public PersonaJuridica getEntidad() {
         return this.entidad;
     }
 
@@ -87,6 +89,16 @@ public abstract class Necesidad {
         Integer cantidadActual = cantidadesSuplidas.getOrDefault(subcategoria, 0);
         Integer cantidadObjetivo = this.getCantidades().getOrDefault(subcategoria, 0);
         cantidadesSuplidas.put(subcategoria, Math.min(cantidadActual + cantidad, cantidadObjetivo));
+    }
+
+    public void restarSuplido(Bien bien, Integer cantidad) {
+        if (cantidad <= 0) {
+            return;
+        }
+        Subcategoria subcategoria = bien.getSubcategoria();
+        Integer cantidadActual = cantidadesSuplidas.getOrDefault(subcategoria, 0);
+        Integer nuevaCantidad = Math.max(cantidadActual - cantidad, 0);
+        cantidadesSuplidas.put(subcategoria, nuevaCantidad);
     }
 
     public boolean estaSatisfecha() {

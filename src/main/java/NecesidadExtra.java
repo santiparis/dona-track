@@ -1,8 +1,14 @@
+import donante.PersonaJuridica;
+
 import java.util.List;
 import java.util.Optional;
 
 public class NecesidadExtra extends Necesidad {
-    public NecesidadExtra(EntidadBeneficiaria entidad, String descripcion, List<Bien> bienes) {
+    public NecesidadExtra(PersonaJuridica entidad, Subcategoria subcategoria, Integer cantidad, String descripcion) {
+        super(entidad, subcategoria, cantidad, descripcion);
+    }
+
+    public NecesidadExtra(PersonaJuridica entidad, String descripcion, List<Bien> bienes) {
         super(entidad, descripcion, bienes);
     }
 
