@@ -1,3 +1,4 @@
+import donante.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -5,11 +6,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NecesidadExtraTest {
 
-    private EntidadBeneficiaria entidad;
+    private PersonaJuridica entidad;
 
     @BeforeEach
     void setUp() {
-        entidad = new EntidadBeneficiaria("Comedor Sol", "Calle 1", "111-2222", List.of("sol@comedor.org"));
+        Contacto email = new Contacto(TipoContacto.EMAIL, "sol@comedor.org");
+        Usuario usuario = new Usuario("sol", "pass");
+        entidad = new PersonaJuridica(
+            TipoDoc.CUIT, "30-12345678-9", "Comedor Sol", null, null,
+            java.util.List.of(), java.util.List.of(email), email, usuario
+        );
     }
 
     @Test

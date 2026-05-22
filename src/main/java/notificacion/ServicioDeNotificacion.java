@@ -1,19 +1,19 @@
 package notificacion;
 
 import donante.Contacto;
-import donante.Donante;
+import donante.Persona;
 import donante.TipoContacto;
 import java.util.Optional;
 
 public class ServicioDeNotificacion {
 
-    public void enviarEmailDeBienvenida(Donante donante) {
-        Optional<Contacto> contactoEmail = donante.getContactos().stream()
+    public void enviarEmailDeBienvenida(Persona persona) {
+        Optional<Contacto> contactoEmail = persona.getContactos().stream()
                 .filter(c -> c.getTipo() == TipoContacto.EMAIL)
                 .findFirst();
 
         contactoEmail.ifPresent(contacto -> {
-            String mensaje = "¡Hola " + donante.getNombre() + "! Te damos la bienvenida a dona-track. Gracias por unirte.";
+            String mensaje = "¡Hola " + persona.getNombre() + "! Te damos la bienvenida a dona-track. Gracias por unirte.";
             this.enviar(contacto, mensaje);
         });
     }

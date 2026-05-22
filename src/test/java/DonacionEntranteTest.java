@@ -1,4 +1,4 @@
-import Donante.*;
+import donante.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DonacionEntranteTest {
 
-    private Donante donante;
+    private Persona donante;
     private Bien bien1;
     private Bien bien2;
 
@@ -20,7 +20,7 @@ public class DonacionEntranteTest {
             List.of(email), email, new Usuario("juanp", "pass")
         );
         bien1 = new Bien(Subcategoria.FIDEOS, 10, "kg", null, null);
-        bien2 = new Bien(Subcategoria.FIDEOS, 20, "kg", null, null);
+        bien2 = new Bien(Subcategoria.REMERAS, 5, "unidades", EstadoBien.USADO, null);
     }
 
     @Test

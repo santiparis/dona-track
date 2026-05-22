@@ -8,13 +8,16 @@ import notificacion.ServicioDeNotificacion;
 
 public class Aplicacion {
     private final List<Persona> personas;
+    private final ServicioDeNotificacion servicioDeNotificacion;
 
   public Aplicacion() {
         this.personas = new ArrayList<>();
+        this.servicioDeNotificacion = new ServicioDeNotificacion();
     }
 
   public void agregarDonante(Persona persona){
       personas.add(persona);
+      servicioDeNotificacion.enviarEmailDeBienvenida(persona);
   }
 
   public List<Persona> getDonantes() {

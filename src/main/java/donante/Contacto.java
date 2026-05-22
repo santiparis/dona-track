@@ -34,7 +34,7 @@ public class Contacto {
                 throw new IllegalArgumentException("El número de teléfono '" + valor + "' es inválido para " + tipo + ".");
             }
         } else if (tipo == TipoContacto.EMAIL) {
-            String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+            String emailRegex = "^[^@\\s]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
             if (!valor.matches(emailRegex)) {
                 throw new IllegalArgumentException("La dirección de email '" + valor + "' es inválida.");
             }
