@@ -6,6 +6,7 @@ public class Asignacion {
     private EstadoAsignacion estado;
     private final List<RegistroCambioEstado<EstadoAsignacion>> historialEstados = new ArrayList<>();
     private String justificacionEntregaFallida;
+    private List<Bien> bienes;
 
     public Asignacion(Necesidad necesidad, EstadoAsignacion estado) {
         this.necesidad = necesidad;
