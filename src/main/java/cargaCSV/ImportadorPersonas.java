@@ -27,7 +27,7 @@ public class ImportadorPersonas {
                 personaAActualizar.actualizarseDesde(personaPotencial);
             } else {
                 repositorioPersonas.agregar(personaPotencial);
-                servicioDeNotificacion.enviarEmailDeBienvenida(personaPotencial);
+//                servicioDeNotificacion.enviarEmailDeBienvenida(personaPotencial);
             }
         }
     }
