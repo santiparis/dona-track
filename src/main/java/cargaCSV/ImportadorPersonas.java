@@ -2,19 +2,16 @@ package cargaCSV;
 
 import donante.*;
 import donante.RepositorioPersonas;
-import notificacion.ServicioDeNotificacion;
 
 import java.util.List;
 import java.util.Optional;
 
 public class ImportadorPersonas {
     private final RepositorioPersonas repositorioPersonas;
-    private final ServicioDeNotificacion servicioDeNotificacion;
     private LectorArchivoCsv lectorArchivoCsv;
 
-    public ImportadorPersonas(RepositorioPersonas repositorioPersonas, ServicioDeNotificacion servicioDeNotificacion) {
+    public ImportadorPersonas(RepositorioPersonas repositorioPersonas) {
         this.repositorioPersonas = repositorioPersonas;
-        this.servicioDeNotificacion = servicioDeNotificacion;
     }
 
     public void importarPersonasDesdeCSV(String pathArchivo){
@@ -27,7 +24,7 @@ public class ImportadorPersonas {
                 personaAActualizar.actualizarseDesde(personaPotencial);
             } else {
                 repositorioPersonas.agregar(personaPotencial);
-//                servicioDeNotificacion.enviarEmailDeBienvenida(personaPotencial);
+                personaPotencial.enviarEmailDeBienvenida();
             }
         }
     }

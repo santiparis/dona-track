@@ -2,6 +2,7 @@ package donante;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class Persona {
     private final TipoDoc tipoDoc;
@@ -85,4 +86,16 @@ public abstract class Persona {
         this.agregarContactos(persona.getContactos());
         this.setMedioPredeterminado(persona.getMedioPredeterminado());
   }
+
+    public void enviarEmailDeBienvenida() {
+        Optional<Contacto> contactoEmail = this.contactos.stream()
+            .filter(c -> c.getTipo() == TipoContacto.EMAIL)
+            .findFirst();
+
+        contactoEmail.ifPresent(contacto -> {
+            String mensaje = "¡Hola " + this.getNombre() + "! Te damos la bienvenida a dona-track. Gracias por unirte.";
+            contacto.enviar(mensaje);
+        });
+    }
+
 }

@@ -1,17 +1,16 @@
 package donante;
 
-public class Contacto {
-    private TipoContacto tipo;
-    private String valor;
+import java.util.ArrayList;
+import java.util.List;
+import notificacion.EstrategiaDeNotificacion;
+import notificacion.Notificacion;
 
-    /**
-     * Construye un Contacto, validando que el valor sea apropiado para el tipo.
-     * @param tipo El tipo de contacto (EMAIL, SMS, WHATSAPP).
-     * @param valor El dato del contacto (dirección de email, número de teléfono).
-     * @throws IllegalArgumentException si el valor no es válido para el tipo especificado.
-     */
+public class Contacto {
+    private final TipoContacto tipo;
+    private final String valor;
+    private final List<Notificacion> notificaciones = new ArrayList<>();
+
     public Contacto(TipoContacto tipo, String valor) {
-        validarValor(tipo, valor);
         this.tipo = tipo;
         this.valor = valor;
     }
@@ -24,20 +23,16 @@ public class Contacto {
         return valor;
     }
 
-    private void validarValor(TipoContacto tipo, String valor) {
-        if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("El valor del contacto no puede ser nulo o vacío.");
-        }
+    public void enviar(String mensaje) {
+        EstrategiaDeNotificacion estrategia = this.tipo.crearEstrategia();
+        boolean exito = estrategia.enviar(this.valor, mensaje);
 
-        if (tipo == TipoContacto.SMS || tipo == TipoContacto.WHATSAPP) {
-            if (valor.replaceAll("\\D", "").length() < 10) {
-                throw new IllegalArgumentException("El número de teléfono '" + valor + "' es inválido para " + tipo + ".");
-            }
-        } else if (tipo == TipoContacto.EMAIL) {
-            String emailRegex = "^[^@\\s]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-            if (!valor.matches(emailRegex)) {
-                throw new IllegalArgumentException("La dirección de email '" + valor + "' es inválida.");
-            }
+        Notificacion notificacion = new Notificacion(mensaje);
+        if (exito) {
+            notificacion.marcarComoCompletada();
+        } else {
+            notificacion.marcarComoFallida();
         }
+        this.notificaciones.add(notificacion);
     }
 }
