@@ -1,0 +1,34 @@
+@startuml
+
+' --- Estilos ---
+hide empty members
+
+' --- Paquetes ---
+class ImportadorPersonas {
+    + importarPersonasDesdeCSV(path: String): void
+}
+
+class LectorArchivoCsv {
+    - inputStream: InputStream
+    + procesarCsv(): List<Persona>
+    - mapearDonante(record: CSVRecord): Optional<Persona>
+}
+
+class MapeoCsvEnPersonaException {
+}
+
+class RepositorioPersonas {
+    + agregar(persona: Persona): void
+}
+
+class Persona {
+}
+
+' --- Relaciones ---
+
+ImportadorPersonas "1" o-- "1" RepositorioPersonas : guarda en >
+ImportadorPersonas ..> LectorArchivoCsv : crea y usa
+LectorArchivoCsv ..> MapeoCsvEnPersonaException : lanza
+LectorArchivoCsv ..> Persona : crea
+
+@enduml

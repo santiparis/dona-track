@@ -1,73 +1,56 @@
 @startuml
 
+ class Contacto {
+     - tipo: TipoContacto
+     - valor: String
+     - notificaciones: List<Notificacion>
+     --
+     + enviar(mensaje: String): void
+     + reintentarFallidas(): void
+     - intentarEnviar(notificacion: Notificacion): void
+ }
 
+ enum TipoContacto {
+     WHATSAPP
+     SMS
+     EMAIL
+     --
+     + crearEstrategia(): EstrategiaDeNotificacion
+ }
+ enum EstadoNotificacion {
+     PENDIENTE
+     COMPLETADA
+     FALLIDA
+ }
 
-enum EstadoNotificacion << enumeration >> {
-  PENDIENTE
-  COMPLETADA
-  FALLIDA
-}
+ interface EstrategiaDeNotificacion {
+     + enviar(destino: String, mensaje: String): boolean
+ }
 
-interface EstrategiaDeNotificacion {
-  + enviar(Notificacion): boolean
-}
-class Notificacion {
-  - final contacto: Contacto
-  - final mensaje: String
-  - estado: EstadoNotificacion
-  + Notificacion(Contacto, String)
-  + getContacto(): Contacto
-  + getMensaje(): String
-  + getEstado(): EstadoNotificacion
-  ~ marcarComoCompletada(): void
-  ~ marcarComoFallida(): void
-}
-class NotificacionPorEmail {
-  + NotificacionPorEmail()
-  + enviar(Notificacion): boolean
-}
-class NotificacionPorSMS {
-  + NotificacionPorSMS()
-  + enviar(Notificacion): boolean
-}
-class NotificacionPorWhatsApp {
-  + NotificacionPorWhatsApp()
-  + enviar(Notificacion): boolean
-}
-class ServicioDeNotificacion {
-  + ServicioDeNotificacion()
-  - crearEstrategia(TipoContacto): EstrategiaDeNotificacion
-  + enviar(Contacto, String): void
-}
+ class Notificacion {
+     - mensaje: String
+     - estado: EstadoNotificacion
+     --
+     + marcarComoCompletada(): void
+     + marcarComoFallida(): void
+ }
 
-' Clases externas al paquete notificacion, pero con las que se relaciona
-class Contacto {
-  - tipo: TipoContacto
-  - valor: String
-  ' ... otros métodos y atributos no relevantes para esta vista ...
-}
-enum TipoContacto{
-  WHATSAPP
-  SMS
-  EMAIL
-  TELEFONO
-}
+ class NotificacionPorEmail
+ class NotificacionPorSMS
+ class NotificacionPorWhatsApp
 
-' Relaciones
+ ' Relaciones de Composición (Parte-Todo)
+ Contacto "1" *-- "1" TipoContacto : define el
+ Contacto "1" *-- "0..*" Notificacion : almacena
+ Notificacion "1" *-- "1" EstadoNotificacion : tiene un
 
-' Realizaciones (Implementaciones) de EstrategiaDeNotificacion
-NotificacionPorEmail      ..|>  EstrategiaDeNotificacion : implementa
-NotificacionPorSMS        ..|>  EstrategiaDeNotificacion : implementa
-NotificacionPorWhatsApp   ..|>  EstrategiaDeNotificacion : implementa
+ ' Relaciones de Dependencia (Uso)
+ Contacto ..> EstrategiaDeNotificacion : usa
+ TipoContacto .left.> EstrategiaDeNotificacion : crea
 
-' Asociaciones de Notificacion
-Notificacion "1" *-- "1" EstadoNotificacion : tiene estado
-Notificacion "1" --> "1" Contacto : para contacto
-Contacto "1" *-- "1" TipoContacto : es de tipo
+ ' Relaciones de Herencia (Implementación)
+ NotificacionPorEmail .up.|> EstrategiaDeNotificacion
+ NotificacionPorSMS .up.|> EstrategiaDeNotificacion
+ NotificacionPorWhatsApp .up.|> EstrategiaDeNotificacion
 
-' Dependencias de ServicioDeNotificacion
-ServicioDeNotificacion ..> EstrategiaDeNotificacion : utiliza estrategia
-ServicioDeNotificacion ..> Notificacion : crea y gestiona
-ServicioDeNotificacion ..> Contacto : utiliza datos de
-ServicioDeNotificacion ..> TipoContacto : utiliza para selección
-@enduml
+ @enduml
