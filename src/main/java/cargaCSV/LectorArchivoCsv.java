@@ -90,7 +90,7 @@ public class LectorArchivoCsv {
 
     } catch (IllegalArgumentException e) {
       // Capturamos el error específico de conversión y lo envolvemos en nuestra excepción
-      throw new MapeoCsvEnDonanteException("Error mapeando registro: " + record + e);
+      throw new MapeoCsvEnPersonaException("Error mapeando registro: " + record + e);
     }
   }
 

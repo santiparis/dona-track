@@ -10,7 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,7 +113,7 @@ public class ImportadorPersonasTest {
         ImportadorPersonas importadorInvalido = new ImportadorPersonas(new RepositorioPersonas(), new ServicioDeNotificacion());
 
         // Verificamos que al procesar el archivo inválido, se lanza nuestra excepción custom.
-        assertThrows(MapeoCsvEnDonanteException.class, () -> {
+        assertThrows(MapeoCsvEnPersonaException.class, () -> {
             importadorInvalido.importarPersonasDesdeCSV(pathCsvInvalido);
         });
     }
