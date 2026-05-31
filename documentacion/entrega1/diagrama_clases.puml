@@ -101,14 +101,12 @@ enum Genero  {
     NO_BINARIO
 }
 
-class ImportadorDonantesCSV {
-    inputStream: InputStream
-    --
-    obtenerTipoDoc(CSVRecord): String
-    separarNombreYApellido(String): String[]
-    crearContactos(String, String): List<Contacto>
-    mapearDonante(CSVRecord): Optional<Persona>
-    procesar(): List<Persona>
+class ImportadorPersonas {
+    + importarPersonasDesdeCSV(String): void
+}
+
+class LectorArchivoCsv {
+    + leerRegistros(): List<CSVRecord>
 }
 
 class Necesidad {
@@ -297,8 +295,7 @@ DonacionIndependiente ..> Necesidad
 
 EstrategiaDeNotificacion ..> Notificacion
 
-ImportadorDonantesCSV ..> Persona
-ImportadorDonantesCSV ..> Contacto
+ImportadorPersonas ..> LectorArchivoCsv
 
 Necesidad --> "*" Bien
 Necesidad --> EntidadBeneficiaria

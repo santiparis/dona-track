@@ -1,92 +1,39 @@
 package cargaCSV;
 
-import donante.*;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LectorArchivoCsvTest {
 
-    private static List<Persona> personas;
+    private static List<CSVRecord> registros;
 
     @BeforeAll
     static void setUp() {
         String pathCsv = "donantes_import_20000_UTF8_BOM.csv";
         LectorArchivoCsv lectorArchivoCsv = new LectorArchivoCsv(pathCsv);
-        personas = lectorArchivoCsv.procesarCsv();
+        registros = lectorArchivoCsv.leerRegistros();
     }
 
     @Test
-    void procesarDevuelveLaCantidadCorrectaDeDonantes() {
-        assertFalse(personas.isEmpty(), "La lista de donantes no debería estar vacía.");
-        assertEquals(20000, personas.size(), "Debería haber 20,000 donantes en la lista.");
+    void leerRegistrosDevuelveLaCantidadCorrectaDeFilas() {
+        assertFalse(registros.isEmpty(), "La lista de registros no debería estar vacía.");
+        assertEquals(20000, registros.size(), "Debería haber 20,000 registros en el CSV.");
     }
 
     @Test
-    void mapeaPersonaHumanaCorrectamente() {
-        // Buscamos un donante que sabemos que está
-        Optional<Persona> donanteOpt = personas.stream()
-                .filter(d -> d.getDocumento().equals("28456905"))
-                .findFirst();
+    void losRegistrosContienenLasColumnasEsperadas() {
+        CSVRecord primerRegistro = registros.get(0);
 
-        assertTrue(donanteOpt.isPresent(), "Debería encontrar a la persona humana por DNI.");
-        Persona donante = donanteOpt.get();
-        assertInstanceOf(PersonaHumana.class, donante, "El donante debería ser una PersonaHumana.");
-        PersonaHumana persona = (PersonaHumana) donante;
-
-        assertEquals("Ana", persona.getNombre());
-        assertEquals("Navarro", persona.getApellido());
-        assertEquals(TipoDoc.DNI, persona.getTipoDoc());
-    }
-
-    @Test
-    void mapeaPersonaJuridicaCorrectamente() {
-        // Buscamos una persona jurídica que sabemos que está
-        Optional<Persona> donanteOpt = personas.stream()
-                .filter(d -> d.getDocumento().equals("30-52235350-3"))
-                .findFirst();
-
-        assertTrue(donanteOpt.isPresent(), "Debería encontrar a la persona jurídica por CUIT.");
-        Persona persona = donanteOpt.get();
-        assertInstanceOf(PersonaJuridica.class, persona, "El donante debería ser una PersonaJuridica.");
-
-        assertEquals("Santa Fe Industrial Fundación", persona.getNombre());
-        assertEquals(TipoDoc.CUIT, persona.getTipoDoc());
-    }
-
-    @Test
-    void creaContactosCorrectamenteParaUnaPersona() {
-        // Buscamos el mismo donante para verificar sus contactos
-        Optional<Persona> donanteOpt = personas.stream()
-                .filter(d -> d.getDocumento().equals("28456905"))
-                .findFirst();
-
-        assertTrue(donanteOpt.isPresent());
-        Persona persona = donanteOpt.get();
-
-        assertNotNull(persona.getContactos());
-        assertFalse(persona.getContactos().isEmpty(), "Debería tener al menos 1 contacto (email).");
-
-        Optional<Contacto> emailOpt = persona.getContactos().stream()
-                .filter(c -> c.getTipo() == TipoContacto.EMAIL)
-                .findFirst();
-        assertTrue(emailOpt.isPresent());
-        assertEquals("ananavarro3658@yahoo.com", emailOpt.get().getValor());
-
-        // Verificar medio predeterminado
-        assertNotNull(persona.getMedioPredeterminado());
-        assertEquals(TipoContacto.EMAIL, persona.getMedioPredeterminado().getTipo());
-    }
-
-    @Test
-    void procesarArchivoInvalidoLanzaExcepcionDeMapeo() {
-        String pathCsvInvalido = "donantes_invalidos.csv";
-        LectorArchivoCsv lectorInvalido = new LectorArchivoCsv(pathCsvInvalido);
-
-        assertThrows(MapeoCsvEnPersonaException.class, lectorInvalido::procesarCsv);
+        assertTrue(primerRegistro.isMapped("TipoPersona"), "Debería contener la columna 'TipoPersona'.");
+        assertTrue(primerRegistro.isMapped("Email"), "Debería contener la columna 'Email'.");
+        assertTrue(primerRegistro.isMapped("Teléfono"), "Debería contener la columna 'Teléfono'.");
+        assertTrue(primerRegistro.isMapped("Nombre/Razón Social"), "Debería contener la columna 'Nombre/Razón Social'.");
+        assertTrue(primerRegistro.isMapped("Donante.TipoDoc"), "Debería contener la columna 'Donante.TipoDoc'.");
+        assertTrue(primerRegistro.isMapped("Documento"), "Debería contener la columna 'Documento'.");
     }
 }

@@ -1,7 +1,6 @@
 package cargaCSV;
 
 import donante.*;
-import donante.RepositorioPersonas;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -25,13 +24,12 @@ public class ImportadorPersonasTest {
     @Test
     void procesarArchivoInvalidoLanzaExcepcionDeMapeo() {
         String pathCsvInvalido = "donantes_invalidos.csv";
-        // El importador usa el Lector, que es el que lanza la excepción.
         // La prueba verifica que el importador propaga la excepción correctamente.
         assertThrows(MapeoCsvEnPersonaException.class, () -> importador.importarPersonasDesdeCSV(pathCsvInvalido));
     }
 
     @Test
-    void importarPersonasDesdeCSV_CreaNuevaPersonaHumana_SiNoExiste(){
+    void importarPersonasDesdeCSV_CreaNuevaPersonaHumana_SiNoExiste() {
         // Arrange
         String pathCsv = "donantes_solo_persona_humana.csv";
         // Mock: Cuando se busque por email, simular que no existe.|
@@ -59,15 +57,14 @@ public class ImportadorPersonasTest {
     }
 
     @Test
-    void importarPersonasDesdeCSV_ActualizaPersona_SiYaExiste(){
+    void importarPersonasDesdeCSV_ActualizaPersona_SiYaExiste() {
         // Arrange: Preparamos una persona existente para que el mock la devuelva
         String pathCsv = "donantes_solo_persona_humana.csv";
         List<Contacto> contactosAna = List.of(new Contacto(TipoContacto.EMAIL, "ananavarro3658@yahoo.com"));
         Usuario usuarioAna = new Usuario("ana_viejo", "passVieja");
         PersonaHumana donanteExistente = spy(new PersonaHumana(
-            "Nombre_viejo", "Apellido_viejo", 1, TipoDoc.DNI, "1", Genero.FEMENINO, "Av. Siempre Viva 742",
-            contactosAna, contactosAna.get(0), usuarioAna
-        ));
+                "Nombre_viejo", "Apellido_viejo", 1, TipoDoc.DNI, "1", Genero.FEMENINO, "Av. Siempre Viva 742",
+                contactosAna, contactosAna.get(0), usuarioAna));
 
         // Mock: Cuando se busque por el email de Ana, devolver la persona existente.
         // Para el resto, devolver vacío para que se creen como nuevas.
@@ -81,7 +78,8 @@ public class ImportadorPersonasTest {
         // Verificar que se llamó al método de actualización en la persona existente
         verify(donanteExistente).actualizarseDesde(any(Persona.class));
 
-        // Verificar que se intentó agregar 5 personas (las 6 del CSV menos la que ya existía)
+        // Verificar que se intentó agregar 5 personas (las 6 del CSV menos la que ya
+        // existía)
         verify(repositorioPersonas, times(5)).agregar(any(Persona.class));
     }
 }
