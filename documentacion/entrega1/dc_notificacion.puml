@@ -1,22 +1,12 @@
 @startuml
 
  class Contacto {
-     - tipo: TipoContacto
+     - estrategia: EstrategiaDeNotificacion
      - valor: String
-     - notificaciones: List<Notificacion>
      --
-     + enviar(mensaje: String): void
-     + reintentarFallidas(): void
-     - intentarEnviar(notificacion: Notificacion): void
+     + enviar(mensaje: String): boolean
  }
 
- enum TipoContacto {
-     WHATSAPP
-     SMS
-     EMAIL
-     --
-     + crearEstrategia(): EstrategiaDeNotificacion
- }
  enum EstadoNotificacion {
      PENDIENTE
      COMPLETADA
@@ -30,7 +20,9 @@
  class Notificacion {
      - mensaje: String
      - estado: EstadoNotificacion
+     - contacto: Contacto
      --
+     + enviar(mensaje: String): void
      + marcarComoCompletada(): void
      + marcarComoFallida(): void
  }
@@ -40,17 +32,15 @@
  class NotificacionPorWhatsApp
 
  ' Relaciones de Composición (Parte-Todo)
- Contacto "1" *-- "1" TipoContacto : define el
- Contacto "1" *-- "0..*" Notificacion : almacena
- Notificacion "1" *-- "1" EstadoNotificacion : tiene un
+ Contacto "1" <-up- "1" Notificacion: tiene un
+ Notificacion "1" --> "1" EstadoNotificacion : tiene un
 
  ' Relaciones de Dependencia (Uso)
- Contacto ..> EstrategiaDeNotificacion : usa
- TipoContacto .left.> EstrategiaDeNotificacion : crea
+ Contacto -left-> EstrategiaDeNotificacion : tiene
 
  ' Relaciones de Herencia (Implementación)
- NotificacionPorEmail .up.|> EstrategiaDeNotificacion
- NotificacionPorSMS .up.|> EstrategiaDeNotificacion
- NotificacionPorWhatsApp .up.|> EstrategiaDeNotificacion
+ NotificacionPorEmail .up.|> EstrategiaDeNotificacion : implementa
+ NotificacionPorSMS .up.|> EstrategiaDeNotificacion : implementa
+ NotificacionPorWhatsApp .up.|> EstrategiaDeNotificacion : implementa
 
  @enduml

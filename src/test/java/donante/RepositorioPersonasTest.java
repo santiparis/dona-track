@@ -1,5 +1,6 @@
 package donante;
 
+import notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,11 +15,12 @@ public class RepositorioPersonasTest {
     private RepositorioPersonas repositorioPersonas;
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
+    NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
 
     @BeforeEach
     void setUp() {
         repositorioPersonas = new RepositorioPersonas();
-        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        List<Contacto> contactos = List.of(new Contacto(estrategiaEmail, "test@test.com"));
         Usuario usuario = new Usuario("user", "pass");
         donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
         donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
@@ -58,7 +60,7 @@ public class RepositorioPersonasTest {
     void sePuedeActualizarUnaPersonaHumana() {
         // Arrange
         repositorioPersonas.agregar(donanteHumano);
-        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        List<Contacto> contactos = List.of(new Contacto(estrategiaEmail, "test@test.com"));
         Usuario usuario = new Usuario("user", "pass");
         PersonaHumana donanteActualizado = new PersonaHumana("NombreActualizado", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
 
@@ -75,7 +77,7 @@ public class RepositorioPersonasTest {
     void sePuedeActualizarUnaPersonaJuridica() {
         // Arrange
         repositorioPersonas.agregar(donanteJuridico);
-        List<Contacto> contactos = List.of(new Contacto(TipoContacto.EMAIL, "test@test.com"));
+        List<Contacto> contactos = List.of(new Contacto(estrategiaEmail, "test@test.com"));
         Usuario usuario = new Usuario("user", "pass");
         PersonaJuridica donanteActualizado = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa Actualizada S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
 

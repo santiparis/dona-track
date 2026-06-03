@@ -1,4 +1,5 @@
 import donante.*;
+import notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -510,7 +511,8 @@ public class SistemaDonacionesTest {
     }
 
     private static Persona donante() {
-        Contacto email = new Contacto(TipoContacto.EMAIL, "ana@example.com");
+        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
+        Contacto email = new Contacto(estrategiaEmail, "ana@example.com");
         return new PersonaHumana(
                 "Ana",
                 "Perez",

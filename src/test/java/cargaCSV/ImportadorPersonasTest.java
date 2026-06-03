@@ -3,6 +3,7 @@ package cargaCSV;
 import donante.*;
 import java.util.List;
 import java.util.Optional;
+import notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,7 +61,8 @@ public class ImportadorPersonasTest {
     void importarPersonasDesdeCSV_ActualizaPersona_SiYaExiste() {
         // Arrange: Preparamos una persona existente para que el mock la devuelva
         String pathCsv = "donantes_solo_persona_humana.csv";
-        List<Contacto> contactosAna = List.of(new Contacto(TipoContacto.EMAIL, "ananavarro3658@yahoo.com"));
+        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
+        List<Contacto> contactosAna = List.of(new Contacto(estrategiaEmail, "ananavarro3658@yahoo.com"));
         Usuario usuarioAna = new Usuario("ana_viejo", "passVieja");
         PersonaHumana donanteExistente = spy(new PersonaHumana(
                 "Nombre_viejo", "Apellido_viejo", 1, TipoDoc.DNI, "1", Genero.FEMENINO, "Av. Siempre Viva 742",
