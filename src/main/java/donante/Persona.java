@@ -7,9 +7,9 @@ public abstract class Persona {
     private final TipoDoc tipoDoc;
     private String documento;
     private String nombre;
-    private List<Contacto> contactos;
+    private final List<Contacto> contactos;
     private Contacto medioPredeterminado;
-    private Usuario usuario;
+    private final Usuario usuario;
 
     Persona(
             TipoDoc tipoDoc,
@@ -28,10 +28,6 @@ public abstract class Persona {
         }
         setMedioPredeterminado(medioPredeterminado);
         this.usuario = usuario;
-    }
-
-    public TipoDoc getTipoDoc() {
-        return this.tipoDoc;
     }
 
     public String getDocumento() {

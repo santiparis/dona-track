@@ -1,5 +1,5 @@
 package notificacion;
 
-interface EstrategiaDeNotificacion {
-    boolean enviar(Notificacion notificacion);
+public interface EstrategiaDeNotificacion {
+    boolean enviar(String destino, String mensaje);
 }

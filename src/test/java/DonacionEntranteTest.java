@@ -1,4 +1,5 @@
 import donante.*;
+import notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -12,7 +13,8 @@ public class DonacionEntranteTest {
 
     @BeforeEach
     void setUp() {
-        Contacto email = new Contacto(TipoContacto.EMAIL, "test@mail.com");
+        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
+        Contacto email = new Contacto(estrategiaEmail, "test@mail.com");
         donante = new PersonaHumana(
             "Juan", "Perez", 30,
             TipoDoc.DNI, "12345678",
