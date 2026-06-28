@@ -37,6 +37,8 @@ public abstract class Necesidad {
         );
     }
 
+    public Subcategoria getSubcategoria() {return this.subcategoria; }
+
     public EntidadBeneficiaria getEntidad() {
         return this.entidad;
     }
@@ -108,4 +110,5 @@ public abstract class Necesidad {
     public Optional<Necesidad> resolver() {
         return Optional.empty();
     }
+
 }

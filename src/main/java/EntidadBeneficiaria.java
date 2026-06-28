@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 public class EntidadBeneficiaria {
     private final String razonSocial;
@@ -45,4 +46,15 @@ public class EntidadBeneficiaria {
     public List<Necesidad> getNecesidades() {
         return necesidades;
     }
+
+    public boolean necesitaSubcategoria(Subcategoria subcategoriaDonada) {
+        return this.necesidades.stream().anyMatch(necesidad -> necesidad.getSubcategoria().equals(subcategoriaDonada));
+    }
+
+    public long getDonacionesRecibidasUltimoTrimestre() {
+        LocalDate haceTresMeses = LocalDate.now().minusMonths(3);
+
+        return this.donacionesRecibidas.stream().filter(donacion -> donacion.getFechaEntrega() != null).filter(donacion -> donacion.getFechaEntrega().isAfter(haceTresMeses)).count();
+    }
+
 }
