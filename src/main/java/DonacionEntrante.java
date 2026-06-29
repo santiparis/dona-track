@@ -22,7 +22,6 @@ public class DonacionEntrante {
         this.descripcion = descripcion;
         this.bienes = bienes;
         this.donaciones_independientes = segmentarEnIndependientes(bienes);
-
     }
 
     List<DonacionIndependiente> segmentarEnIndependientes(List<Bien> bienes){
