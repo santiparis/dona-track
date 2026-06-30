@@ -1,37 +1,19 @@
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class OrganizadorAsignaciones {
 
-  private EstrategiaAsignacion estrategiaSemantica;
-  private EstrategiaAsignacion estrategiaPrioridad;
+  private final EstrategiaAsignacion compatibilidadSemantica = new CompatibilidadSemantica();
+  private final EstrategiaAsignacion prioridadSubAtendidos = new PrioridadSubAtendidos();
 
-  public OrganizadorAsignaciones() {
-    this.estrategiaSemantica = new CompatibilidadSemantica();
-    this.estrategiaPrioridad = new PrioridadSubAtendidos();
-  }
+  public SugerenciaAsignacion procesarMatchmaking(DonacionIndependiente donacion, List<EntidadBeneficiaria> todasLasEntidades) {
 
-  public SugerenciaAsignacion ejecutarMatchmaking(DonacionIndependiente donacion, List<EntidadBeneficiaria> todasLasEntidades) {
+    List<EntidadBeneficiaria> semanticas = compatibilidadSemantica.sugerirEntidades(donacion, todasLasEntidades);
+    List<EntidadBeneficiaria> subAtendidas = prioridadSubAtendidos.sugerirEntidades(donacion, todasLasEntidades);
 
-    List<EntidadBeneficiaria> candidatasSemantica = estrategiaSemantica.sugerirEntidades(donacion, todasLasEntidades);
-    List<EntidadBeneficiaria> candidatasPrioridad = estrategiaPrioridad.sugerirEntidades(donacion, todasLasEntidades);
+    List<EntidadBeneficiaria> coincidentes = semanticas.stream()
+            .filter(subAtendidas::contains)
+            .toList();
 
-    List<EntidadBeneficiaria> coincidencias = candidatasSemantica.stream()
-            .filter(candidatasPrioridad::contains)
-            .collect(Collectors.toList());
-
-    if (!coincidencias.isEmpty()) {
-      return new SugerenciaAsignacion(donacion, coincidencias);
-    } else {
-      List<EntidadBeneficiaria> ambasEjecuciones = Stream.concat(
-                      candidatasSemantica.stream(),
-                      candidatasPrioridad.stream()
-              )
-              .distinct()
-              .collect(Collectors.toList());
-
-      return new SugerenciaAsignacion(donacion, ambasEjecuciones);
-    }
+    return new SugerenciaAsignacion(coincidentes, semanticas, subAtendidas);
   }
 }

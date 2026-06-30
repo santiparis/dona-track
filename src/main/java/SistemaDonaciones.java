@@ -1,4 +1,3 @@
-import donante.PersonaJuridica;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -120,7 +119,7 @@ public class SistemaDonaciones {
       }
       if (this.hayStockParaSuplirParcialmente(necesidad, cantidadSubcategorias)) {
         this.suplirNecesidadParcialmente(necesidad, cantidadSubcategorias);
-        if (!necesidad.estaSatisfecha()) {
+        if (necesidad.estaSatisfecha()) {
           continue;
         }
         necesidad.resolver().ifPresent(nuevasNecesidades::add);

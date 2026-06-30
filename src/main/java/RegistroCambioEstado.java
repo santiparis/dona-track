@@ -6,4 +6,5 @@ public record RegistroCambioEstado<T>(
         Date fecha,
         String justificacion
 ) {
+
 }

@@ -8,6 +8,7 @@ public class EntidadBeneficiaria {
     private final String telefono;
     private final List<String> correosRepresentantes;
     private final List<Necesidad> necesidades = new ArrayList<>();
+    private final List<DonacionIndependiente> donacionesRecibidas = new ArrayList<>();
 
     public EntidadBeneficiaria(
             String razonSocial,
@@ -47,14 +48,20 @@ public class EntidadBeneficiaria {
         return necesidades;
     }
 
-    public boolean necesitaSubcategoria(Subcategoria subcategoriaDonada) {
-        return this.necesidades.stream().anyMatch(necesidad -> necesidad.getSubcategoria().equals(subcategoriaDonada));
+    public boolean necesitaSubcategoria(Subcategoria subcategoria) {
+        return this.necesidades.stream()
+                .anyMatch(necesidad -> necesidad.requiereSubcategoria(subcategoria));
     }
 
     public long getDonacionesRecibidasUltimoTrimestre() {
         LocalDate haceTresMeses = LocalDate.now().minusMonths(3);
+        return this.donacionesRecibidas.stream()
+                .filter(donacion -> donacion.fueEntregadaDespuesDe(haceTresMeses))
+                .count();
+    }
 
-        return this.donacionesRecibidas.stream().filter(donacion -> donacion.getFechaEntrega() != null).filter(donacion -> donacion.getFechaEntrega().isAfter(haceTresMeses)).count();
+    public void registrarDonacionRecibida(DonacionIndependiente donacion) {
+        this.donacionesRecibidas.add(donacion);
     }
 
 }

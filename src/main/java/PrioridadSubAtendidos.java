@@ -6,6 +6,8 @@ public class PrioridadSubAtendidos implements EstrategiaAsignacion {
 
   @Override
   public List<EntidadBeneficiaria> sugerirEntidades(DonacionIndependiente donacion, List<EntidadBeneficiaria> entidades) {
-    return entidades.stream().sorted(Comparator.comparingLong(EntidadBeneficiaria::getDonacionesRecibidasUltimoTrimestre)).limit(10).collect(Collectors.toList());
+    return entidades.stream()
+            .sorted(Comparator.comparingLong(EntidadBeneficiaria::getDonacionesRecibidasUltimoTrimestre))
+            .limit(10).collect(Collectors.toList());
   }
 }

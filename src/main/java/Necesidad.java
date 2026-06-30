@@ -37,8 +37,6 @@ public abstract class Necesidad {
         );
     }
 
-    public Subcategoria getSubcategoria() {return this.subcategoria; }
-
     public EntidadBeneficiaria getEntidad() {
         return this.entidad;
     }
@@ -102,7 +100,7 @@ public abstract class Necesidad {
     }
 
     public boolean estaSatisfecha() {
-        return this.getCantidadesPendientes().isEmpty();
+        return !this.getCantidadesPendientes().isEmpty();
     }
 
     public void actualizar() {}
@@ -111,4 +109,7 @@ public abstract class Necesidad {
         return Optional.empty();
     }
 
+    public boolean requiereSubcategoria(Subcategoria subcategoria) {
+        return this.estaSatisfecha() && this.bienes.stream().anyMatch(bien -> bien.getSubcategoria().equals(subcategoria));
+    }
 }

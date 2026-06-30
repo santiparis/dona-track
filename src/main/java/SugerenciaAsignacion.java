@@ -1,13 +1,12 @@
 import java.util.List;
 
-public class SugerenciaAsignacion {
-  private DonacionIndependiente donacion;
-  private List<EntidadBeneficiaria> entidadesSugeridas;
+public record SugerenciaAsignacion(
+        List<EntidadBeneficiaria> coincidentes,
+        List<EntidadBeneficiaria> sugerenciasSemanticas,
+        List<EntidadBeneficiaria> sugerenciasSubAtendidas
+) {
 
-  public SugerenciaAsignacion(DonacionIndependiente donacion, List<EntidadBeneficiaria> entidadesSugeridas) {
-    this.donacion = donacion;
-    this.entidadesSugeridas = entidadesSugeridas;
+  public boolean tieneCoincidencias() {
+    return !coincidentes.isEmpty();
   }
-
-  // Getters correspondientes...
 }

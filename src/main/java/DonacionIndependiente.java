@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class DonacionIndependiente {
     private final Bien bien;
@@ -62,5 +64,13 @@ public class DonacionIndependiente {
 
     public List<RegistroCambioEstado<EstadoDonacionIndependiente>> getHistorialEstados() {
         return historialEstados;
+    }
+
+    public boolean fueEntregadaDespuesDe(LocalDate fechaLimite) {
+        return this.historialEstados.stream()
+                .filter(registro -> registro.estadoNuevo() == EstadoDonacionIndependiente.ENTREGADA)
+                .map(RegistroCambioEstado::fecha)
+                .map(fechaDate -> fechaDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                .anyMatch(fechaEntrega -> !fechaEntrega.isBefore(fechaLimite));
     }
 }
