@@ -1,6 +1,11 @@
-import donante.*;
-import notificacion.*;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 
+import donaciones.domain.notificacion.Notificacion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import planificacion.NotificarPersonasInactivas;

@@ -1,6 +1,10 @@
-import donante.Contacto;
+import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.EstadoNotificacion;
+import donaciones.domain.notificacion.Notificacion;
+import donaciones.domain.notificacion.NotificacionPorSMS;
+import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import io.javalin.Javalin;
-import notificacion.*;
 import notificacion.adaptadores.ClienteRetrofitFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

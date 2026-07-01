@@ -1,6 +1,6 @@
-package notificacion;
+package donaciones.domain.notificacion;
 
-import donante.Contacto;
+import donaciones.domain.donante.Contacto;
 import java.util.List;
 
 public interface Notificable {

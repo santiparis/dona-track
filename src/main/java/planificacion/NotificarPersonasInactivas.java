@@ -1,7 +1,7 @@
 package planificacion;
 
-import donante.Persona;
-import notificacion.Notificacion;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.notificacion.Notificacion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

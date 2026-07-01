@@ -1,7 +1,7 @@
 package donaciones.domain;
 
-import donante.Contacto;
-import notificacion.Notificable;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Notificable;
 import java.util.ArrayList;
 import java.util.List;
 

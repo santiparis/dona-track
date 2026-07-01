@@ -1,6 +1,6 @@
 package donaciones.domain.donante;
 
-import notificacion.Notificable;
+import donaciones.domain.notificacion.Notificable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
