@@ -1,15 +1,18 @@
 package donaciones.domain.donante;
 
+import donaciones.domain.notificacion.Notificable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Persona {
+public abstract class Persona implements Notificable {
     private final TipoDoc tipoDoc;
     private String documento;
     private String nombre;
     private final List<Contacto> contactos;
     private Contacto medioPredeterminado;
     private final Usuario usuario;
+    private LocalDateTime ultimaInteraccion = LocalDateTime.now();
 
     Persona(
             TipoDoc tipoDoc,
@@ -81,4 +84,16 @@ public abstract class Persona {
         this.agregarContactos(persona.getContactos());
         this.setMedioPredeterminado(persona.getMedioPredeterminado());
   }
+
+    public LocalDateTime getUltimaInteraccion() {
+        return ultimaInteraccion;
+    }
+
+    public void registrarInteraccion() {
+        this.ultimaInteraccion = LocalDateTime.now();
+    }
+
+    public void setUltimaInteraccion(LocalDateTime ultimaInteraccion) {
+        this.ultimaInteraccion = ultimaInteraccion;
+    }
 }

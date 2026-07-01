@@ -1,14 +1,18 @@
 package donaciones.domain;
 
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Notificable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntidadBeneficiaria {
+public class EntidadBeneficiaria implements Notificable {
     private final String razonSocial;
     private final String direccion;
     private final String telefono;
     private final List<String> correosRepresentantes;
     private final List<Necesidad> necesidades = new ArrayList<>();
+    private final List<Contacto> contactos = new ArrayList<>();
+    private Contacto medioPredeterminado;
 
     public EntidadBeneficiaria(
             String razonSocial,
@@ -20,6 +24,21 @@ public class EntidadBeneficiaria {
         this.direccion = direccion;
         this.telefono = telefono;
         this.correosRepresentantes = correosRepresentantes;
+    }
+
+    public EntidadBeneficiaria(
+            String razonSocial,
+            String direccion,
+            String telefono,
+            List<String> correosRepresentantes,
+            List<Contacto> contactos,
+            Contacto medioPredeterminado
+    ) {
+        this(razonSocial, direccion, telefono, correosRepresentantes);
+        if (contactos != null) {
+            this.contactos.addAll(contactos);
+        }
+        this.medioPredeterminado = medioPredeterminado;
     }
 
     public String getRazonSocial() {
@@ -46,5 +65,24 @@ public class EntidadBeneficiaria {
 
     public List<Necesidad> getNecesidades() {
         return necesidades;
+    }
+
+    @Override
+    public List<Contacto> getContactos() {
+        return this.contactos;
+    }
+
+    @Override
+    public Contacto getMedioPredeterminado() {
+        return this.medioPredeterminado;
+    }
+
+    public void registrarContacto(Contacto contacto, boolean predeterminado) {
+        if (!this.contactos.contains(contacto)) {
+            this.contactos.add(contacto);
+        }
+        if (predeterminado || this.medioPredeterminado == null) {
+            this.medioPredeterminado = contacto;
+        }
     }
 }
