@@ -9,6 +9,7 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
 
     @Override
     public boolean enviar(String destino, String mensaje) {
+        /*
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
@@ -34,5 +35,7 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
             e.printStackTrace();
             return false;
         }
+        */
+        return true;
     }
 }
