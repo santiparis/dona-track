@@ -1,9 +1,19 @@
 package cargaCSV;
 
-import donante.*;
+import donaciones.domain.cargaCSV.ImportadorPersonas;
+import donaciones.domain.cargaCSV.MapeoCsvEnPersonaException;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.PersonaJuridica;
+import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.donante.Usuario;
+
 import java.util.List;
 import java.util.Optional;
-import notificacion.NotificacionPorEmail;
+import donaciones.domain.notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

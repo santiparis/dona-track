@@ -1,5 +1,6 @@
 package cargaCSV;
 
+import donaciones.domain.cargaCSV.LectorArchivoCsv;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

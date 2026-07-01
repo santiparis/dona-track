@@ -1,5 +1,15 @@
-import donante.*;
-import notificacion.NotificacionPorEmail;
+import donaciones.domain.Bien;
+import donaciones.domain.DonacionEntrante;
+import donaciones.domain.DonacionIndependiente;
+import donaciones.domain.EstadoBien;
+import donaciones.domain.Subcategoria;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.donante.Usuario;
+import donaciones.domain.notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -21,8 +31,8 @@ public class DonacionEntranteTest {
             Genero.MASCULINO, "Av. Siempreviva 123",
             List.of(email), email, new Usuario("juanp", "pass")
         );
-        bien1 = new Bien(Subcategoria.FIDEOS, 10, "kg", null, null);
-        bien2 = new Bien(Subcategoria.REMERAS, 5, "unidades", EstadoBien.USADO, null);
+        bien1 = new Bien(Subcategoria.FIDEOS, 10, "kg", null, null, null, null);
+        bien2 = new Bien(Subcategoria.REMERAS, 5, "unidades", null, null, EstadoBien.USADO, null);
     }
 
     @Test
