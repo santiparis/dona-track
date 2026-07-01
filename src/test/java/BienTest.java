@@ -1,12 +1,14 @@
+import donaciones.domain.Bien;
+import donaciones.domain.EstadoBien;
+import donaciones.domain.Subcategoria;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import java.util.Date;
 
 public class BienTest {
 
     @Test
     void creaUnBienSimpleSinRequisitos() {
-        Bien bien = new Bien(Subcategoria.FIDEOS, 10, "kg", null, null);
+        Bien bien = new Bien(Subcategoria.FIDEOS, 10, "kg", null, null, null, null);
         assertEquals(Subcategoria.FIDEOS, bien.getSubcategoria());
         assertEquals(10, bien.getCantidad());
         assertEquals("kg", bien.getUnidad());
@@ -14,7 +16,7 @@ public class BienTest {
 
     @Test
     void creaUnBienConEstadoCuandoEsRequerido() {
-        Bien bien = new Bien(Subcategoria.BANCOS, 2, "unidad", EstadoBien.USADO, null);
+        Bien bien = new Bien(Subcategoria.BANCOS, 2, "unidad", null, null, EstadoBien.USADO, null);
         assertEquals(EstadoBien.USADO, bien.getEstado());
     }
 
@@ -22,7 +24,7 @@ public class BienTest {
     void lanzaExcepcionSiSubcategoriaRequiereEstadoYNoSePasa() {
         // BANCOS requiereEstado = true
         assertThrows(IllegalArgumentException.class, () ->
-            new Bien(Subcategoria.BANCOS, 2, "unidad", null, null)
+            new Bien(Subcategoria.BANCOS, 2, "unidad", null, null, null, null)
         );
     }
 
@@ -32,7 +34,7 @@ public class BienTest {
         // Este test documentaria el comportamiento esperado.
         // Con FIDEOS (requiereVencimiento=false) no lanza excepcion
         assertDoesNotThrow(() ->
-            new Bien(Subcategoria.FIDEOS, 5, "kg", null, null)
+            new Bien(Subcategoria.FIDEOS, 5, "kg", null, null, null, null)
         );
     }
 }

@@ -124,7 +124,7 @@ class Necesidad {
    
 }
 
-class NecesidadExtra {
+class NecesidadExtraordinaria {
     --
     resolver(): Optional<Necesidad>
 }
@@ -301,7 +301,7 @@ Necesidad --> "*" Bien
 Necesidad --> EntidadBeneficiaria
 Necesidad --> Subcategoria
 
-NecesidadExtra --|> Necesidad
+NecesidadExtraordinaria --|> Necesidad
 
 NecesidadRecurrente --|> Necesidad
 
