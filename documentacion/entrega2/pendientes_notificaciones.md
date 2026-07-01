@@ -1,7 +1,5 @@
 # Lista de Pendientes: Disparadores de Notificaciones (Entrega 2)
 
-Este documento detalla los 6 puntos exactos del sistema donde se deben conectar e invocar las llamadas al método `notificar(...)` de la interfaz `Notificable`.
-
 ## 1. Módulo de Donaciones y Asignaciones
 
 - [ ] **Donación asignada (Entidad Beneficiaria):**
@@ -29,9 +27,3 @@ Este documento detalla los 6 puntos exactos del sistema donde se deben conectar 
   - **Acción sugerida:** Notificar a la entidad beneficiaria, a la persona donante y a la administración del sistema incluyendo la justificación del incidente.
 
 ---
-
-## 3. Tareas Programadas / Crontab
-
-- [ ] **Ausencia de la plataforma (> 20 días):**
-  - **Cuándo ocurre:** Tarea programada nocturna o en horario de baja carga que evalúa `getUltimaInteraccion()`.
-  - **Acción sugerida:** `donanteInactivo.notificar("¡Hola! Notamos más de 20 días sin actividad. ¡Te invitamos a realizar una nueva donación!");`

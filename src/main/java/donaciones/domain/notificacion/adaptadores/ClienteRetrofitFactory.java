@@ -1,4 +1,4 @@
-package notificacion.adaptadores;
+package donaciones.domain.notificacion.adaptadores;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
