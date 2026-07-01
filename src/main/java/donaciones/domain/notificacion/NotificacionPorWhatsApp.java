@@ -1,7 +1,7 @@
 package donaciones.domain.notificacion;
 
-import notificacion.adaptadores.ClienteRetrofitFactory;
-import notificacion.adaptadores.PasarelaMensajeriaREST;
+import donaciones.domain.notificacion.adaptadores.ClienteRetrofitFactory;
+import donaciones.domain.notificacion.adaptadores.PasarelaMensajeriaREST;
 import retrofit2.Response;
 
 public class NotificacionPorWhatsApp implements EstrategiaDeNotificacion {

@@ -1,6 +1,7 @@
 package planificacion;
 
 import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.Notificacion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +15,11 @@ public class NotificarPersonasInactivas {
   private static final Logger logger = LoggerFactory.getLogger(NotificarPersonasInactivas.class);
   private static final int DIAS_INACTIVIDAD = 20;
 
-  public static List<Notificacion> notificarInactivos(List<Persona> personas) {
+  public static List<Notificacion> notificarInactivos(RepositorioPersonas repositorio) {
     List<Notificacion> historial = new ArrayList<>();
     LocalDateTime umbralInactividad = LocalDateTime.now().minusDays(DIAS_INACTIVIDAD);
 
-    for (Persona persona : personas) {
+    for (Persona persona : repositorio.obtenerTodas()) {
       if (persona.getUltimaInteraccion().isBefore(umbralInactividad)) {
         String mensaje = "¡Hola " + persona.getNombre() + "! Notamos más de " + DIAS_INACTIVIDAD
             + " días sin actividad. ¡Te invitamos a realizar una nueva donación en la plataforma!";
@@ -36,8 +37,8 @@ public class NotificarPersonasInactivas {
     logger.info("Iniciando notificación de personas inactivas");
 
     try {
-      List<Persona> personasRegistradas = new ArrayList<>();
-      notificarInactivos(personasRegistradas);
+      RepositorioPersonas repositorio = new RepositorioPersonas();
+      notificarInactivos(repositorio);
     } catch (RuntimeException e) {
       logger.error("Error al ejecutar tarea programada de notificación", e);
     }

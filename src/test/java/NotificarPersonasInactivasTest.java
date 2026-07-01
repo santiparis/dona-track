@@ -1,7 +1,7 @@
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.donante.Genero;
-import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NotificarPersonasInactivasTest {
 
-    private static List<Persona> personasRegistradas;
+    private static RepositorioPersonas repositorioPersonas;
 
     @BeforeAll
     public static void setUp() {
@@ -31,12 +31,14 @@ public class NotificarPersonasInactivasTest {
         PersonaHumana donanteActivo = new PersonaHumana("Ana Activa", "Lopez", 35, TipoDoc.DNI, "22222222", Genero.FEMENINO, "Calle 2", List.of(contactoEmail2), contactoEmail2, null);
         donanteActivo.setUltimaInteraccion(LocalDateTime.now().minusDays(5));
 
-        personasRegistradas = List.of(donanteAusente, donanteActivo);
+        repositorioPersonas = new RepositorioPersonas();
+        repositorioPersonas.agregar(donanteAusente);
+        repositorioPersonas.agregar(donanteActivo);
     }
 
     @Test
     public void testCrontabSimuladoDetectaInactividadYNotificaDirectamente() {
-        List<Notificacion> historial = NotificarPersonasInactivas.notificarInactivos(personasRegistradas);
+        List<Notificacion> historial = NotificarPersonasInactivas.notificarInactivos(repositorioPersonas);
 
         assertEquals(1, historial.size(), "Debe haberse generado exactamente una notificación para la persona ausente");
     }
