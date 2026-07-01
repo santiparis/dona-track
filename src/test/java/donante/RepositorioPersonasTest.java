@@ -1,6 +1,15 @@
 package donante;
 
-import notificacion.NotificacionPorEmail;
+import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.PersonaJuridica;
+import donaciones.domain.donante.RazonSocial;
+import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.donante.Usuario;
+import donaciones.domain.notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
