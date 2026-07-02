@@ -283,7 +283,7 @@ public class SistemaDonacionesTest {
         DonacionEntrante donacionEntrante = new DonacionEntrante(donante(), "Fideos", List.of(bienFideos(2)));
 
         sistema.cargarDonacion(donacionEntrante);
-        registrarNecesidad(sistema, new NecesidadExtra(entidadBeneficiaria(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
+        registrarNecesidad(sistema, new NecesidadExtraordinaria(entidadBeneficiaria(), Subcategoria.FIDEOS, 2, "Necesidad extraordinaria"));
         sistema.actualizarNecesidades();
 
         assertEquals(1, sistema.getAsignaciones().size(), "La necesidad extraordinaria debería suplirse.");
@@ -373,7 +373,7 @@ public class SistemaDonacionesTest {
     void sistemaGestionaEntidadesBeneficiariasYNecesidades() {
         SistemaDonaciones sistema = new SistemaDonaciones();
         EntidadBeneficiaria entidad = entidadBeneficiaria();
-        Necesidad necesidad = new NecesidadExtra(entidad, "Necesidad múltiple", List.of(bienFideos(2), bienFideos(3)));
+        Necesidad necesidad = new NecesidadExtraordinaria(entidad, "Necesidad múltiple", List.of(bienFideos(2), bienFideos(3)));
 
         sistema.registrarEntidadBeneficiaria(entidad);
         registrarNecesidad(sistema, necesidad);

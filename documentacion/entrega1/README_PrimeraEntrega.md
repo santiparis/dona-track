@@ -37,9 +37,9 @@
 
 ## Gestión de Necesidades
 
-* **Principio Abierto/Cerrado (OCP)**: `Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtra` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
+* **Principio Abierto/Cerrado (OCP)**: `Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtraordinaria` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
 
-* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtra` se resuelve sin generar nuevas instancias. Las necesidades pertenecen siempre a una `EntidadBeneficiaria`.
+* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtraordinaria` se resuelve sin generar nuevas instancias. Las necesidades pertenecen siempre a una `EntidadBeneficiaria`.
 
 * **Patrón Template Method**: La clase abstracta define `resolver()` como método abstracto que cada subclase implementa según su lógica específica. Ambas también cuentan con `actualizar()` que puede ser sobrescrito.
 

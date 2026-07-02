@@ -1,4 +1,3 @@
-import donante.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -45,7 +44,7 @@ public class DonacionIndependienteTest {
     @Test
     void agregarAsignacionLaRegistra() {
         EntidadBeneficiaria entidad = new EntidadBeneficiaria("Comedor Sol", "Calle 1", "1234-5678", List.of());
-        Necesidad necesidad = new NecesidadExtra(entidad, "necesidad test", java.util.List.of(bien));
+        Necesidad necesidad = new NecesidadExtraordinaria(entidad, "necesidad test", java.util.List.of(bien));
 
         donacion.agregarAsignacion(new AsignacionItem<>(necesidad, 10));
         assertEquals(1, donacion.getAsignaciones().size());
