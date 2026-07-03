@@ -1,16 +1,32 @@
 package logistica.domain;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Entrega {
+  static Integer asignador_id = 0;
+  final String id;
+  final String donacionId;
   Coordenadas destino;
   EstadoEntrega estado;
-  //List<DonacionIndependiente> donaciones;
 
-  //public Entrega(Coordenadas destino, List<DonacionIndependiente> donaciones) {
-  //  this.destino = destino;
-  //  this.estado = EstadoEntrega.EN_RUTA;
- // }
+
+  public Entrega(String donacionId, Coordenadas destino) {
+
+    this.id = asignador_id.toString();
+    asignador_id++;
+    this.donacionId = donacionId;
+    this.destino = destino;
+    this.estado = EstadoEntrega.EN_TRASLADO;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getDonacionId() {
+    return donacionId;
+  }
 
   public EstadoEntrega getEstado() {
     return estado;
@@ -22,5 +38,13 @@ public class Entrega {
 
   public void marcarEntregada() {
     this.estado = EstadoEntrega.ENTREGADA;
+  }
+
+  public void marcarNoRecibida() {
+    this.estado = EstadoEntrega.NO_RECIBIDA;
+  }
+
+  public void actualizarEstado(EstadoEntrega estado) {
+    this.estado = estado;
   }
 }

@@ -20,6 +20,6 @@ public class Ruta {
   }
 
   public long entregasPendientes() {
-    return this.entregas.stream().filter(e -> e.getEstado() == EstadoEntrega.EN_RUTA).count();
+    return this.entregas.stream().filter(e -> e.getEstado() == EstadoEntrega.EN_TRASLADO).count();
   }
 }
