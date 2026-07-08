@@ -1,4 +1,6 @@
-package logistica.domain;
+package logistica.repository;
+
+import logistica.domain.Entrega;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,10 @@ public class RepositorioEntregas {
 
     public void agregar(Entrega entrega) {
         entregas.add(entrega);
+    }
+
+    public void agregarTodos(List<Entrega> nuevas) {
+        entregas.addAll(nuevas);
     }
 
     public Optional<Entrega> buscarPorId(String id) {

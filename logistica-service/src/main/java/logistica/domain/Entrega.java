@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class Entrega {
-  static Integer asignador_id = 0;
+  static Integer asignador_id = 1;
   final String id;
   final String donacionId;
   Coordenadas destino;
@@ -17,7 +17,7 @@ public class Entrega {
     asignador_id++;
     this.donacionId = donacionId;
     this.destino = destino;
-    this.estado = EstadoEntrega.EN_TRASLADO;
+    this.estado = EstadoEntrega.PENDIENTE;
   }
 
   public String getId() {
