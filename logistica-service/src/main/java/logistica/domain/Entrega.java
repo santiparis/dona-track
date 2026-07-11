@@ -1,31 +1,26 @@
 package logistica.domain;
 
 import java.util.List;
-import java.util.UUID;
 
 public class Entrega {
-  static Integer asignador_id = 1;
+  static Integer entregaID = 1;
   final String id;
-  final String donacionId;
+  final List<Donacion> listaDonaciones;
   Coordenadas destino;
   EstadoEntrega estado;
 
 
-  public Entrega(String donacionId, Coordenadas destino) {
+  public Entrega(List<Donacion> listaDonaciones, Coordenadas destino) {
+    this.listaDonaciones = listaDonaciones;
+    this.id = entregaID.toString();
+    entregaID++;
 
-    this.id = asignador_id.toString();
-    asignador_id++;
-    this.donacionId = donacionId;
     this.destino = destino;
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
   public String getId() {
     return id;
-  }
-
-  public String getDonacionId() {
-    return donacionId;
   }
 
   public EstadoEntrega getEstado() {
@@ -46,5 +41,9 @@ public class Entrega {
 
   public void actualizarEstado(EstadoEntrega estado) {
     this.estado = estado;
+  }
+
+  public void agregarDonacion(Donacion donacion){
+    this.listaDonaciones.add(donacion);
   }
 }

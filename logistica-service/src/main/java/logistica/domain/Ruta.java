@@ -3,6 +3,7 @@ package logistica.domain;
 import java.util.List;
 
 public class Ruta {
+
   Camion camion;
   List<Entrega> entregas;
 

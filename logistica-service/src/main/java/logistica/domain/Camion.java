@@ -20,12 +20,38 @@ public class Camion {
     this.localizacion = nuevaLocalizacion;
   }
 
+
+
+  public Boolean estaDisponible(){
+    return this.disponibilidad == true;
+  }
+
+  public Coordenadas getLocalizacion() {
+    return localizacion;
+  }
+
+  public void setLocalizacion(Coordenadas localizacion) {
+    this.localizacion = localizacion;
+  }
+
+  public double getCargaMax() {
+    return cargaMax;
+  }
+
+  public double getAltura() {
+    return altura;
+  }
+
+  public double getVolumen() {
+    return volumen;
+  }
+
   public String getPatente(){
     return this.patente;
   }
 
-  public Boolean estaDisponible(){
-    return this.disponibilidad == true;
+  public void setDisponibilidad(Boolean estado){
+    this.disponibilidad = estado;
   }
 }
 
