@@ -11,15 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import donaciones.domain.notificacion.Notificacion;
+import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 import donaciones.domain.notificacion.NotificacionPorEmail;
 import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import org.apache.commons.csv.CSVRecord;
 
 public class ImportadorPersonas {
     private final RepositorioPersonas repositorioPersonas;
+    private final EstrategiaDeNotificacion estrategiaEmail;
+    private final EstrategiaDeNotificacion estrategiaWhatsapp;
+
+    public ImportadorPersonas(RepositorioPersonas repositorioPersonas, EstrategiaDeNotificacion estrategiaEmail, EstrategiaDeNotificacion estrategiaWhatsapp) {
+        this.repositorioPersonas = repositorioPersonas;
+        this.estrategiaEmail = estrategiaEmail;
+        this.estrategiaWhatsapp = estrategiaWhatsapp;
+    }
 
     public ImportadorPersonas(RepositorioPersonas repositorioPersonas) {
-        this.repositorioPersonas = repositorioPersonas;
+        this(repositorioPersonas, new NotificacionPorEmail(), new NotificacionPorWhatsApp());
     }
 
     public void importarPersonasDesdeCSV(String pathArchivo) {
@@ -82,10 +91,8 @@ public class ImportadorPersonas {
 
     private List<Contacto> crearContactos(String emailStr, String telefonoStr) {
         List<Contacto> contactos = new ArrayList<>();
-        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
-        NotificacionPorWhatsApp estrategiaWhatsapp = new NotificacionPorWhatsApp();
-        contactos.add(new Contacto(estrategiaEmail, emailStr));
-        contactos.add(new Contacto(estrategiaWhatsapp, telefonoStr));
+        contactos.add(new Contacto(this.estrategiaEmail, emailStr));
+        contactos.add(new Contacto(this.estrategiaWhatsapp, telefonoStr));
         return contactos;
     }
 

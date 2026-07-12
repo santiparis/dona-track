@@ -11,9 +11,10 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
 
+import donaciones.domain.notificacion.NotificacionPorEmail;
+import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import java.util.List;
 import java.util.Optional;
-import donaciones.domain.notificacion.NotificacionPorEmail;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,13 @@ public class ImportadorPersonasTest {
     @Mock
     private RepositorioPersonas repositorioPersonas;
 
+    @Mock
+    private NotificacionPorEmail estrategiaEmail;
+
+    @Mock
+    private NotificacionPorWhatsApp estrategiaWhatsapp;
+
+    // Inyecto mocks para no enviar notificaciones reales
     @InjectMocks
     private ImportadorPersonas importador;
 
@@ -69,9 +77,8 @@ public class ImportadorPersonasTest {
 
     @Test
     void importarPersonasDesdeCSV_ActualizaPersona_SiYaExiste() {
-        // Arrange: Preparamos una persona existente para que el mock la devuelva
         String pathCsv = "donantes_solo_persona_humana.csv";
-        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
+        NotificacionPorEmail estrategiaEmail = mock(NotificacionPorEmail.class);
         List<Contacto> contactosAna = List.of(new Contacto(estrategiaEmail, "ananavarro3658@yahoo.com"));
         Usuario usuarioAna = new Usuario("ana_viejo", "passVieja");
         PersonaHumana donanteExistente = spy(new PersonaHumana(

@@ -18,13 +18,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class RepositorioPersonasTest {
 
     private RepositorioPersonas repositorioPersonas;
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
-    NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
+    NotificacionPorEmail estrategiaEmail = mock(NotificacionPorEmail.class);
 
     @BeforeEach
     void setUp() {

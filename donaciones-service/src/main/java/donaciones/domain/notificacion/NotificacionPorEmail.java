@@ -16,10 +16,9 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
         String remitente = System.getenv("SENDGRID_REMITENTE");
         String apiKey = System.getenv("SENDGRID_API_KEY");
 
-        // Si el remitente o la API Key no están definidos, se simula el envío
+        // Si el remitente o la API Key no están definidos, lanza una excepción
         if (remitente == null || remitente.trim().isEmpty() || apiKey == null || apiKey.trim().isEmpty()) {
-            System.out.println("[EMAIL SIMULADO] De: " + remitente + " -> Para: " + destino + " | Mensaje: " + mensaje);
-            return true;
+            throw new ConfiguracionSendGridException("No están configuradas las variables de entorno SENDGRID_REMITENTE y/o SENDGRID_API_KEY.");
         }
 
         // Para enviar mails realmente hay que tener la apikey cargada en el sengrind.env
@@ -43,6 +42,7 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
             } else {
                 throw new EnvioDeEmailException("SendGrid respondió con código HTTP " + statusCode + ": " + response.getBody());
             }
+            // Uso IOException porque las clases de SendGrid lanzan esta excepción
         } catch (IOException ex) {
             throw new EnvioDeEmailException("Fallo de red o I/O al comunicarse con SendGrid: " + ex.getMessage());
         }

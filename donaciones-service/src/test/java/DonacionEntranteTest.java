@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class DonacionEntranteTest {
 
@@ -23,8 +24,8 @@ public class DonacionEntranteTest {
 
     @BeforeEach
     void setUp() {
-        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
-        Contacto email = new Contacto(estrategiaEmail, "test@mail.com");
+        NotificacionPorEmail estrategiaMock = mock(NotificacionPorEmail.class);
+        Contacto email = new Contacto(estrategiaMock, "test@mail.com");
         donante = new PersonaHumana(
             "Juan", "Perez", 30,
             TipoDoc.DNI, "12345678",
