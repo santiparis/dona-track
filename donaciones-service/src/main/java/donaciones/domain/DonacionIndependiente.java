@@ -9,11 +9,13 @@ public class DonacionIndependiente {
     private final Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
+    private LocalDate fecha;
 
     public DonacionIndependiente(
         Bien bien
     ) {
         this.bien = bien;
+        this.fecha = LocalDate.now();
         this.historialEstados.add(new RegistroCambioEstado<>(null, this.estado, new java.util.Date(), null));
     }
 
@@ -36,11 +38,7 @@ public class DonacionIndependiente {
         return historialEstados;
     }
 
-    public boolean fueEntregadaDespuesDe(LocalDate fechaLimite) {
-        return this.historialEstados.stream()
-                .filter(registro -> registro.estadoNuevo() == EstadoDonacionIndependiente.ENTREGADA)
-                .map(RegistroCambioEstado::fecha)
-                .map(fechaDate -> fechaDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
-                .anyMatch(fechaEntrega -> !fechaEntrega.isBefore(fechaLimite));
+    public LocalDate getFecha() {
+        return this.fecha;
     }
 }

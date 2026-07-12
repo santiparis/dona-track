@@ -1,3 +1,7 @@
+package donaciones.domain.algoritmos;
+
+import donaciones.domain.EntidadBeneficiaria;
+
 import java.util.List;
 
 public record SugerenciaAsignacion(

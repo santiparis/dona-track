@@ -1,3 +1,8 @@
+package donaciones.domain.algoritmos;
+
+import donaciones.domain.DonacionIndependiente;
+import donaciones.domain.EntidadBeneficiaria;
+
 import java.util.List;
 
 public class OrganizadorAsignaciones {
