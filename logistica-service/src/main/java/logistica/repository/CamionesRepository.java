@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class RepositorioCamiones {
+public class CamionesRepository {
   private final List<Camion> camiones = new ArrayList<>();
 
   public void agregar(Camion camion) {
@@ -32,4 +32,5 @@ public class RepositorioCamiones {
         .filter(Camion::estaDisponible)
         .toList();
   }
+
 }
