@@ -1,5 +1,8 @@
 package logistica.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Camion {
   final String patente;
   final double volumen;
@@ -8,7 +11,12 @@ public class Camion {
   Coordenadas localizacion = null;
   Boolean disponibilidad;
 
-  public Camion(String patente, double volumen, double altura, double cargaMax) {
+  // los jsonProperty los usara jackson para crear los objetos de json a dominio
+  @JsonCreator
+  public Camion(@JsonProperty("patente") String patente,
+                @JsonProperty("volumen") double volumen,
+                @JsonProperty("altura") double altura,
+                @JsonProperty("cargaMax") double cargaMax) {
     this.patente = patente;
     this.volumen = volumen;
     this.altura = altura;

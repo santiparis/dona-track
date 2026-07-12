@@ -28,6 +28,7 @@ public class EntregasService {
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));
 
     ruta.iniciar();
+    //inicia las request
     donacionesApi.rutaIniciada(ruta).execute();
 
     return ruta;

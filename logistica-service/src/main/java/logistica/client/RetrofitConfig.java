@@ -5,18 +5,29 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitConfig {
 
-  private final Retrofit retrofit = new Retrofit.Builder()
-      .baseUrl("https://localhost:8080/")
-      .addConverterFactory(JacksonConverterFactory.create())
-      .build();
+  private String donacionesBaseUrl = "http://localhost:8080/";
+  private String planificadorBaseUrl = "http://localhost:9090/";
+
+  public void setDonacionesBaseUrl(String url) {
+    this.donacionesBaseUrl = url;
+  }
+
+  public void setPlanificadorBaseUrl(String url) {
+    this.planificadorBaseUrl = url;
+  }
 
   public DonacionesAPICalls donacionesAPICalls() {
-    return retrofit.create(DonacionesAPICalls.class);
+    return construirRetrofit(donacionesBaseUrl).create(DonacionesAPICalls.class);
   }
 
   public PlanificadorAPICalls planificadorAPICalls() {
-    return retrofit.create(PlanificadorAPICalls.class);
+    return construirRetrofit(planificadorBaseUrl).create(PlanificadorAPICalls.class);
   }
 
-
+  private Retrofit construirRetrofit(String baseUrl) {
+    return new Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .addConverterFactory(JacksonConverterFactory.create())
+        .build();
+  }
 }
