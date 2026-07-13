@@ -20,7 +20,6 @@ public class Main {
     DonanteService donanteService = new DonanteService(donanteRepo);
     DonanteController donanteController = new DonanteController(donanteService);
 
-    // Armamos el módulo de ASIGNACIONES
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
     AsignacionService asignacionService = new AsignacionService(repository, entidadRepo);
     AsignacionController asignacionController = new AsignacionController(asignacionService);
