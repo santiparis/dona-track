@@ -18,8 +18,8 @@ public class RutaTest {
   @BeforeEach
   void setUp() {
     Camion camion = new Camion("AB123CD", 10, 2, 1000);
-    entrega1 = new Entrega(new ArrayList<>(), new Coordenadas(-34.6, -58.4));
-    entrega2 = new Entrega(new ArrayList<>(), new Coordenadas(-34.5, -58.3));
+    entrega1 = new Entrega(new ArrayList<>(), "Calle 123", "Comedor Sol");
+    entrega2 = new Entrega(new ArrayList<>(), "Calle 456", "Fundacion Esperanza");
     ruta = new Ruta(camion, List.of(entrega1, entrega2));
   }
 

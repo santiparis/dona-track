@@ -1,4 +1,4 @@
-package logistica.client;
+package logistica.retrofit_client;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;

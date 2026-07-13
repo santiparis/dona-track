@@ -7,17 +7,20 @@ public class Donacion {
   final String donacionID;
   final int cantidadBienes;
   final String unidad;
-  final Coordenadas destino;
+  final String destino;
+  final String entidadNombre;
 
   @JsonCreator
   public Donacion(@JsonProperty("donacionID") String donacionID,
                    @JsonProperty("cantidadBienes") int cantidad,
                    @JsonProperty("unidad") String unidad,
-                   @JsonProperty("destino") Coordenadas coordenadas) {
+                   @JsonProperty("destino") String coordenadas,
+                   @JsonProperty("entidadNombre") String entidadNombre) {
     this.donacionID = donacionID;
     this.cantidadBienes = cantidad;
     this.unidad = unidad;
     this.destino = coordenadas;
+    this.entidadNombre = entidadNombre;
   }
 
   public String getDonacionID() {
@@ -32,7 +35,11 @@ public class Donacion {
     return unidad;
   }
 
-  public Coordenadas getDestino() {
+  public String getDestino() {
     return destino;
+  }
+
+  public String getEntidadNombre() {
+    return entidadNombre;
   }
 }

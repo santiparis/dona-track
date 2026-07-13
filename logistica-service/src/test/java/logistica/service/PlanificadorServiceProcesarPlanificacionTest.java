@@ -1,8 +1,8 @@
 package logistica.service;
 
-import logistica.client.PlanificacionCallbackRequest;
-import logistica.client.PlanificacionCallbackRequest.AsignacionCamion;
-import logistica.client.PlanificacionCallbackRequest.ParadaPlanificada;
+import logistica.retrofit_client.PlanificacionCallbackRequest;
+import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
+import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
 import logistica.domain.Camion;
 import logistica.domain.Donacion;
 import logistica.domain.Ruta;
@@ -38,8 +38,8 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void creaUnaRutaConSuEntregaParaElCamionAsignado() {
-    var donacion = new Donacion("D1", 1, "kg", null);
-    var parada = new ParadaPlanificada(-34.6, -58.4, List.of(donacion));
+    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("AB123CD", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());
 
@@ -52,7 +52,8 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void guardaLaRutaCreadaEnElRepositorio() {
-    var parada = new ParadaPlanificada(-34.6, -58.4, List.of());
+    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("AB123CD", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());
 
@@ -63,7 +64,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void reencolaLasDonacionesNoAsignadas() {
-    var noAsignada = new Donacion("D2", 1, "kg", null);
+    var noAsignada = new Donacion("D2", 1, "kg", null, null);
     var resultado = new PlanificacionCallbackRequest(List.of(), List.of(noAsignada));
 
     planificadorService.procesarPlanificacion(resultado);
@@ -73,7 +74,8 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void tiraExcepcionSiElCamionAsignadoNoExiste() {
-    var parada = new ParadaPlanificada(-34.6, -58.4, List.of());
+    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("PATENTE-INEXISTENTE", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());
 

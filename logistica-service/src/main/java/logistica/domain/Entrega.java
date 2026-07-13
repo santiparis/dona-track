@@ -6,15 +6,17 @@ import java.util.UUID;
 public class Entrega {
   final String id;
   final List<Donacion> listaDonaciones;
-  Coordenadas destino;
+  String destino;
+  String entidadNombre;
   EstadoEntrega estado;
 
 
-  public Entrega(List<Donacion> listaDonaciones, Coordenadas destino) {
+  public Entrega(List<Donacion> listaDonaciones, String destino, String entidadNombre) {
     this.listaDonaciones = listaDonaciones;
     this.id = UUID.randomUUID().toString();
 
     this.destino = destino;
+    this.entidadNombre = entidadNombre;
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
@@ -26,8 +28,12 @@ public class Entrega {
     return estado;
   }
 
-  public Coordenadas getDestino() {
+  public String getDestino() {
     return destino;
+  }
+
+  public String getEntidadNombre() {
+    return entidadNombre;
   }
 
   public List<Donacion> getListaDonaciones() {

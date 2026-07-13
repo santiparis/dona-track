@@ -1,4 +1,4 @@
-package logistica.client;
+package logistica.retrofit_client;
 
 import logistica.domain.Donacion;
 
@@ -8,5 +8,5 @@ public record PlanificacionCallbackRequest(List<AsignacionCamion> asignaciones, 
 
   public record AsignacionCamion(String patenteCamion, List<ParadaPlanificada> paradas) {}
 
-  public record ParadaPlanificada(double latitud, double longitud, List<Donacion> donaciones) {}
+  public record ParadaPlanificada(List<Donacion> donaciones) {}
 }

@@ -1,7 +1,7 @@
 package logistica.controller;
 
 import io.javalin.http.Context;
-import logistica.client.PlanificacionCallbackRequest;
+import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.domain.Ruta;
 import logistica.service.PlanificadorService;
 

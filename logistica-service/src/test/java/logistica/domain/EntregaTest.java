@@ -14,7 +14,7 @@ public class EntregaTest {
 
   @BeforeEach
   void setUp() {
-    entrega = new Entrega(new ArrayList<>(), new Coordenadas(-34.6, -58.4));
+    entrega = new Entrega(new ArrayList<>(), "Calle 123", "Comedor Sol");
   }
 
   @Test

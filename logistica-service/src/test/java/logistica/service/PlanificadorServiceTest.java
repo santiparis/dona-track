@@ -1,10 +1,9 @@
 package logistica.service;
 
 import io.javalin.Javalin;
-import logistica.client.PlanificadorAPICalls.PlanificacionRequest;
-import logistica.client.RetrofitConfig;
+import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
+import logistica.retrofit_client.RetrofitConfig;
 import logistica.domain.Camion;
-import logistica.domain.Coordenadas;
 import logistica.domain.Donacion;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
@@ -68,8 +67,8 @@ public class PlanificadorServiceTest {
 
   @Test
   public void enviaLasDonacionesPendientesYLasSacaDelPoolSiElPlanificadorConfirma() throws IOException {
-    donacionesRepository.agregar(new Donacion("D1", 1, "kg", new Coordenadas(-34.6, -58.4)));
-    donacionesRepository.agregar(new Donacion("D2", 2, "kg", new Coordenadas(-34.6, -58.4)));
+    donacionesRepository.agregar(new Donacion("D1", 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
+    donacionesRepository.agregar(new Donacion("D2", 2, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
 
     planificadorService.enviarPlanificacion();
 
@@ -87,7 +86,7 @@ public class PlanificadorServiceTest {
   @Test
   public void respetaElLimiteDeCienDonacionesPorBatch() throws IOException {
     for (int i = 0; i < 150; i++) {
-      donacionesRepository.agregar(new Donacion("D" + i, 1, "kg", new Coordenadas(-34.6, -58.4)));
+      donacionesRepository.agregar(new Donacion("D" + i, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
     }
 
     planificadorService.enviarPlanificacion();

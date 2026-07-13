@@ -1,12 +1,11 @@
 package logistica.service;
 
-import logistica.client.PlanificacionCallbackRequest;
-import logistica.client.PlanificacionCallbackRequest.AsignacionCamion;
-import logistica.client.PlanificacionCallbackRequest.ParadaPlanificada;
-import logistica.client.PlanificadorAPICalls;
-import logistica.client.PlanificadorAPICalls.PlanificacionRequest;
+import logistica.retrofit_client.PlanificacionCallbackRequest;
+import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
+import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
+import logistica.retrofit_client.PlanificadorAPICalls;
+import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
 import logistica.domain.Camion;
-import logistica.domain.Coordenadas;
 import logistica.domain.Donacion;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
@@ -64,8 +63,10 @@ public class PlanificadorService {
 
       List<Entrega> entregas = new ArrayList<>();
       for (ParadaPlanificada parada : asignacion.paradas()) {
-        Coordenadas destino = new Coordenadas(parada.latitud(), parada.longitud());
-        entregas.add(new Entrega(new ArrayList<>(parada.donaciones()), destino));
+        Donacion primeraDonacion = parada.donaciones().get(0);
+        String destino = primeraDonacion.getDestino();
+        String entidadNombre = primeraDonacion.getEntidadNombre();
+        entregas.add(new Entrega(new ArrayList<>(parada.donaciones()), destino, entidadNombre));
       }
 
       Ruta ruta = new Ruta(camion, entregas);

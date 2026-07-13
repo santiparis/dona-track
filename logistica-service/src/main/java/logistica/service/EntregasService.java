@@ -1,6 +1,6 @@
 package logistica.service;
 
-import logistica.client.DonacionesAPICalls;
+import logistica.retrofit_client.DonacionesAPICalls;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;

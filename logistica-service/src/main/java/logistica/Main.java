@@ -1,7 +1,7 @@
 package logistica;
 
 import io.javalin.Javalin;
-import logistica.client.RetrofitConfig;
+import logistica.retrofit_client.RetrofitConfig;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
