@@ -1,0 +1,34 @@
+@startuml
+interface EstrategiaAsignacion {
++ sugerirEntidades(donacion: DonacionIndependiente, entidades: List<EntidadBeneficiaria>)
+}
+
+class CompatibilidadSemantica {
++ sugerirEntidades(donacion, entidades)
+}
+
+class PrioridadSubAtendidos {
++ sugerirEntidades(donacion, entidades)
+}
+
+CompatibilidadSemantica .up.|> EstrategiaAsignacion
+PrioridadSubAtendidos .up.|> EstrategiaAsignacion
+
+class OrganizadorAsignaciones{
+-EstrategiaAsignacion compatibilidadSemantica
+-EstrategiaAsignacion prioridadSubAtendidos
+
++ procesarMatchmaking(donacion: DonacionIndependiente, todasLasEntidades: List<EntidadBeneficiaria>)
+}
+
+OrganizadorAsignaciones -left-> EstrategiaAsignacion
+
+class SugerenciaAsignacion <<record>>{
+-List<EntidadBeneficiaria> coincidentes
+-List<EntidadBeneficiaria> sugerenciasSemanticas
+-List<EntidadBeneficiaria> sugerenciasSubAtendidas
++tieneCoincidencias()
+}
+
+SugerenciaAsignacion .up.> OrganizadorAsignaciones
+@enduml

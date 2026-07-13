@@ -42,4 +42,10 @@ public class Necesidad {
     public boolean estaSatisfecha() {
         return this.cantidadesSuplidas.keySet().stream().allMatch(subcategoria -> Objects.equals(this.cantidadesSuplidas.get(subcategoria), this.cantidadesRequeridas.get(subcategoria)));
     }
+    public boolean seSatisfaceCon(Bien bienDonado) {
+        if (bienDonado == null || bienDonado.getSubcategoria() == null) {
+            return false;
+        }
+        return this.cantidadesRequeridas.containsKey(bienDonado.getSubcategoria());
+    }
 }

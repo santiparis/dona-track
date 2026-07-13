@@ -51,9 +51,7 @@ public class Bien {
             return this.subcategoria.equals(bien.subcategoria);
     }
 
-    public Subcategoria getSubcategoria() {
-        return this.subcategoria;
-    }
+    public Subcategoria getSubcategoria() {return this.subcategoria; }
 
     public Integer getCantidad() {
         return this.cantidad;
