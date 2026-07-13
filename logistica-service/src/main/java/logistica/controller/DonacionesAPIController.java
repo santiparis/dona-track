@@ -1,48 +1,33 @@
 package logistica.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.javalin.http.Context;
-import logistica.domain.Coordenadas;
-import logistica.domain.Entrega;
-import logistica.domain.EstadoEntrega;
-import logistica.repository.RepositorioEntregas;
-import logistica.service.DonacionesAPIService;
+import logistica.domain.Donacion;
+
+import logistica.service.DonacionesService;
+
+
+import java.util.List;
+
 
 public class DonacionesAPIController {
-  private final DonacionesAPIService apiService;
+  private final DonacionesService donacionesService;
 
-  public DonacionesAPIController(DonacionesAPIService service) {
+  public DonacionesAPIController(DonacionesService service) {
 
-    this.apiService = service;
+    this.donacionesService = service;
   }
 
-  public record CrearEntregaRequest(String donacionId, double latitud, double longitud) {}
-  public record ActualizarEstadoRequest(EstadoEntrega estado) {}
 
   public record ErrorResponse(String mensaje) {}
 
-  public void crear(Context ctx) {
-    var body = ctx.bodyAsClass(CrearEntregaRequest.class);
-    var destino = new Coordenadas(body.latitud(), body.longitud());
-    var entrega = new Entrega(body.donacionId(), destino);
-    apiService.agregar(entrega);
-    ctx.status(201).json(entrega);
+  public void obtenerDonaciones(Context ctx) {
+    //se usa TypeReference para ayudar a Jackson a deserealizar la lista
+    List<Donacion> donaciones = ctx.bodyAsClass(new TypeReference<List<Donacion>>() {}.getType());
+    donacionesService.agregarDonaciones(donaciones);
+    ctx.status(201).json(donaciones);
   }
 
-  public void obtener(Context ctx) {
-    var id = ctx.pathParam("id");
-    apiService.buscarPorId(id).ifPresentOrElse(
-        ctx::json,
-        () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada")));
-  }
 
-  public void actualizarEstado(Context ctx) {
-    var id = ctx.pathParam("id");
-    var body = ctx.bodyAsClass(ActualizarEstadoRequest.class);
-    apiService.buscarPorId(id).ifPresentOrElse(
-        entrega -> {
-          entrega.actualizarEstado(body.estado());
-          ctx.json(entrega);
-        },
-        () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada")));
-  }
+
 }

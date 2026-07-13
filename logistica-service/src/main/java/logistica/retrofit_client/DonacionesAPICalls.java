@@ -1,4 +1,4 @@
-package logistica.client;
+package logistica.retrofit_client;
 
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;

@@ -4,19 +4,19 @@ import java.util.List;
 import java.util.UUID;
 
 public class Entrega {
-  static Integer asignador_id = 1;
   final String id;
-  final String donacionId;
-  Coordenadas destino;
+  final List<Donacion> listaDonaciones;
+  String destino;
+  String entidadNombre;
   EstadoEntrega estado;
 
 
-  public Entrega(String donacionId, Coordenadas destino) {
+  public Entrega(List<Donacion> listaDonaciones, String destino, String entidadNombre) {
+    this.listaDonaciones = listaDonaciones;
+    this.id = UUID.randomUUID().toString();
 
-    this.id = asignador_id.toString();
-    asignador_id++;
-    this.donacionId = donacionId;
     this.destino = destino;
+    this.entidadNombre = entidadNombre;
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
@@ -24,27 +24,51 @@ public class Entrega {
     return id;
   }
 
-  public String getDonacionId() {
-    return donacionId;
-  }
-
   public EstadoEntrega getEstado() {
     return estado;
   }
 
-  public Coordenadas getDestino() {
+  public String getDestino() {
     return destino;
   }
 
+  public String getEntidadNombre() {
+    return entidadNombre;
+  }
+
+  public List<Donacion> getListaDonaciones() {
+    return listaDonaciones;
+  }
+
+  public void iniciarTraslado() {
+    if (estado != EstadoEntrega.PENDIENTE) {
+      throw new IllegalStateException("No se puede iniciar traslado desde " + estado);
+    }
+    this.estado = EstadoEntrega.EN_TRASLADO;
+  }
+
   public void marcarEntregada() {
+    if (estado != EstadoEntrega.EN_TRASLADO) {
+      throw new IllegalStateException("No se puede marcar entregada desde " + estado);
+    }
     this.estado = EstadoEntrega.ENTREGADA;
   }
 
   public void marcarNoRecibida() {
+    if (estado != EstadoEntrega.EN_TRASLADO) {
+      throw new IllegalStateException("No se puede marcar no recibida desde " + estado);
+    }
     this.estado = EstadoEntrega.NO_RECIBIDA;
   }
 
-  public void actualizarEstado(EstadoEntrega estado) {
-    this.estado = estado;
+  public void reingresarADeposito() {
+    if (estado != EstadoEntrega.NO_RECIBIDA) {
+      throw new IllegalStateException("No se puede reingresar a depósito desde " + estado);
+    }
+    this.estado = EstadoEntrega.PENDIENTE;
+  }
+
+  public void agregarDonacion(Donacion donacion){
+    this.listaDonaciones.add(donacion);
   }
 }
