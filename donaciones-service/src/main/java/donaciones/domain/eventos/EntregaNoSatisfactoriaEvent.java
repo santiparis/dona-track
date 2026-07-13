@@ -9,18 +9,16 @@ public class EntregaNoSatisfactoriaEvent implements CambioDeEstadoEnDonacion {
     private final Persona donante;
     private final EntidadBeneficiaria entidad;
     private final List<PersonaAdministradora> administradores;
-    private final String motivoFallo;
 
-    public EntregaNoSatisfactoriaEvent(Persona donante, EntidadBeneficiaria entidad, List<PersonaAdministradora> administradores, String motivoFallo) {
+    public EntregaNoSatisfactoriaEvent(Persona donante, EntidadBeneficiaria entidad, List<PersonaAdministradora> administradores) {
         this.donante = donante;
         this.entidad = entidad;
         this.administradores = administradores;
-        this.motivoFallo = motivoFallo;
     }
 
     @Override
     public void notificarAInvolucrados() {
-        String mensaje = "Alerta: Entrega no satisfactoria. Motivo: " + motivoFallo;
+        String mensaje = "Alerta: Entrega no satisfactoria.";
 
         donante.notificar(mensaje);
         entidad.notificar(mensaje);

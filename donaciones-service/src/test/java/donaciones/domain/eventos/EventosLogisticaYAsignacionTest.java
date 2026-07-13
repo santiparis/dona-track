@@ -67,12 +67,12 @@ public class EventosLogisticaYAsignacionTest {
         // Requerimiento: Cuando una entrega falla, notificar a entidad, donante y administradores
         // incluyendo la justificación del incidente.
         CambioDeEstadoEnDonacion cambio = new EntregaNoSatisfactoriaEvent(
-                donanteMock, entidadMock, List.of(adminMock), "Ausencia en el domicilio"
+                donanteMock, entidadMock, List.of(adminMock)
         );
         cambio.notificarAInvolucrados();
 
-        verify(donanteMock, times(1)).notificar(contains("Ausencia en el domicilio"));
-        verify(entidadMock, times(1)).notificar(contains("Ausencia en el domicilio"));
-        verify(adminMock, times(1)).notificar(contains("Ausencia en el domicilio"));
+        verify(donanteMock, times(1)).notificar(contains("Alerta: Entrega no satisfactoria."));
+        verify(entidadMock, times(1)).notificar(contains("Alerta: Entrega no satisfactoria."));
+        verify(adminMock, times(1)).notificar(contains("Alerta: Entrega no satisfactoria."));
     }
 }
