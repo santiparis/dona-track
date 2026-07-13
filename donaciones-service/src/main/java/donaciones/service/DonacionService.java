@@ -45,12 +45,24 @@ public class DonacionService {
   }
 
   public void cambiarEstado(int id, String nuevoEstadoTexto) {
+
+    if (nuevoEstadoTexto == null || nuevoEstadoTexto.isBlank()) {
+      throw new IllegalArgumentException("Debe indicar el nuevo estado");
+    }
+
     Optional<DonacionIndependiente> donacionOpt = repository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
-      EstadoDonacionIndependiente nuevoEstado = EstadoDonacionIndependiente.valueOf(nuevoEstadoTexto.toUpperCase());
+      EstadoDonacionIndependiente nuevoEstado;
+      try {
+        nuevoEstado = EstadoDonacionIndependiente.valueOf(
+            nuevoEstadoTexto.toUpperCase()
+        );
+      } catch (IllegalArgumentException e) {
+          throw new IllegalArgumentException("Estado de donación inválido");
+      }
       donacionOpt.get().setEstado(nuevoEstado);
     } else {
-      throw new IllegalArgumentException("No se encontro la donacion");
+      throw new IllegalArgumentException("No se encontró la donación");
     }
   }
 
@@ -59,7 +71,7 @@ public class DonacionService {
     if (donacionOpt.isPresent()) {
       repository.borrarPorPosicion(id);
     } else {
-      throw new IllegalArgumentException("No se puede eliminar");
+      throw new IllegalArgumentException("No se encontró la donación");
     }
   }
 }
