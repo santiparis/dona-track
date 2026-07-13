@@ -2,6 +2,8 @@ package donaciones.domain;
 
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.notificacion.Notificable;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,7 @@ public class EntidadBeneficiaria implements Notificable {
     private final List<Necesidad> necesidades = new ArrayList<>();
     private final List<Contacto> contactos = new ArrayList<>();
     private Contacto medioPredeterminado;
+    private final List<DonacionIndependiente> donacionesRecibidas = new ArrayList<>();
 
     public EntidadBeneficiaria(
             String razonSocial,
@@ -85,4 +88,21 @@ public class EntidadBeneficiaria implements Notificable {
             this.medioPredeterminado = contacto;
         }
     }
+
+    public boolean satisfaceNecesidad(DonacionIndependiente donacion) {
+        if (donacion.getBien() == null) {
+            return false;
+        }
+        return this.necesidades.stream()
+                .anyMatch(necesidad -> necesidad.seSatisfaceCon(donacion.getBien()));
+    }
+
+    public int getDonacionesUltimoTrimestre() {
+        LocalDate haceTresMeses = LocalDate.now().minusMonths(3);
+        long cantidad = this.donacionesRecibidas.stream()
+                .filter(donacion -> donacion.getFecha().isAfter(haceTresMeses))
+                .count();
+        return (int) cantidad;
+    }
+
 }
