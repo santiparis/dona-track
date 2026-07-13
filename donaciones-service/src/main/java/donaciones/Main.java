@@ -1,8 +1,11 @@
 package donaciones;
 
+import donaciones.controller.AsignacionController;
 import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.repository.DonacionRepository;
+import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.service.AsignacionService;
 import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
 import io.javalin.Javalin;
@@ -17,6 +20,11 @@ public class Main {
     DonanteService donanteService = new DonanteService(donanteRepo);
     DonanteController donanteController = new DonanteController(donanteService);
 
+    // Armamos el módulo de ASIGNACIONES
+    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
+    AsignacionService asignacionService = new AsignacionService(repository, entidadRepo);
+    AsignacionController asignacionController = new AsignacionController(asignacionService);
+
     Javalin app = Javalin.create().start(8081);
 
     app.get("/api/donaciones", controller::listar);
@@ -28,5 +36,8 @@ public class Main {
     app.post("/api/donantes", donanteController::crear);
     app.put("/api/donantes/{documento}", donanteController::actualizar);
     app.delete("/api/donantes/{documento}", donanteController::eliminar);
+
+    app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
+    app.post("/api/donaciones/{id}/asignar", asignacionController::seleccionarEntidad);
   }
 }
