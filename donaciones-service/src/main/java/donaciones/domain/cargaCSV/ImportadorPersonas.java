@@ -10,7 +10,6 @@ import donaciones.domain.donante.Usuario;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import donaciones.domain.notificacion.Notificacion;
 import donaciones.domain.notificacion.NotificacionPorEmail;
 import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import org.apache.commons.csv.CSVRecord;
@@ -38,10 +37,6 @@ public class ImportadorPersonas {
                 personaAActualizar.actualizarseDesde(personaPotencial);
             } else {
                 repositorioPersonas.agregar(personaPotencial);
-                Notificacion notificacion = new Notificacion(personaPotencial.getMedioPredeterminado(),
-                    "¡Hola " + personaPotencial.getNombre()
-                        + "! Te damos la bienvenida a dona-track. Gracias por unirte.");
-                notificacion.enviar();
             }
         }
     }
@@ -82,10 +77,8 @@ public class ImportadorPersonas {
 
     private List<Contacto> crearContactos(String emailStr, String telefonoStr) {
         List<Contacto> contactos = new ArrayList<>();
-        NotificacionPorEmail estrategiaEmail = new NotificacionPorEmail();
-        NotificacionPorWhatsApp estrategiaWhatsapp = new NotificacionPorWhatsApp();
-        contactos.add(new Contacto(estrategiaEmail, emailStr));
-        contactos.add(new Contacto(estrategiaWhatsapp, telefonoStr));
+        contactos.add(new Contacto(new NotificacionPorEmail(), emailStr));
+        contactos.add(new Contacto(new NotificacionPorWhatsApp(), telefonoStr));
         return contactos;
     }
 
