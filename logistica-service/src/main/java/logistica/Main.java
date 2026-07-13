@@ -42,8 +42,14 @@ public class Main {
       //endpoints consumidos por el planificador externo
       config.routes.post("/rutas", ctx -> planificadorController.obtenerRutas(ctx));
 
+      //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
+      config.routes.get("/rutas/{id}", ctx -> rutasController.obtenerRuta(ctx));
+
       //endpoint que usa el chofer para iniciar su ruta
       config.routes.post("/rutas/{id}/iniciar", ctx -> rutasController.iniciarRuta(ctx));
+
+      //lectura de una entrega (para que un objeto consulte el estado)
+      config.routes.get("/entregas/{id}", ctx -> entregasController.obtenerEntrega(ctx));
 
       //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
       config.routes.post("/entregas/{id}/confirmar", ctx -> entregasController.confirmar(ctx));

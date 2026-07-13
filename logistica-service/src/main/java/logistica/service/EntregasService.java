@@ -23,6 +23,10 @@ public class EntregasService {
     return rutasRepository.buscarEntregaPorId(id);
   }
 
+  public Optional<Ruta> buscarRutaPorId(String id) {
+    return rutasRepository.buscarPorId(id);
+  }
+
   public Ruta iniciarRuta(String rutaId) throws IOException {
     Ruta ruta = rutasRepository.buscarPorId(rutaId)
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));

@@ -13,6 +13,14 @@ public class EntregasController {
 
   public record ErrorResponse(String mensaje) {}
 
+  public void obtenerEntrega(Context ctx) {
+    String id = ctx.pathParam("id");
+    entregasService.buscarPorId(id).ifPresentOrElse(
+        ctx::json,
+        () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada: " + id))
+    );
+  }
+
   public void confirmar(Context ctx) {
     String id = ctx.pathParam("id");
     ctx.json(entregasService.confirmarEntrega(id));

@@ -16,6 +16,14 @@ public class RutasController {
 
   public record ErrorResponse(String mensaje) {}
 
+  public void obtenerRuta(Context ctx) {
+    String id = ctx.pathParam("id");
+    entregasService.buscarRutaPorId(id).ifPresentOrElse(
+        ctx::json,
+        () -> ctx.status(404).json(new ErrorResponse("Ruta no encontrada: " + id))
+    );
+  }
+
   public void iniciarRuta(Context ctx) {
     String id = ctx.pathParam("id");
     try {
