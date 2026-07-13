@@ -24,7 +24,7 @@ public class RepositorioPersonasTest {
     private RepositorioPersonas repositorioPersonas;
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
-    List<Contacto> contactos = List.of(mock(Contacto.class));;
+    List<Contacto> contactos = List.of(mock(Contacto.class));
     Usuario usuario = new Usuario("user", "pass");
 
     @BeforeEach
