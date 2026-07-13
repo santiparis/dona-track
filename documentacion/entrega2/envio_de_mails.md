@@ -1,21 +1,13 @@
-# Guía Rápida: Configuracion de Sendgrind
+# Guía Rápida: Configuración de SendGrid
 ---
 
-## 1. Ejecución de Pruebas (`mvn test`)
+## 1. Configuración de Variables de Entorno
 
-Para ejecutar la suite de pruebas desde el directorio del servicio (`donaciones-service`), ejecuta:
-
-```bash
-mvn test
-```
-
-## 2. Configuración de SendGrid (Modo Simulado vs. Real)
-
-El sistema opera por defecto en **Modo Simulado (*Dry-Run*)** si no detecta la API Key o el correo remitente (`SENDGRID_REMITENTE`). En este modo, los correos se imprimen por consola sin usar servicios externos.
+Para poder enviar correos mediante SendGrid (`NotificacionPorEmail`), es **requerido** que estén configuradas las variables de entorno `SENDGRID_API_KEY` y `SENDGRID_REMITENTE`.
 
 ### Cargar las variables en la sesión actual
 
-Para activar el **Modo Real**, el archivo `sendgrid.env` debe exportar ambas variables:
+El archivo `sendgrid.env` debe exportar ambas variables para habilitar el envío de correos:
 ```bash
 export SENDGRID_API_KEY='SG...'
 export SENDGRID_REMITENTE='tu-email@dominio.com'
@@ -28,9 +20,9 @@ Carga tu archivo de variables en la consola:
 source sendgrid.env
 ```
 
-### Borrar / Limpiar las variables (Volver al modo simulado)
+### Borrar / Limpiar las variables
 
-Si deseas remover las variables cargadas en tu consola para volver a correr los tests en modo simulado:
+Si deseas remover las variables cargadas en tu consola:
 
 **En Git Bash / Linux:**
 ```bash
@@ -42,9 +34,17 @@ unset SENDGRID_REMITENTE
 
 ---
 
+## 2. Comportamiento ante Falta de Configuración (`ConfiguracionSendGridException`)
+
+Si las variables `SENDGRID_REMITENTE` o `SENDGRID_API_KEY` no están definidas o se encuentran vacías al invocar el método `enviar()`, la estrategia `NotificacionPorEmail` no opera en un modo simulado por consola, sino que lanza de inmediato la excepción `ConfiguracionSendGridException`:
+
+De este modo se previene el intento silencioso o erróneo de envío de correos sin credenciales válidas.
+
+---
+
 ## 3. Validación de Excepciones con Mockito en Tests
 
-Para verificar de forma declarativa y aislada que el sistema propaga correctamente la excepción `EnvioDeEmailException` ante fallos en el servicio de correos, utilizamos **Mockito**:
+Para verificar de forma declarativa y aislada que el sistema propaga correctamente la excepción `EnvioDeEmailException` ante fallos en la comunicación o respuesta HTTP del servicio de correos, utilizamos **Mockito**:
 
 ```java
 @Test

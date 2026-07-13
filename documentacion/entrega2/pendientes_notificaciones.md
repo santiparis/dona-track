@@ -32,3 +32,11 @@
 
 - [x] **Ausencia de la plataforma (Inactividad por > 20 días):**
   - **Estado:** Completado. Implementado como proceso calendarizable en la carpeta `planificacion`. Se empaqueta en el JAR mediante `mvn package` y se habilita manualmente a través de `crontab`.
+
+---
+
+## 4. Módulo de Gestión de Usuarios y Registro
+
+- [ ] **Registro de nuevo usuario (Email de bienvenida):**
+  - **Cuándo ocurre:** Al registrarse o darse de alta por primera vez un nuevo usuario o persona en la plataforma (e.g., mediante registro directo o importación de datos).
+  - **Acción sugerida:** `persona.notificar("¡Bienvenido a DonaTrack! Gracias por sumarte a nuestra plataforma.");`
