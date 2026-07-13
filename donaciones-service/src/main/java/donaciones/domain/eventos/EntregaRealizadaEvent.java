@@ -3,7 +3,7 @@ package donaciones.domain.eventos;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Persona;
 
-public class EntregaRealizadaEvent {
+public class EntregaRealizadaEvent implements CambioDeEstadoEnDonacion {
     private final Persona donante;
     private final EntidadBeneficiaria entidad;
     private final String fechaHora;
@@ -16,19 +16,12 @@ public class EntregaRealizadaEvent {
         this.camionResponsable = camionResponsable;
     }
 
-    public Persona getDonante() {
-        return donante;
-    }
+    @Override
+    public void notificarAInvolucrados() {
+        String comprobante = String.format("Comprobante de Entrega - Fecha/Hora: %s | Camión: %s",
+                fechaHora, camionResponsable);
 
-    public EntidadBeneficiaria getEntidad() {
-        return entidad;
-    }
-
-    public String getFechaHora() {
-        return fechaHora;
-    }
-
-    public String getCamionResponsable() {
-        return camionResponsable;
+        donante.notificar("Su donación fue entregada con éxito. " + comprobante);
+        entidad.notificar("Donación recibida satisfactoriamente. " + comprobante);
     }
 }

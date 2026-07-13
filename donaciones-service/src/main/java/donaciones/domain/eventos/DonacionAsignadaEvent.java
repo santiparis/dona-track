@@ -3,7 +3,7 @@ package donaciones.domain.eventos;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Persona;
 
-public class DonacionAsignadaEvent {
+public class DonacionAsignadaEvent implements CambioDeEstadoEnDonacion {
     private final Persona donante;
     private final EntidadBeneficiaria entidadBeneficiaria;
 
@@ -12,11 +12,9 @@ public class DonacionAsignadaEvent {
         this.entidadBeneficiaria = entidadBeneficiaria;
     }
 
-    public Persona getDonante() {
-        return donante;
-    }
-
-    public EntidadBeneficiaria getEntidadBeneficiaria() {
-        return entidadBeneficiaria;
+    @Override
+    public void notificarAInvolucrados() {
+        donante.notificar("Su donación ha sido asignada a la entidad: " + entidadBeneficiaria.getRazonSocial());
+        entidadBeneficiaria.notificar("Se le ha asignado satisfactoriamente una nueva donación.");
     }
 }

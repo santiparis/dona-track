@@ -5,7 +5,7 @@ import donaciones.domain.PersonaAdministradora;
 import donaciones.domain.donante.Persona;
 import java.util.List;
 
-public class EntregaNoSatisfactoriaEvent {
+public class EntregaNoSatisfactoriaEvent implements CambioDeEstadoEnDonacion {
     private final Persona donante;
     private final EntidadBeneficiaria entidad;
     private final List<PersonaAdministradora> administradores;
@@ -18,19 +18,12 @@ public class EntregaNoSatisfactoriaEvent {
         this.motivoFallo = motivoFallo;
     }
 
-    public Persona getDonante() {
-        return donante;
-    }
+    @Override
+    public void notificarAInvolucrados() {
+        String mensaje = "Alerta: Entrega no satisfactoria. Motivo: " + motivoFallo;
 
-    public EntidadBeneficiaria getEntidad() {
-        return entidad;
-    }
-
-    public List<PersonaAdministradora> getAdministradores() {
-        return administradores;
-    }
-
-    public String getMotivoFallo() {
-        return motivoFallo;
+        donante.notificar(mensaje);
+        entidad.notificar(mensaje);
+        administradores.forEach(admin -> admin.notificar(mensaje));
     }
 }

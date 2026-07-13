@@ -4,7 +4,7 @@ import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Persona;
 import java.util.List;
 
-public class InicioRutaEvent {
+public class InicioRutaEvent implements CambioDeEstadoEnDonacion {
     private final List<Persona> donantes;
     private final List<EntidadBeneficiaria> entidades;
     private final String urlMapaSeguimiento;
@@ -15,15 +15,11 @@ public class InicioRutaEvent {
         this.urlMapaSeguimiento = urlMapaSeguimiento;
     }
 
-    public List<Persona> getDonantes() {
-        return donantes;
-    }
+    @Override
+    public void notificarAInvolucrados() {
+        String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: " + urlMapaSeguimiento;
 
-    public List<EntidadBeneficiaria> getEntidades() {
-        return entidades;
-    }
-
-    public String getUrlMapaSeguimiento() {
-        return urlMapaSeguimiento;
+        donantes.forEach(donante -> donante.notificar(mensaje));
+        entidades.forEach(entidad -> entidad.notificar(mensaje));
     }
 }
