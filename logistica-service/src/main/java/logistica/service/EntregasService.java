@@ -33,4 +33,19 @@ public class EntregasService {
 
     return ruta;
   }
+
+  public Entrega confirmarEntrega(String entregaId) {
+    // buscar la entrega, entrega.marcarEntregada(), avisar a donacionesApi.entregaCompletada(entrega)
+
+  }
+
+  public Entrega marcarNoRecibida(String entregaId) {
+    // buscar la entrega, entrega.marcarNoRecibida(), avisar a donacionesApi.entregaFallida(entrega)
+
+  }
+
+  public Entrega reingresarADeposito(String entregaId) {
+    // buscar la entrega, entrega.reingresarADeposito()
+
+  }
 }

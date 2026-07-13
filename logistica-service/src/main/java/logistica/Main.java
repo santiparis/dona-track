@@ -7,6 +7,7 @@ import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
 import logistica.repository.SeedCamiones;
 import logistica.controller.DonacionesAPIController;
+import logistica.controller.EntregasController;
 import logistica.controller.PlanificadorController;
 import logistica.controller.RutasController;
 import logistica.service.DonacionesService;
@@ -24,6 +25,7 @@ public class Main {
     var donacionesService = new DonacionesService(repositorioDonaciones);
     var donacionesController = new DonacionesAPIController(donacionesService);
     var rutasController = new RutasController(entregasService);
+    var entregasController = new EntregasController(entregasService);
 
     var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
     var planificadorController = new PlanificadorController(planificadorService);
@@ -42,6 +44,11 @@ public class Main {
 
       //endpoint que usa el chofer para iniciar su ruta
       config.routes.post("/rutas/{id}/iniciar", ctx -> rutasController.iniciarRuta(ctx));
+
+      //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
+      config.routes.post("/entregas/{id}/confirmar", ctx -> entregasController.confirmar(ctx));
+      config.routes.post("/entregas/{id}/no-recibida", ctx -> entregasController.marcarNoRecibida(ctx));
+      config.routes.post("/entregas/{id}/reingresar-deposito", ctx -> entregasController.reingresarADeposito(ctx));
 
     }).start(7070);
   }
