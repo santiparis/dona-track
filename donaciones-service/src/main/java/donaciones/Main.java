@@ -8,20 +8,30 @@ import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.service.AsignacionService;
 import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
+import donaciones.retrofit_client.LogisticaAPICalls;
+import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.repository.DonanteRepository;
 import io.javalin.Javalin;
 
 public class Main {
   public static void main(String[] args) {
+
     DonacionRepository repository = new DonacionRepository();
+
+    DonanteRepository donanteRepo = new DonanteRepository();
+
+    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
+
+    RetrofitConfig retrofitConfig = new RetrofitConfig();
+    LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
+
     DonacionService service = new DonacionService(repository);
     DonacionController controller = new DonacionController(service);
 
-    donaciones.repository.DonanteRepository donanteRepo = new donaciones.repository.DonanteRepository();
     DonanteService donanteService = new DonanteService(donanteRepo);
     DonanteController donanteController = new DonanteController(donanteService);
 
-    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
-    AsignacionService asignacionService = new AsignacionService(repository, entidadRepo);
+    AsignacionService asignacionService = new AsignacionService(repository, entidadRepo, logisticaAPICalls);
     AsignacionController asignacionController = new AsignacionController(asignacionService);
 
     Javalin app = Javalin.create().start(8081);
