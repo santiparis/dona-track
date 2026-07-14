@@ -1,0 +1,78 @@
+package donaciones.controller;
+
+import donaciones.service.DonacionService;
+import donaciones.dto.DonacionRequestDTO;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+
+public class DonacionController {
+
+  private final DonacionService donacionService;
+
+  public DonacionController(DonacionService service) {
+    this.donacionService = service;
+  }
+
+  public void listar(Context ctx) {
+    ctx.json(donacionService.listarDonaciones());
+  }
+
+  public void crear(Context ctx) {
+    DonacionRequestDTO dto = ctx.bodyAsClass(DonacionRequestDTO.class);
+
+    try {
+      donacionService.crearDonacion(dto);
+      ctx.status(HttpStatus.CREATED).result("Donación recibida y guardada");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).result("Error: " + e.getMessage());
+    }
+  }
+
+  public void cambiarEstado(Context ctx) {
+    int id = Integer.parseInt(ctx.pathParam("id"));
+    String nuevoEstadoTexto = ctx.queryParam("nuevo");
+    String nombreCamion =  ctx.queryParam("nombreCamion");
+
+    try {
+      donacionService.cambiarEstado(id, nuevoEstadoTexto, nombreCamion);
+      ctx.result("Estado actualizado");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).result("Error: " + e.getMessage());
+    }
+  }
+
+  public void actualizar(Context ctx) {
+    int id = Integer.parseInt(ctx.pathParam("id"));
+    DonacionRequestDTO dto = ctx.bodyAsClass(DonacionRequestDTO.class);
+
+    try {
+      donacionService.actualizarDonacion(id, dto);
+      ctx.result("Donación actualizada");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    }
+  }
+
+  public void actualizarParcial(Context ctx) {
+    int id = Integer.parseInt(ctx.pathParam("id"));
+    donaciones.dto.DonacionPatchDTO dto = ctx.bodyAsClass(donaciones.dto.DonacionPatchDTO.class);
+
+    try {
+      donacionService.actualizarDonacionParcial(id, dto);
+      ctx.result("Donación actualizada parcialmente");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    }
+  }
+
+  public void eliminar(Context ctx) {
+    int id = Integer.parseInt(ctx.pathParam("id"));
+
+    try {
+      donacionService.eliminarDonacion(id);
+      ctx.result("Donacion eliminada");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    }
+  }
+}

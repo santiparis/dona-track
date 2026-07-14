@@ -1,7 +1,0 @@
-public enum EstadoAsignacion {
-    ASIGNACION_REALIZADA,
-    LISTA_ENTREGA,
-    EN_TRASLADO,
-    ENTREGADA,
-    ENTREGA_FALLIDA
-}

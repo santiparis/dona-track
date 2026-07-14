@@ -1,0 +1,221 @@
+@startuml
+!theme plain
+
+package domain {
+
+  enum EstadoEntrega {
+    PENDIENTE
+    EN_TRASLADO
+    ENTREGADA
+    NO_RECIBIDA
+  }
+
+  enum EstadoRuta {
+    PLANIFICADA
+    EN_CURSO
+    COMPLETADA
+  }
+
+  class Coordenadas {
+    latitud: double
+    longitud: double
+    --
+    getLatitud(): double
+    getLongitud(): double
+  }
+
+  class Donacion {
+    donacionID: String
+    cantidadBienes: int
+    unidad: String
+    destino: Coordenadas
+    --
+    getDonacionID(): String
+    getCantidadBienes(): int
+    getUnidad(): String
+    getDestino(): Coordenadas
+  }
+
+  class Camion {
+    patente: String
+    volumen: double
+    altura: double
+    cargaMax: double
+    localizacion: Coordenadas
+    disponibilidad: Boolean
+    --
+    actualizarLocalizacion(Coordenadas): void
+    estaDisponible(): Boolean
+    setDisponibilidad(Boolean): void
+  }
+
+  class Entrega {
+    id: String
+    listaDonaciones: List<Donacion>
+    destino: Coordenadas
+    estado: EstadoEntrega
+    --
+    iniciarTraslado(): void
+    marcarEntregada(): void
+    marcarNoRecibida(): void
+    reingresarADeposito(): void
+    agregarDonacion(Donacion): void
+  }
+
+  class Ruta {
+    id: String
+    camion: Camion
+    entregas: List<Entrega>
+    estado: EstadoRuta
+    --
+    iniciar(): void
+    entregasPendientes(): long
+  }
+
+  Entrega --> "*" Donacion
+  Entrega --> Coordenadas : destino
+  Entrega --> EstadoEntrega
+  Donacion --> Coordenadas : destino
+  Camion --> Coordenadas : localizacion
+  Ruta --> Camion
+  Ruta --> "*" Entrega
+  Ruta --> EstadoRuta
+}
+
+package repository {
+
+  class CamionesRepository {
+    --
+    agregar(Camion): void
+    agregarTodos(List<Camion>): void
+    buscarPorPatente(String): Optional<Camion>
+    obtenerTodos(): List<Camion>
+    obtenerDisponibles(): List<Camion>
+  }
+
+  class DonacionesRepository {
+    --
+    agregar(Donacion): void
+    agregarTodos(List<Donacion>): void
+    obtenerTodas(): List<Donacion>
+    remover(List<Donacion>): void
+  }
+
+  class RutasRepository {
+    --
+    agregar(Ruta): void
+    agregarTodos(List<Ruta>): void
+    buscarPorId(String): Optional<Ruta>
+    buscarEntregaPorId(String): Optional<Entrega>
+    buscarRutaEnCursoPorCamion(String): Optional<Ruta>
+    obtenerTodas(): List<Ruta>
+  }
+
+}
+
+package retrofit_client {
+
+  interface DonacionesAPICalls {
+    rutaIniciada(Ruta): Call<String>
+    entregaCompletada(Entrega): Call<String>
+    entregaFallida(Entrega): Call<String>
+  }
+
+  interface PlanificadorAPICalls {
+    enviarDonacionesAsignadas(PlanificacionRequest): Call<String>
+  }
+
+  class PlanificacionRequest <<record>> {
+    donaciones: List<Donacion>
+    camiones: List<Camion>
+  }
+
+  class PlanificacionCallbackRequest <<record>> {
+    asignaciones: List<AsignacionCamion>
+    donacionesNoAsignadas: List<Donacion>
+  }
+
+  class AsignacionCamion <<record>> {
+    patenteCamion: String
+    paradas: List<ParadaPlanificada>
+  }
+
+  class ParadaPlanificada <<record>> {
+    latitud: double
+    longitud: double
+    donaciones: List<Donacion>
+  }
+
+  class RetrofitConfig {
+    donacionesBaseUrl: String
+    planificadorBaseUrl: String
+    --
+    setDonacionesBaseUrl(String): void
+    setPlanificadorBaseUrl(String): void
+    donacionesAPICalls(): DonacionesAPICalls
+    planificadorAPICalls(): PlanificadorAPICalls
+  }
+
+  PlanificadorAPICalls --> PlanificacionRequest
+  PlanificacionCallbackRequest --> "*" AsignacionCamion
+  AsignacionCamion --> "*" ParadaPlanificada
+  RetrofitConfig ..> DonacionesAPICalls
+  RetrofitConfig ..> PlanificadorAPICalls
+}
+
+package service {
+
+  class DonacionesService {
+    --
+    agregarDonaciones(List<Donacion>): void
+    obtenerPendientes(): List<Donacion>
+  }
+
+  class EntregasService {
+    --
+    buscarPorId(String): Optional<Entrega>
+    iniciarRuta(String): Ruta
+  }
+
+  class PlanificadorService {
+    TAMANIO_MAXIMO_BATCH: int
+    --
+    enviarPlanificacion(): void
+    procesarPlanificacion(PlanificacionCallbackRequest): List<Ruta>
+  }
+
+  DonacionesService --> repository.DonacionesRepository
+
+  EntregasService --> repository.RutasRepository
+  EntregasService --> retrofit_client.DonacionesAPICalls
+
+  PlanificadorService --> repository.CamionesRepository
+  PlanificadorService --> repository.RutasRepository
+  PlanificadorService --> repository.DonacionesRepository
+  PlanificadorService --> retrofit_client.PlanificadorAPICalls
+  PlanificadorService ..> retrofit_client.PlanificacionCallbackRequest
+}
+
+package controller {
+
+  class DonacionesAPIController {
+    --
+    obtenerDonaciones(Context): void
+  }
+
+  class PlanificadorController {
+    --
+    obtenerRutas(Context): void
+  }
+
+  class RutasController {
+    --
+    iniciarRuta(Context): void
+  }
+
+  DonacionesAPIController --> service.DonacionesService
+  PlanificadorController --> service.PlanificadorService
+  RutasController --> service.EntregasService
+}
+
+@enduml

@@ -7,17 +7,17 @@
 
 ## Gestión de Donaciones
 
-* **Principio de Responsabilidad Única (SRP)**: `DonacionEntrante` se encarga únicamente de modelar una donación con sus bienes asociados. La segmentación de bienes en donaciones independientes es un comportamiento separado que ocurre en el constructor. `DonacionIndependiente` gestiona el estado de un bien único y su disponibilidad, mientras que `SistemaDonaciones` orquesta la gestión del stock global.
+* **Principio de Responsabilidad Única (SRP)**: `donaciones.domain.DonacionEntrante` se encarga únicamente de modelar una donación con sus bienes asociados. La segmentación de bienes en donaciones independientes es un comportamiento separado que ocurre en el constructor. `donaciones.domain.DonacionIndependiente` gestiona el estado de un bien único y su disponibilidad, mientras que `SistemaDonaciones` orquesta la gestión del stock global.
 
-* **Patrón Strategy**: El método `segmentarEnIndependientes()` en `DonacionEntrante` agrupa bienes según sus características (comparteSegmentoCon), permitiendo diferentes formas de segmentación sin modificar el dominio.
+* **Patrón Strategy**: El método `segmentarEnIndependientes()` en `donaciones.domain.DonacionEntrante` agrupa bienes según sus características (comparteSegmentoCon), permitiendo diferentes formas de segmentación sin modificar el dominio.
 
-* **Patrón State**: `EstadoDonacionIndependiente` define los estados posibles (EN_DEPOSITO, ENTREGADA, VENCIDA) y `DonacionIndependiente` gestiona transiciones y mantenimiento de historial con `RegistroCambioEstado`.
+* **Patrón State**: `donaciones.domain.EstadoDonacionIndependiente` define los estados posibles (EN_DEPOSITO, ENTREGADA, VENCIDA) y `donaciones.domain.DonacionIndependiente` gestiona transiciones y mantenimiento de historial con `donaciones.domain.RegistroCambioEstado`.
 
-* **Arquitectura en Capas**: La capa de dominio (`DonacionEntrante`, `DonacionIndependiente`) separa el modelado de datos del comportamiento orquestado en el `SistemaDonaciones`.
+* **Arquitectura en Capas**: La capa de dominio (`donaciones.domain.DonacionEntrante`, `donaciones.domain.DonacionIndependiente`) separa el modelado de datos del comportamiento orquestado en el `SistemaDonaciones`.
 
 ## Gestión de Personas
 
-* **Principio de Responsabilidad Única (SRP)**: Cada clase tiene una responsabilidad clara: `Persona` define el comportamiento base común (identificación, contactos), `PersonaHumana` añade atributos específicos de humanos (género, edad, dirección), y `PersonaJuridica` gestiona solo información de entidades donantes (razón social, rubro, representantes habilitados). Las entidades beneficiarias están separadas en `EntidadBeneficiaria` para mantener la separación de responsabilidades.
+* **Principio de Responsabilidad Única (SRP)**: Cada clase tiene una responsabilidad clara: `Persona` define el comportamiento base común (identificación, contactos), `PersonaHumana` añade atributos específicos de humanos (género, edad, dirección), y `PersonaJuridica` gestiona solo información de entidades donantes (razón social, rubro, representantes habilitados). Las entidades beneficiarias están separadas en `donaciones.domain.EntidadBeneficiaria` para mantener la separación de responsabilidades.
 
 * **Principio de Sustitución de Liskov (LSP)**: Las subclases `PersonaHumana` y `PersonaJuridica` respetan el contrato establecido por `Persona`, permitiendo que sean usadas intercambiablemente en contextos de donantes.
 
@@ -27,19 +27,19 @@
 
 # Gestión de Entidades Beneficiarias
 
-* **Principio de Responsabilidad Única (SRP)**: `EntidadBeneficiaria` gestiona exclusivamente la información y necesidades de las entidades que reciben donaciones (razón social, dirección, teléfono, correos). Está completamente separada de `PersonaJuridica` que representa donantes. Esto permite que una entidad beneficiaria sea distinta de un donante aunque compartan cierta información.
+* **Principio de Responsabilidad Única (SRP)**: `donaciones.domain.EntidadBeneficiaria` gestiona exclusivamente la información y necesidades de las entidades que reciben donaciones (razón social, dirección, teléfono, correos). Está completamente separada de `PersonaJuridica` que representa donantes. Esto permite que una entidad beneficiaria sea distinta de un donante aunque compartan cierta información.
 
-* **Separación de Conceptos**: Aunque `EntidadBeneficiaria` y `PersonaJuridica` pueden parecer similares superficialmente, tienen roles fundamentalmente diferentes: una es quien recibe y gestiona necesidades, la otra es quien aporta bienes. Esta distinción clarifica la semántica del dominio.
+* **Separación de Conceptos**: Aunque `donaciones.domain.EntidadBeneficiaria` y `PersonaJuridica` pueden parecer similares superficialmente, tienen roles fundamentalmente diferentes: una es quien recibe y gestiona necesidades, la otra es quien aporta bienes. Esta distinción clarifica la semántica del dominio.
 
-* **Facilita Cambios Independientes**: Al separar estas responsabilidades, cada clase puede evolucionar independientemente. Las necesidades y el registro de beneficiarios quedan encapsulados en `EntidadBeneficiaria` sin afectar la lógica de donantes.
+* **Facilita Cambios Independientes**: Al separar estas responsabilidades, cada clase puede evolucionar independientemente. Las necesidades y el registro de beneficiarios quedan encapsulados en `donaciones.domain.EntidadBeneficiaria` sin afectar la lógica de donantes.
 
-* **Arquitectura de Roles**: El sistema implementa una arquitectura donde cada entidad juega un rol específico: Persona (base), PersonaJuridica (donante), EntidadBeneficiaria (receptor).
+* **Arquitectura de Roles**: El sistema implementa una arquitectura donde cada entidad juega un rol específico: Persona (base), PersonaJuridica (donante), donaciones.domain.EntidadBeneficiaria (receptor).
 
 ## Gestión de Necesidades
 
-* **Principio Abierto/Cerrado (OCP)**: `Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtra` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
+* **Principio Abierto/Cerrado (OCP)**: `donaciones.domain.Necesidad` es una clase abstracta que establece la estructura base. `NecesidadRecurrente` (necesidades periódicas) y `NecesidadExtraordinaria` (necesidades puntuales) extienden este comportamiento sin modificar la clase base, permitiendo agregar nuevos tipos de necesidades fácilmente.
 
-* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtra` se resuelve sin generar nuevas instancias. Las necesidades pertenecen siempre a una `EntidadBeneficiaria`.
+* **Principio de Responsabilidad Única (SRP)**: Cada tipo de necesidad gestiona su propia lógica de resolución. `NecesidadRecurrente` genera el siguiente período automáticamente, mientras que `NecesidadExtraordinaria` se resuelve sin generar nuevas instancias. Las necesidades pertenecen siempre a una `donaciones.domain.EntidadBeneficiaria`.
 
 * **Patrón Template Method**: La clase abstracta define `resolver()` como método abstracto que cada subclase implementa según su lógica específica. Ambas también cuentan con `actualizar()` que puede ser sobrescrito.
 
@@ -47,7 +47,7 @@
 
 ## Gestión de Asignaciones
 
-* **Principio de Responsabilidad Única (SRP)**: `Asignacion` gestiona la asignación de bienes a una necesidad específica. `RegistroCambioEstado` se encarga únicamente de registrar el historial de cambios. `AsignacionItem` actúa como un contenedor de datos inmutable (record) para las asociaciones.
+* **Principio de Responsabilidad Única (SRP)**: `Asignacion` gestiona la asignación de bienes a una necesidad específica. `donaciones.domain.RegistroCambioEstado` se encarga únicamente de registrar el historial de cambios. `AsignacionItem` actúa como un contenedor de datos inmutable (record) para las asociaciones.
 
 * **Patrón State**: `EstadoAsignacion` define los estados posibles (ASIGNACION_REALIZADA, LISTA_ENTREGA, EN_TRASLADO, ENTREGADA, ENTREGA_FALLIDA) y `Asignacion.setEstado()` gestiona las transiciones y validaciones (ej: ENTREGA_FALLIDA requiere justificación).
 

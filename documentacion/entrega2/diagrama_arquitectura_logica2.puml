@@ -1,0 +1,35 @@
+@startuml
+
+left to right direction
+
+[Archivo CSV] as CSV
+
+node " Dominio DonaTrack" as nodo {
+
+node "Donaciones" {
+        [Microservicio Donaciones] as MD
+    }
+
+    node "Logística"{
+        [Microservicio Logística] as ML
+}
+[Notificaciones] as Notif
+}
+CSV --> MD
+MD <--> ML : REST
+Notif --> MD
+
+cloud "Componente Externo" {
+    [Planificación de Rutas] as Planificador
+}
+
+MD --> Planificador : REST
+Planificador <-up-> ML: REST
+
+node "GPS" {
+[Datos camion y rutas] as Datos
+}
+
+Datos -up-> ML : REST
+
+@enduml
