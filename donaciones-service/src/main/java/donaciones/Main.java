@@ -33,11 +33,10 @@ public class Main {
     DonanteController donanteController = new DonanteController(donanteService);
 
     AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls);
-    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo);
     AsignacionController asignacionController = new AsignacionController(asignacionService);
+
 
     Javalin app = Javalin.create().start(8081);
 
