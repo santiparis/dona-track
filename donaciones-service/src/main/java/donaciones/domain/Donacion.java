@@ -11,8 +11,8 @@ public class Donacion {
     private Persona donante;
     private EntidadBeneficiaria entidadBeneficiaria;
     private Bien bien;
-    private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
-    private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
+    private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
+    private final List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
 
     public Donacion(
@@ -40,18 +40,18 @@ public class Donacion {
         return this.bien;
     }
 
-    public EstadoDonacionIndependiente getEstado() {
+    public EstadoDonacion getEstado() {
         return this.estado;
     }
 
-    public void setEstado(EstadoDonacionIndependiente estado) {
+    public void setEstado(EstadoDonacion estado) {
         if (this.estado != estado) {
             this.historialEstados.add(new RegistroCambioEstado<>(this.estado, estado, new java.util.Date(), null));
         }
         this.estado = estado;
     }
 
-    public List<RegistroCambioEstado<EstadoDonacionIndependiente>> getHistorialEstados() {
+    public List<RegistroCambioEstado<EstadoDonacion>> getHistorialEstados() {
         return historialEstados;
     }
 

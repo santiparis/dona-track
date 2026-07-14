@@ -120,11 +120,11 @@ public class DonacionService {
 
     Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
-      EstadoDonacionIndependiente nuevoEstado;
+      EstadoDonacion nuevoEstado;
       Donacion donacion = donacionOpt.get();
 
       try {
-        nuevoEstado = EstadoDonacionIndependiente.valueOf(
+        nuevoEstado = EstadoDonacion.valueOf(
             nuevoEstadoTexto.toUpperCase()
         );
       } catch (IllegalArgumentException e) {
@@ -132,14 +132,14 @@ public class DonacionService {
       }
       donacion.setEstado(nuevoEstado);
 
-      if (nuevoEstado == EstadoDonacionIndependiente.ENTREGA_FALLIDA) {
+      if (nuevoEstado == EstadoDonacion.ENTREGA_FALLIDA) {
         publicador.publicar(
             new EntregaNoSatisfactoriaEvent(donacion));
-      } else if (nuevoEstado == EstadoDonacionIndependiente.ENTREGADA) {
+      } else if (nuevoEstado == EstadoDonacion.ENTREGADA) {
         String fechaYHora = LocalDate.now().toString();
         publicador.publicar(
             new EntregaRealizadaEvent(donacion, fechaYHora, nombreCamion));
-      } else if (nuevoEstado == EstadoDonacionIndependiente.EN_TRASLADO) {
+      } else if (nuevoEstado == EstadoDonacion.EN_TRASLADO) {
         publicador.publicar(new InicioRutaEvent(donacion, null));
       }
 

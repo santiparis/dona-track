@@ -1,7 +1,7 @@
 package donaciones.service;
 
 import donaciones.domain.Donacion;
-import donaciones.domain.EstadoDonacionIndependiente;
+import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.eventos.DonacionAsignadaEvent;
 import donaciones.domain.eventos.PublicadorDeEventos;
@@ -10,7 +10,7 @@ import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
-import donaciones.retrofit_client.RetrofitConfig;
+
 import java.util.List;
 import java.util.Optional;
 import donaciones.domain.algoritmos.EstrategiaAsignacion;
@@ -69,7 +69,7 @@ public class AsignacionService {
 
     if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
       Donacion donacion = donacionOpt.get();
-      donacion.setEstado(EstadoDonacionIndependiente.ASIGNADA);
+      donacion.setEstado(EstadoDonacion.ASIGNADA);
       EntidadBeneficiaria entidad = entidadOpt.get();
       donacion.setEntidadBeneficiaria(entidad);
 

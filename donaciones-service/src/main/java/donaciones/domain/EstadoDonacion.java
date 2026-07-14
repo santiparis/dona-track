@@ -1,6 +1,6 @@
 package donaciones.domain;
 
-public enum EstadoDonacionIndependiente {
+public enum EstadoDonacion {
     EN_DEPOSITO,
     ASIGNADA,
     LISTA_PARA_ENTREGAR,
