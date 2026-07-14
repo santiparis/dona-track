@@ -3,6 +3,8 @@ package logistica.controller;
 import io.javalin.http.Context;
 import logistica.service.EntregasService;
 
+import java.io.IOException;
+
 public class EntregasController {
 
   private final EntregasService entregasService;
@@ -21,12 +23,12 @@ public class EntregasController {
     );
   }
 
-  public void confirmar(Context ctx) {
+  public void confirmar(Context ctx) throws IOException {
     String id = ctx.pathParam("id");
     ctx.json(entregasService.confirmarEntrega(id));
   }
 
-  public void marcarNoRecibida(Context ctx) {
+  public void marcarNoRecibida(Context ctx) throws IOException {
     String id = ctx.pathParam("id");
     ctx.json(entregasService.marcarNoRecibida(id));
   }

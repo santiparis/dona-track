@@ -38,8 +38,14 @@ public class Main {
 
       // endpoints consumidos por el microservicio donaciones
       config.routes.post("/donaciones", ctx -> donacionesController.obtenerDonaciones(ctx));
+      //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
+      config.routes.post("/entregas/{id}/confirmar", ctx -> entregasController.confirmar(ctx));
+      config.routes.post("/entregas/{id}/no-recibida", ctx -> entregasController.marcarNoRecibida(ctx));
 
-      //endpoints consumidos por el planificador externo
+      //dispara la planificacion (lo llama el cron via HTTP, o a demanda)
+      config.routes.post("/planificar", ctx -> planificadorController.planificar(ctx));
+
+      //callback: el planificador externo devuelve las rutas armadas
       config.routes.post("/rutas", ctx -> planificadorController.obtenerRutas(ctx));
 
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
@@ -51,9 +57,8 @@ public class Main {
       //lectura de una entrega (para que un objeto consulte el estado)
       config.routes.get("/entregas/{id}", ctx -> entregasController.obtenerEntrega(ctx));
 
-      //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
-      config.routes.post("/entregas/{id}/confirmar", ctx -> entregasController.confirmar(ctx));
-      config.routes.post("/entregas/{id}/no-recibida", ctx -> entregasController.marcarNoRecibida(ctx));
+
+
       config.routes.post("/entregas/{id}/reingresar-deposito", ctx -> entregasController.reingresarADeposito(ctx));
 
     }).start(7070);

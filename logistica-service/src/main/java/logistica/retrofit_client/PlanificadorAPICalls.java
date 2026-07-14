@@ -10,8 +10,9 @@ import java.util.List;
 public interface PlanificadorAPICalls {
 
   public record PlanificacionRequest(List<Donacion> donaciones, List<Camion> camiones) {};
-  // aca arranca la comunicacion con el planififcador
+  // aca arranca la comunicacion con el planificador.
+  // Void: la integracion es asincronica, solo importa el "OK" (status); las rutas llegan por callback
   @POST("/planificador/donaciones")
-  Call<String> enviarDonacionesAsignadas(@Body PlanificacionRequest request);
+  Call<Void> enviarDonacionesAsignadas(@Body PlanificacionRequest request);
 
 }

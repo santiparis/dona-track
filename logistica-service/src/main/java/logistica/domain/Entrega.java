@@ -1,5 +1,7 @@
 package logistica.domain;
 
+import logistica.retrofit_client.DonacionesAPICalls;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -68,7 +70,4 @@ public class Entrega {
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
-  public void agregarDonacion(Donacion donacion){
-    this.listaDonaciones.add(donacion);
-  }
 }
