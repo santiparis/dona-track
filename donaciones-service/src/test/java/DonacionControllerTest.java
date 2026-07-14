@@ -38,8 +38,9 @@ public class DonacionControllerTest {
     void cambiarEstadoDevuelveBadRequestCuandoElServicioLanzaIllegalArgumentException() {
         when(ctx.pathParam("id")).thenReturn("1");
         when(ctx.queryParam("nuevo")).thenReturn(" ");
+        when(ctx.queryParam("nombreCamion")).thenReturn(" ");
         doThrow(new IllegalArgumentException("Debe indicar el nuevo estado"))
-                .when(donacionService).cambiarEstado(1, " ");
+                .when(donacionService).cambiarEstado(1, " ", " ");
 
         controller.cambiarEstado(ctx);
 

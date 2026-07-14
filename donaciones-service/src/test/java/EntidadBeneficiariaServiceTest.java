@@ -1,9 +1,8 @@
-package donaciones.service;
-
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.dto.EntidadBeneficiariaDTO;
 import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.service.EntidadBeneficiariaService;
 import donaciones.service.excepcion.EntidadBeneficiariaNoEncontradaException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ public class EntidadBeneficiariaServiceTest {
 
     @Test
     void putEntidadBeneficiariaParcialModificaSoloLosCamposRecibidos() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Vieja", "Dir vieja", "111", List.of("a@b.com"));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Vieja", "Dir vieja", "111", List.of("a@b.com"));
         when(repository.buscarPorPosicion(0)).thenReturn(Optional.of(entidad));
 
         service.patchEntidadBeneficiaria(0, new EntidadBeneficiariaPatchDTO("Nueva", null, null, null));
@@ -41,7 +40,7 @@ public class EntidadBeneficiariaServiceTest {
 
     @Test
     void putEntidadBeneficiariaSobrescribeLosDatosCompletos() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Vieja", "Dir vieja", "111", List.of("a@b.com"));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Vieja", "Dir vieja", "111", List.of("a@b.com"));
         when(repository.buscarPorPosicion(2)).thenReturn(Optional.of(entidad));
 
         service.putEntidadBeneficiaria(2, new EntidadBeneficiariaDTO("Nueva", "Dir nueva", "222", List.of("b@c.com")));

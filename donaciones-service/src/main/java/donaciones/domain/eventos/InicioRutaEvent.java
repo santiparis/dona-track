@@ -1,25 +1,21 @@
 package donaciones.domain.eventos;
 
-import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.donante.Persona;
-import java.util.List;
+import donaciones.domain.Donacion;
 
 public class InicioRutaEvent implements CambioDeEstadoEnDonacion {
-    private final List<Persona> donantes;
-    private final List<EntidadBeneficiaria> entidades;
+    private final Donacion donacion;
     private final String urlMapaSeguimiento;
 
-    public InicioRutaEvent(List<Persona> donantes, List<EntidadBeneficiaria> entidades, String urlMapaSeguimiento) {
-        this.donantes = donantes;
-        this.entidades = entidades;
+    public InicioRutaEvent(Donacion donacion, String urlMapaSeguimiento) {
+        this.donacion = donacion;
         this.urlMapaSeguimiento = urlMapaSeguimiento;
     }
 
-    @Override
-    public void notificarAInvolucrados() {
-        String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: " + urlMapaSeguimiento;
+    public Donacion getDonacion() {
+        return donacion;
+    }
 
-        donantes.forEach(donante -> donante.notificar(mensaje));
-        entidades.forEach(entidad -> entidad.notificar(mensaje));
+    public String getUrlMapaSeguimiento() {
+        return urlMapaSeguimiento;
     }
 }

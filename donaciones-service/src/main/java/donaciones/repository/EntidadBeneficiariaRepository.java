@@ -18,7 +18,7 @@ public class EntidadBeneficiariaRepository {
   public EntidadBeneficiariaRepository() {
     if (baseDeDatosSimulada.isEmpty()) {
 
-      EntidadBeneficiaria e1 = new EntidadBeneficiaria("razon1", "direc1", "tel1", new ArrayList<>());
+      EntidadBeneficiaria e1 = new EntidadBeneficiaria(1L, "razon1", "direc1", "tel1", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE1 = new HashMap<>();
       cantidadesE1.put(Subcategoria.BANCOS, 50);
 
@@ -30,7 +30,7 @@ public class EntidadBeneficiariaRepository {
       e1.getNecesidades().add(necesidadE1);
       baseDeDatosSimulada.add(e1);
 
-      EntidadBeneficiaria e2 = new EntidadBeneficiaria("razon2", "direc2", "tel2", new ArrayList<>());
+      EntidadBeneficiaria e2 = new EntidadBeneficiaria(2L, "razon2", "direc2", "tel2", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE2 = new HashMap<>();
       cantidadesE2.put(Subcategoria.REMERAS, 15);
       cantidadesE2.put(Subcategoria.ARROZ, 40);
@@ -65,5 +65,11 @@ public class EntidadBeneficiariaRepository {
 
   public void eliminarPorPosicion(int id) {
     baseDeDatosSimulada.remove(id);
+  }
+
+  public Optional<EntidadBeneficiaria> obtenerPorId(Long idEntidad) {
+    return baseDeDatosSimulada.stream()
+            .filter(entidad -> entidad.getId().equals(idEntidad))
+            .findFirst();
   }
 }

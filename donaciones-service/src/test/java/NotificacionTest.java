@@ -52,7 +52,7 @@ public class NotificacionTest {
 
     @Test
     public void testNotificacionAEntidadBeneficiariaMedianteServicio() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
         Contacto contactoWa = new Contacto(estrategiaMock, "+5491100001111");
         entidad.registrarContacto(contactoWa, true);
 

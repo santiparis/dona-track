@@ -1,20 +1,15 @@
 package donaciones.domain.eventos;
 
-import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.donante.Persona;
+import donaciones.domain.Donacion;
 
 public class DonacionAsignadaEvent implements CambioDeEstadoEnDonacion {
-    private final Persona donante;
-    private final EntidadBeneficiaria entidadBeneficiaria;
+    private final Donacion donacion;
 
-    public DonacionAsignadaEvent(Persona donante, EntidadBeneficiaria entidadBeneficiaria) {
-        this.donante = donante;
-        this.entidadBeneficiaria = entidadBeneficiaria;
+    public DonacionAsignadaEvent(Donacion donacion) {
+        this.donacion = donacion;
     }
 
-    @Override
-    public void notificarAInvolucrados() {
-        donante.notificar("Su donación ha sido asignada a la entidad: " + entidadBeneficiaria.getRazonSocial());
-        entidadBeneficiaria.notificar("Se le ha asignado satisfactoriamente una nueva donación.");
+    public Donacion getDonacion() {
+        return donacion;
     }
 }

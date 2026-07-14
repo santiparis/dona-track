@@ -3,6 +3,8 @@ package donaciones.service;
 import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.eventos.DonacionAsignadaEvent;
+import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
@@ -19,16 +21,19 @@ public class AsignacionService {
 
   private final DonacionRepository donacionRepository;
   private final EntidadBeneficiariaRepository entidadRepository;
+  private final PublicadorDeEventos publicador;
   private final LogisticaAPICalls logisticaAPICalls;
-
+  
   public AsignacionService(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
-      LogisticaAPICalls logisticaAPICalls
+      LogisticaAPICalls logisticaAPICalls,
+      PublicadorDeEventos publicador
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.logisticaAPICalls = logisticaAPICalls;
+    this.publicador = publicador;
   }
 
   // ejecucion y ranking
@@ -58,11 +63,18 @@ public class AsignacionService {
   }
 
   // seleccion final
-  public void confirmarAsignacion(int donacionId, String nombreEntidad) {
+  public void confirmarAsignacion(int donacionId, Long idEntidad, String nombreEntidad) {
     Optional<Donacion> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
-    if (donacionOpt.isPresent()) {
+    Optional<EntidadBeneficiaria> entidadOpt = entidadRepository.obtenerPorId(idEntidad);
+
+    if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
       Donacion donacion = donacionOpt.get();
-      donacion.setEstado(EstadoDonacionIndependiente.ENTREGADA);
+      donacion.setEstado(EstadoDonacionIndependiente.ASIGNADA);
+      EntidadBeneficiaria entidad = entidadOpt.get();
+      donacion.setEntidadBeneficiaria(entidad);
+
+      // Enviar notificacion
+      publicador.publicar(new DonacionAsignadaEvent(donacion));
 
       try {
         DonacionLogisticaDTO dto = new DonacionLogisticaDTO(

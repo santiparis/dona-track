@@ -2,6 +2,10 @@ package donaciones.service;
 
 import donaciones.domain.*;
 import donaciones.domain.donante.Persona;
+import donaciones.domain.eventos.EntregaNoSatisfactoriaEvent;
+import donaciones.domain.eventos.EntregaRealizadaEvent;
+import donaciones.domain.eventos.InicioRutaEvent;
+import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionPatchDTO;
@@ -15,14 +19,17 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public class DonacionService {
   private final DonacionRepository donacionesRepository;
   private final RepositorioPersonas personasRepository;
+  private final PublicadorDeEventos publicador;
 
-  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository) {
+  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository, PublicadorDeEventos publicador) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
+    this.publicador = publicador;
   }
 
   public void crearDonacion(DonacionRequestDTO dto) {
@@ -32,7 +39,7 @@ public class DonacionService {
       Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
 
       if (persona.isPresent()) {
-        this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
+        this.donacionesRepository.guardar(new Donacion(persona.get(), bien, new Random().nextLong()));
       } else {
         throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
       }
@@ -105,7 +112,7 @@ public class DonacionService {
     return donacionesRepository.obtenerTodas();
   }
 
-  public void cambiarEstado(int id, String nuevoEstadoTexto) {
+  public void cambiarEstado(int id, String nuevoEstadoTexto, String nombreCamion) {
 
     if (nuevoEstadoTexto == null || nuevoEstadoTexto.isBlank()) {
       throw new IllegalArgumentException("Debe indicar el nuevo estado");
@@ -114,6 +121,8 @@ public class DonacionService {
     Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
       EstadoDonacionIndependiente nuevoEstado;
+      Donacion donacion = donacionOpt.get();
+
       try {
         nuevoEstado = EstadoDonacionIndependiente.valueOf(
             nuevoEstadoTexto.toUpperCase()
@@ -121,7 +130,19 @@ public class DonacionService {
       } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException("Estado de donación inválido");
       }
-      donacionOpt.get().setEstado(nuevoEstado);
+      donacion.setEstado(nuevoEstado);
+
+      if (nuevoEstado == EstadoDonacionIndependiente.ENTREGA_FALLIDA) {
+        publicador.publicar(
+            new EntregaNoSatisfactoriaEvent(donacion));
+      } else if (nuevoEstado == EstadoDonacionIndependiente.ENTREGADA) {
+        String fechaYHora = LocalDate.now().toString();
+        publicador.publicar(
+            new EntregaRealizadaEvent(donacion, fechaYHora, nombreCamion));
+      } else if (nuevoEstado == EstadoDonacionIndependiente.EN_TRASLADO) {
+        publicador.publicar(new InicioRutaEvent(donacion, null));
+      }
+
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }

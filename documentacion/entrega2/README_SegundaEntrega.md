@@ -41,3 +41,4 @@ Ver diagrama de clases: [dc_eventos.puml](./diagrama_eventos_notificaciones.puml
 
 
 * `SugerenciaAsignacion` es un **public record** utilizado para mostrar ambas ejecuciones de los algoritmos y las coincidentes, como lo requiere la consigna.
+

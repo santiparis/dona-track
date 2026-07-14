@@ -1,15 +1,15 @@
 package donaciones.domain;
 
 import donaciones.domain.donante.Persona;
-import donaciones.domain.donante.PersonaHumana;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 public class Donacion {
+    private final Long ID;
     private Persona donante;
+    private EntidadBeneficiaria entidadBeneficiaria;
     private Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
@@ -17,8 +17,10 @@ public class Donacion {
 
     public Donacion(
         Persona donante,
-        Bien bien
+        Bien bien,
+        Long ID
     ) {
+        this.ID = ID;
         this.donante = donante;
         this.bien = bien;
         this.fecha = LocalDate.now();
@@ -55,5 +57,21 @@ public class Donacion {
 
     public LocalDate getFecha() {
         return this.fecha;
+    }
+
+    public Long getID() {
+        return ID;
+    }
+
+    public Persona getDonante() {
+        return this.donante;
+    }
+
+    public EntidadBeneficiaria getEntidadBeneficiaria() {
+        return this.entidadBeneficiaria;
+    }
+
+    public void setEntidadBeneficiaria(EntidadBeneficiaria entidadBeneficiaria) {
+        this.entidadBeneficiaria = entidadBeneficiaria;
     }
 }
