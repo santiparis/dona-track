@@ -34,3 +34,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### claude
+CLAUDE.md
+
+### SendGrid ###
+sendgrid.env
+
