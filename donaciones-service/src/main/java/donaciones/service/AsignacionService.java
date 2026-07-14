@@ -75,8 +75,7 @@ public class AsignacionService {
 
       // Enviar notificacion
       publicador.publicar(new DonacionAsignadaEvent(donacion));
-      
-      //donacion.setEstado(EstadoDonacionIndependiente.ENTREGADA);
+
       try {
         DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
                 String.valueOf(donacionId),
