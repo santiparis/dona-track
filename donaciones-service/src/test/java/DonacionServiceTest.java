@@ -1,6 +1,3 @@
-package donaciones.service;
-
-import donaciones.domain.Bien;
 import donaciones.domain.Categoria;
 import donaciones.domain.Donacion;
 import donaciones.domain.Subcategoria;
@@ -9,12 +6,12 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
+import donaciones.service.DonacionService;
 import donaciones.service.excepcion.CategoriaInvalidaException;
 import donaciones.service.excepcion.DonanteNoEncontradoException;
 import donaciones.service.excepcion.EstadoBienInvalidoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Optional;

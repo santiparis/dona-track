@@ -1,7 +1,5 @@
 package donaciones.dto;
 
-import donaciones.domain.Subcategoria;
-
 public record BienDTO(
         String categoria,
         boolean requiereEstado,

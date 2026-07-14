@@ -14,7 +14,6 @@ import donaciones.service.excepcion.DonanteNoEncontradoException;
 import donaciones.service.excepcion.EstadoBienInvalidoException;
 
 import java.time.LocalDate;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;

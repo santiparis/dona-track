@@ -1,8 +1,6 @@
 package donaciones.domain;
 
 import donaciones.domain.donante.Persona;
-import donaciones.domain.donante.Persona;
-import donaciones.domain.donante.PersonaHumana;
 
 import java.util.ArrayList;
 import java.util.List;
