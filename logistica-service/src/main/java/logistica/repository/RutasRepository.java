@@ -36,6 +36,12 @@ public class RutasRepository {
     return new ArrayList<>(rutas);
   }
 
+  public Optional<Ruta> buscarRutaPorEntregaId(String entregaId) {
+    return rutas.stream()
+        .filter(r -> r.getEntregas().stream().anyMatch(e -> e.getId().equals(entregaId)))
+        .findFirst();
+  }
+
   public Optional<Ruta> buscarRutaEnCursoPorCamion(String patente) {
     return rutas.stream()
         .filter(r -> r.getCamion().getPatente().equals(patente))

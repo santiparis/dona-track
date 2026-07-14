@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "Dona-Track (Logística + Donaciones)",
+    "description": "Colección de demo. ORDEN sugerido para la presentación:\n1) Levantar donaciones.Main (8081), logistica.Main (7070), MockPlanificador (9090) y opcionalmente MockGps.\n2) Correr los requests numerados en orden.\n\nLos ids de ruta/entrega son UUID generados en runtime: el request '05 Crear ruta (callback)' los guarda solos en variables {{rutaId}} y {{entregaId}}.\n\nOJO con la máquina de estados: para 'confirmar' o 'no-recibida' la entrega tiene que estar EN_TRASLADO, así que SIEMPRE correr '07 Iniciar ruta' antes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseLogistica", "value": "http://localhost:7070" },
+    { "key": "baseDonaciones", "value": "http://localhost:8081" },
+    { "key": "rutaId", "value": "" },
+    { "key": "entregaId", "value": "" },
+    { "key": "patente", "value": "AB123CD" }
+  ],
+  "item": [
+    {
+      "name": "LOGÍSTICA (:7070)",
+      "item": [
+        {
+          "name": "01 Health",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/", "host": ["{{baseLogistica}}"], "path": [""] } }
+        },
+        {
+          "name": "02 Listar camiones (flota)",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/camiones", "host": ["{{baseLogistica}}"], "path": ["camiones"] } }
+        },
+        {
+          "name": "03 Feed donaciones a planificar (lo que manda donaciones)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "[\n  { \"donacionID\": \"0\", \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" },\n  { \"donacionID\": \"1\", \"cantidadBienes\": 2, \"unidad\": \"unidades\", \"destino\": \"Calle 9 de Julio 55\", \"entidadNombre\": \"razon2\" }\n]" },
+            "url": { "raw": "{{baseLogistica}}/donaciones", "host": ["{{baseLogistica}}"], "path": ["donaciones"] }
+          }
+        },
+        {
+          "name": "04 Disparar planificación (async -> MockPlanificador)",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/planificar", "host": ["{{baseLogistica}}"], "path": ["planificar"] } },
+          "response": []
+        },
+        {
+          "name": "05 Crear ruta (callback del planificador) [guarda ids]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const rutas = pm.response.json();",
+                  "if (Array.isArray(rutas) && rutas.length > 0) {",
+                  "  pm.collectionVariables.set('rutaId', rutas[0].id);",
+                  "  console.log('rutaId =', rutas[0].id);",
+                  "  if (rutas[0].entregas && rutas[0].entregas.length > 0) {",
+                  "    pm.collectionVariables.set('entregaId', rutas[0].entregas[0].id);",
+                  "    console.log('entregaId =', rutas[0].entregas[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"AB123CD\",\n      \"paradas\": [\n        { \"donaciones\": [ { \"donacionID\": \"0\", \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" } ] }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}" },
+            "url": { "raw": "{{baseLogistica}}/rutas", "host": ["{{baseLogistica}}"], "path": ["rutas"] }
+          }
+        },
+        {
+          "name": "06 Ver ruta",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/rutas/{{rutaId}}", "host": ["{{baseLogistica}}"], "path": ["rutas", "{{rutaId}}"] } }
+        },
+        {
+          "name": "07 Iniciar ruta (chofer) -> entregas EN_TRASLADO + notifica donaciones",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/rutas/{{rutaId}}/iniciar", "host": ["{{baseLogistica}}"], "path": ["rutas", "{{rutaId}}", "iniciar"] } }
+        },
+        {
+          "name": "08 Confirmar entrega (beneficiario) -> ENTREGADA + camión",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/entregas/{{entregaId}}/confirmar", "host": ["{{baseLogistica}}"], "path": ["entregas", "{{entregaId}}", "confirmar"] } }
+        },
+        {
+          "name": "08b (alt) Marcar NO recibida -> NO_RECIBIDA",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/entregas/{{entregaId}}/no-recibida", "host": ["{{baseLogistica}}"], "path": ["entregas", "{{entregaId}}", "no-recibida"] } }
+        },
+        {
+          "name": "08c (alt) Reingresar a depósito -> PENDIENTE",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/entregas/{{entregaId}}/reingresar-deposito", "host": ["{{baseLogistica}}"], "path": ["entregas", "{{entregaId}}", "reingresar-deposito"] } }
+        },
+        {
+          "name": "09 Ver entrega",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/entregas/{{entregaId}}", "host": ["{{baseLogistica}}"], "path": ["entregas", "{{entregaId}}"] } }
+        },
+        {
+          "name": "10 GPS: actualizar ubicación + velocidad",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"latitud\": -34.6037, \"longitud\": -58.3816, \"velocidad\": 47.5 }" },
+            "url": { "raw": "{{baseLogistica}}/camiones/{{patente}}", "host": ["{{baseLogistica}}"], "path": ["camiones", "{{patente}}"] }
+          }
+        },
+        {
+          "name": "11 (CRUD) Alta de camión",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"patente\": \"NUEVO01\", \"volumen\": 20.0, \"altura\": 2.5, \"cargaMax\": 5000 }" },
+            "url": { "raw": "{{baseLogistica}}/camiones", "host": ["{{baseLogistica}}"], "path": ["camiones"] }
+          }
+        },
+        {
+          "name": "12 (CRUD) Baja de camión",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseLogistica}}/camiones/NUEVO01", "host": ["{{baseLogistica}}"], "path": ["camiones", "NUEVO01"] } }
+        }
+      ]
+    },
+    {
+      "name": "DONACIONES (:8081)",
+      "item": [
+        {
+          "name": "Listar donaciones",
+          "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donaciones", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones"] } }
+        },
+        {
+          "name": "Listar entidades beneficiarias (seed)",
+          "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias"] } }
+        },
+        {
+          "name": "Cambiar estado de donación (lo que dispara logística)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseDonaciones}}/api/donaciones/0/estado?nuevo=EN_TRASLADO",
+              "host": ["{{baseDonaciones}}"],
+              "path": ["api", "donaciones", "0", "estado"],
+              "query": [ { "key": "nuevo", "value": "EN_TRASLADO" } ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

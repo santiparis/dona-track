@@ -9,6 +9,7 @@ public class Camion {
   final double altura;
   final double cargaMax;
   Coordenadas localizacion = null;
+  double velocidad = 0;
   Boolean disponibilidad;
 
   // los jsonProperty los usara jackson para crear los objetos de json a dominio
@@ -40,6 +41,14 @@ public class Camion {
 
   public void setLocalizacion(Coordenadas localizacion) {
     this.localizacion = localizacion;
+  }
+
+  public double getVelocidad() {
+    return velocidad;
+  }
+
+  public void setVelocidad(double velocidad) {
+    this.velocidad = velocidad;
   }
 
   public double getCargaMax() {

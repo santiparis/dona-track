@@ -116,7 +116,7 @@ public class CamionesControllerTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaCoordenadaEsInvalida() {
-    var dto = new LocalizacionDTO(120, -58);
+    var dto = new LocalizacionDTO(120, -58, 20);
     when(ctx.pathParam("patente")).thenReturn("AB123CD");
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(dto);
     doThrow(new IllegalArgumentException("Latitud inválida"))

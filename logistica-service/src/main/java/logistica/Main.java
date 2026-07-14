@@ -52,7 +52,10 @@ public class Main {
       // endpoints consumidos por el microservicio donaciones
       config.routes.post("/donaciones", donacionesController::obtenerDonaciones);
 
-      //endpoints consumidos por el planificador externo
+      //dispara la planificacion (lo llama el cron via HTTP, o a demanda)
+      config.routes.post("/planificar", planificadorController::planificar);
+
+      //endpoints consumidos por el planificador externo (callback con las rutas armadas)
       config.routes.post("/rutas", planificadorController::obtenerRutas);
 
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)

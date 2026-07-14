@@ -53,7 +53,13 @@ public class CamionesService {
     Camion camion = this.camionesRepository.buscarPorPatente(patente)
         .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
 
+    if (dto.velocidad() < 0) {
+      throw new IllegalArgumentException("La velocidad no puede ser negativa");
+    }
+
+    // la validación de lat/long la hace el constructor de Coordenadas
     Coordenadas localizacion = new Coordenadas(dto.latitud(), dto.longitud());
     camion.actualizarLocalizacion(localizacion);
+    camion.setVelocidad(dto.velocidad());
   }
 }
