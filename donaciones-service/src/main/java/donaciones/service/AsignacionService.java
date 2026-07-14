@@ -3,11 +3,12 @@ package donaciones.service;
 import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
-
+import donaciones.retrofit_client.RetrofitConfig;
 import java.util.List;
 import java.util.Optional;
 import donaciones.domain.algoritmos.EstrategiaAsignacion;
@@ -62,6 +63,19 @@ public class AsignacionService {
     if (donacionOpt.isPresent()) {
       Donacion donacion = donacionOpt.get();
       donacion.setEstado(EstadoDonacionIndependiente.ENTREGADA);
+
+      try {
+        DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
+                String.valueOf(donacionId),
+                donacion.getBien().getCantidad(),
+                "unidades",
+                "direccion",
+                nombreEntidad
+        );
+        logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
+      } catch (Exception e) {
+        System.out.println("Error al conectar con logistica");
+      }
     } else {
       throw new IllegalArgumentException("No se encontro la donacion");
     }
