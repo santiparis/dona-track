@@ -9,8 +9,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 public class Donacion {
-    private final Persona donante;
-    private final Bien bien;
+    private Persona donante;
+    private Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
@@ -23,6 +23,15 @@ public class Donacion {
         this.bien = bien;
         this.fecha = LocalDate.now();
         this.historialEstados.add(new RegistroCambioEstado<>(null, this.estado, new java.util.Date(), null));
+    }
+
+    public void actualizarDatos(Persona donante, Bien bien) {
+        if (donante != null) {
+            this.donante = donante;
+        }
+        if (bien != null) {
+            this.bien = bien;
+        }
     }
 
     public Bien getBien() {

@@ -33,4 +33,16 @@ public class CamionesRepository {
         .toList();
   }
 
+  public void eliminarCamion(String patente) {
+    this.buscarPorPatente(patente).ifPresent(this.camiones::remove);
+  }
+
+  public void reemplazarCamion(String patente, Camion nuevoCamion) {
+    for (int i = 0; i < camiones.size(); i++) {
+      if (camiones.get(i).getPatente().equals(patente)) {
+        camiones.set(i, nuevoCamion);
+        return;
+      }
+    }
+  }
 }
