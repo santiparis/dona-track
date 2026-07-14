@@ -1,15 +1,17 @@
 package logistica;
 
 import io.javalin.Javalin;
+import logistica.controller.CamionesController;
+import logistica.controller.DonacionesAPIController;
+import logistica.controller.EntregasController;
+import logistica.controller.PlanificadorController;
+import logistica.controller.RutasController;
 import logistica.retrofit_client.RetrofitConfig;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
 import logistica.repository.SeedCamiones;
-import logistica.controller.DonacionesAPIController;
-import logistica.controller.EntregasController;
-import logistica.controller.PlanificadorController;
-import logistica.controller.RutasController;
+import logistica.service.CamionesService;
 import logistica.service.DonacionesService;
 import logistica.service.EntregasService;
 import logistica.service.PlanificadorService;
@@ -26,6 +28,8 @@ public class Main {
     var donacionesController = new DonacionesAPIController(donacionesService);
     var rutasController = new RutasController(entregasService);
     var entregasController = new EntregasController(entregasService);
+    var camionesService = new CamionesService(repositorioCamiones);
+    var camionesController = new CamionesController(camionesService);
 
     var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
     var planificadorController = new PlanificadorController(planificadorService);
@@ -36,30 +40,34 @@ public class Main {
       //health
       config.routes.get("/", ctx -> ctx.result("logistica-service OK"));
 
+      // Gestión de flota de camiones
+      config.routes.get("/camiones", camionesController::getCamiones);
+      config.routes.post("/camiones", camionesController::postCamiones);
+      config.routes.delete("/camiones/{patente}", camionesController::deleteCamion);
+      config.routes.put("/camiones/{patente}", camionesController::putCamion);
+
+      // Actualización de la localización de un camión
+      config.routes.patch("/camiones/{patente}", camionesController::actualizarLocalizacion);
+
       // endpoints consumidos por el microservicio donaciones
-      config.routes.post("/donaciones", ctx -> donacionesController.obtenerDonaciones(ctx));
-      //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
-      config.routes.post("/entregas/{id}/confirmar", ctx -> entregasController.confirmar(ctx));
-      config.routes.post("/entregas/{id}/no-recibida", ctx -> entregasController.marcarNoRecibida(ctx));
+      config.routes.post("/donaciones", donacionesController::obtenerDonaciones);
 
-      //dispara la planificacion (lo llama el cron via HTTP, o a demanda)
-      config.routes.post("/planificar", ctx -> planificadorController.planificar(ctx));
-
-      //callback: el planificador externo devuelve las rutas armadas
-      config.routes.post("/rutas", ctx -> planificadorController.obtenerRutas(ctx));
+      //endpoints consumidos por el planificador externo
+      config.routes.post("/rutas", planificadorController::obtenerRutas);
 
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
-      config.routes.get("/rutas/{id}", ctx -> rutasController.obtenerRuta(ctx));
+      config.routes.get("/rutas/{id}", rutasController::obtenerRuta);
 
       //endpoint que usa el chofer para iniciar su ruta
-      config.routes.post("/rutas/{id}/iniciar", ctx -> rutasController.iniciarRuta(ctx));
+      config.routes.post("/rutas/{id}/iniciar", rutasController::iniciarRuta);
 
       //lectura de una entrega (para que un objeto consulte el estado)
-      config.routes.get("/entregas/{id}", ctx -> entregasController.obtenerEntrega(ctx));
+      config.routes.get("/entregas/{id}", entregasController::obtenerEntrega);
 
-
-
-      config.routes.post("/entregas/{id}/reingresar-deposito", ctx -> entregasController.reingresarADeposito(ctx));
+      //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
+      config.routes.post("/entregas/{id}/confirmar", entregasController::confirmar);
+      config.routes.post("/entregas/{id}/no-recibida", entregasController::marcarNoRecibida);
+      config.routes.post("/entregas/{id}/reingresar-deposito", entregasController::reingresarADeposito);
 
     }).start(7070);
   }
