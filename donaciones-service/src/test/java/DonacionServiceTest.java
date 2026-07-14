@@ -41,7 +41,7 @@ public class DonacionServiceTest {
         DonacionRequestDTO dto = new DonacionRequestDTO(
                 "123",
                 "donación de prueba",
-                List.of(new BienDTO("ALIMENTOS", false, false, "Fideos", 5, "kg", "descripción", null, null, null))
+                List.of(new BienDTO(false, false, "Fideos", 5, "kg", "descripción", null, null, null))
         );
 
         donacionService.crearDonacion(dto);
@@ -56,7 +56,7 @@ public class DonacionServiceTest {
         DonacionRequestDTO dto = new DonacionRequestDTO(
                 "404",
                 "donación inválida",
-                List.of(new BienDTO("ALIMENTOS", false, false, "Fideos", 1, "kg", "desc", null, null, null))
+                List.of(new BienDTO(false, false, "Fideos", 1, "kg", "desc", null, null, null))
         );
 
         assertThrows(DonanteNoEncontradoException.class, () -> donacionService.crearDonacion(dto));
@@ -64,7 +64,7 @@ public class DonacionServiceTest {
 
     @Test
     void parsearCategoriaLanzaExcepcionParaValorInvalido() {
-        assertThrows(CategoriaInvalidaException.class, () -> donacionService.parsearCategoria("NO_EXISTE"));
+        assertThrows(CategoriaInvalidaException.class, () -> donacionService.parsearSubcategoria("NO_EXISTE"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class DonacionServiceTest {
 
     @Test
     void crearSubcategoriaConstruyeUnObjetoConLaCategoriaEsperada() {
-        Subcategoria subcategoria = donacionService.crearSubcategoria("ALIMENTOS", false, false, "Fideos");
+        Subcategoria subcategoria = donacionService.parsearSubcategoria("ALIMENTOS");
 
         assertEquals(Categoria.ALIMENTOS, subcategoria.getCategoria());
         assertEquals("Fideos", subcategoria.nombre());

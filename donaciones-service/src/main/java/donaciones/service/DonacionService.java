@@ -8,6 +8,7 @@ import donaciones.domain.eventos.InicioRutaEvent;
 import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
+import donaciones.dto.DonacionPatchDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.service.excepcion.CategoriaInvalidaException;
@@ -15,6 +16,7 @@ import donaciones.service.excepcion.DonanteNoEncontradoException;
 import donaciones.service.excepcion.EstadoBienInvalidoException;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -47,7 +49,7 @@ public class DonacionService {
   public List<Bien> crearListaBienes(List<BienDTO> bienesDto) {
     return bienesDto.stream()
         .map(bienDto -> {
-          Subcategoria subcat = this.crearSubcategoria(bienDto.categoria(), bienDto.requiereEstado(), bienDto.requiereVencimiento(), bienDto.nombreSubcategoria());
+          Subcategoria subcat = this.parsearSubcategoria(bienDto.nombreSubcategoria());
           EstadoBien estado;
 
           if (bienDto.estado() != null) {
@@ -76,16 +78,25 @@ public class DonacionService {
         .toList();
   }
 
-  public Subcategoria crearSubcategoria(String categoria, boolean requiereEstado, boolean requiereVencimiento, String nombre) {
-    Categoria categoriaEnum = this.parsearCategoria(categoria);
-    return new Subcategoria(categoriaEnum, requiereEstado, requiereVencimiento, nombre);
-  }
+  public Subcategoria parsearSubcategoria(String subcategoria) {
+    String valor = subcategoria == null ? "" : subcategoria.trim().toUpperCase();
 
-  public Categoria parsearCategoria(String categoria) {
+    if (valor.isEmpty()) {
+      throw new CategoriaInvalidaException("Categoría inválida: " + subcategoria);
+    }
+
     try {
-      return Categoria.valueOf(categoria.toUpperCase());
+      return Subcategoria.valueOf(valor);
     } catch (IllegalArgumentException e) {
-      throw new CategoriaInvalidaException("Categoría inválida: " + categoria, e);
+      try {
+        Categoria categoria = Categoria.valueOf(valor);
+        return Arrays.stream(Subcategoria.values())
+            .filter(sub -> sub.getCategoria() == categoria)
+            .findFirst()
+            .orElseThrow(() -> new CategoriaInvalidaException("Categoría inválida: " + subcategoria));
+      } catch (IllegalArgumentException ignored) {
+        throw new CategoriaInvalidaException("Categoría inválida: " + subcategoria, e);
+      }
     }
   }
 
@@ -135,6 +146,59 @@ public class DonacionService {
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }
+  }
+
+  public void actualizarDonacion(int id, DonacionRequestDTO dto) {
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+    if (donacionOpt.isEmpty()) {
+      throw new IllegalArgumentException("No se encontró la donación");
+    }
+
+    Donacion donacionExistente = donacionOpt.get();
+    Bien bienActualizado = null;
+
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      List<Bien> bienes = this.crearListaBienes(dto.bienes());
+      bienActualizado = bienes.get(0);
+    }
+
+    if (dto.documentoDonante() != null) {
+      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+      if (persona.isPresent()) {
+        donacionExistente.actualizarDatos(persona.get(), bienActualizado);
+      } else {
+        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+      }
+    } else {
+      donacionExistente.actualizarDatos(null, bienActualizado);
+    }
+  }
+
+  public void actualizarDonacionParcial(int id, DonacionPatchDTO dto) {
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+    if (donacionOpt.isEmpty()) {
+      throw new IllegalArgumentException("No se encontró la donación");
+    }
+
+    Donacion donacionExistente = donacionOpt.get();
+    Persona personaActualizada = null;
+    Bien bienActualizado = null;
+
+    if (dto.documentoDonante() != null) {
+      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+      if (persona.isPresent()) {
+        personaActualizada = persona.get();
+      } else {
+        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+      }
+    }
+
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      List<Bien> bienes = this.crearListaBienes(dto.bienes());
+      bienActualizado = bienes.get(0);
+    }
+
+    donacionExistente.actualizarDatos(personaActualizada, bienActualizado);
   }
 
   public void eliminarDonacion(int id) {

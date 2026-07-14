@@ -10,7 +10,7 @@ public class Donacion {
     private final Long ID;
     private final Persona donante;
     private EntidadBeneficiaria entidadBeneficiaria;
-    private final Bien bien;
+    private Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
@@ -25,6 +25,15 @@ public class Donacion {
         this.bien = bien;
         this.fecha = LocalDate.now();
         this.historialEstados.add(new RegistroCambioEstado<>(null, this.estado, new java.util.Date(), null));
+    }
+
+    public void actualizarDatos(Persona donante, Bien bien) {
+        if (donante != null) {
+            this.donante = donante;
+        }
+        if (bien != null) {
+            this.bien = bien;
+        }
     }
 
     public Bien getBien() {
