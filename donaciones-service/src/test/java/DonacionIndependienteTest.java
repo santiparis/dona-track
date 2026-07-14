@@ -2,9 +2,11 @@ import donaciones.domain.Bien;
 import donaciones.domain.DonacionIndependiente;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.Subcategoria;
+import donaciones.domain.donante.Persona;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class DonacionIndependienteTest {
 
@@ -14,7 +16,7 @@ public class DonacionIndependienteTest {
     @BeforeEach
     void setUp() {
         bien = new Bien(Subcategoria.FIDEOS, 50, "kg", null, null, null, null);
-        donacion = new DonacionIndependiente(bien);
+        donacion = new DonacionIndependiente(1L, bien, mock(Persona.class));
     }
 
     @Test

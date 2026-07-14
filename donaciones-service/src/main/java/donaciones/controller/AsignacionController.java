@@ -26,9 +26,12 @@ public class AsignacionController {
 
   public void seleccionarEntidad(Context ctx) {
     int id = Integer.parseInt(ctx.pathParam("id"));
+    Long idEntidad = Long.parseLong(ctx.pathParam("idEntidad"));
+
     AsignacionRequestDTO dto = ctx.bodyAsClass(AsignacionRequestDTO.class);
+
     try {
-      asignacionService.confirmarAsignacion(id, dto.nombreEntidadSeleccionada());
+      asignacionService.confirmarAsignacion(id, idEntidad, dto.nombreEntidadSeleccionada());
       ctx.status(HttpStatus.CREATED).result("Asignacion confirmada y estado actualizado");
     } catch (IllegalArgumentException e) {
       ctx.status(HttpStatus.BAD_REQUEST).result(e.getMessage());

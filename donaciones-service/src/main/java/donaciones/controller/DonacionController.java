@@ -28,9 +28,10 @@ public class DonacionController {
   public void cambiarEstado(Context ctx) {
     int id = Integer.parseInt(ctx.pathParam("id"));
     String nuevoEstadoTexto = ctx.queryParam("nuevo");
+    String nombreCamion =  ctx.queryParam("nombreCamion");
 
     try {
-      donacionService.cambiarEstado(id, nuevoEstadoTexto);
+      donacionService.cambiarEstado(id, nuevoEstadoTexto, nombreCamion);
       ctx.result("Estado actualizado");
     } catch (IllegalArgumentException e) {
       ctx.status(HttpStatus.BAD_REQUEST).result("Error: " + e.getMessage());

@@ -4,6 +4,7 @@ import donaciones.domain.donante.Persona;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class DonacionEntrante {
     private final Persona persona;
@@ -45,7 +46,8 @@ public class DonacionEntrante {
 
         this.donaciones_independientes = new ArrayList<>();
         for(Bien bien : bienesSegmentados){
-            DonacionIndependiente donacionIndependiente = new DonacionIndependiente(bien);
+            //TODO: Eliminar la clase DonacionEntrante y manejar todo con DonacionIndependiente, con su propio ID
+            DonacionIndependiente donacionIndependiente = new DonacionIndependiente(new Random().nextLong(), bien, this.persona);
             donaciones_independientes.add(donacionIndependiente);
         }
         return donaciones_independientes;

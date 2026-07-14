@@ -37,6 +37,6 @@ public class Main {
     app.delete("/api/donantes/{documento}", donanteController::eliminar);
 
     app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
-    app.post("/api/donaciones/{id}/asignar", asignacionController::seleccionarEntidad);
+    app.post("/api/donaciones/{id}/asignar/{idEntidad}", asignacionController::seleccionarEntidad);
   }
 }

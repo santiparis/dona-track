@@ -3,6 +3,7 @@ package donaciones.service;
 import donaciones.domain.DonacionIndependiente;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.eventos.DonacionAsignadaEvent;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
@@ -49,11 +50,20 @@ public class AsignacionService {
   }
 
   // seleccion final
-  public void confirmarAsignacion(int donacionId, String nombreEntidad) {
+  public void confirmarAsignacion(int donacionId, Long idEntidad, String nombreEntidad) {
     Optional<DonacionIndependiente> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
-    if (donacionOpt.isPresent()) {
+    Optional<EntidadBeneficiaria> entidadOpt = entidadRepository.obtenerPorId(idEntidad);
+
+    if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
       DonacionIndependiente donacion = donacionOpt.get();
-      donacion.setEstado(EstadoDonacionIndependiente.ENTREGADA);
+      donacion.setEstado(EstadoDonacionIndependiente.ASIGNADA);
+      EntidadBeneficiaria entidad = entidadOpt.get();
+      donacion.setEntidadBeneficiaria(entidad);
+
+      // Enviar notificacion
+      DonacionAsignadaEvent evento = new DonacionAsignadaEvent(donacion.getDonante(), entidad);
+      evento.notificarAInvolucrados();
+
     } else {
       throw new IllegalArgumentException("No se encontro la donacion");
     }

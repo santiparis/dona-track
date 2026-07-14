@@ -40,16 +40,16 @@ public class EntregasService {
 
   public Entrega confirmarEntrega(String entregaId) {
     // buscar la entrega, entrega.marcarEntregada(), avisar a donacionesApi.entregaCompletada(entrega)
-
+    return null;
   }
 
   public Entrega marcarNoRecibida(String entregaId) {
     // buscar la entrega, entrega.marcarNoRecibida(), avisar a donacionesApi.entregaFallida(entrega)
-
+    return null;
   }
 
   public Entrega reingresarADeposito(String entregaId) {
     // buscar la entrega, entrega.reingresarADeposito()
-
+    return null;
   }
 }

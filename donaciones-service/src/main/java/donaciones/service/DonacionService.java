@@ -3,9 +3,13 @@ package donaciones.service;
 import donaciones.domain.*;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.eventos.EntregaNoSatisfactoriaEvent;
+import donaciones.domain.eventos.EntregaRealizadaEvent;
+import donaciones.domain.eventos.InicioRutaEvent;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +48,7 @@ public class DonacionService {
     return repository.obtenerTodas();
   }
 
-  public void cambiarEstado(int id, String nuevoEstadoTexto) {
+  public void cambiarEstado(int id, String nuevoEstadoTexto, String nombreCamion) {
 
     if (nuevoEstadoTexto == null || nuevoEstadoTexto.isBlank()) {
       throw new IllegalArgumentException("Debe indicar el nuevo estado");
@@ -53,6 +57,8 @@ public class DonacionService {
     Optional<DonacionIndependiente> donacionOpt = repository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
       EstadoDonacionIndependiente nuevoEstado;
+      DonacionIndependiente donacion = donacionOpt.get();
+
       try {
         nuevoEstado = EstadoDonacionIndependiente.valueOf(
             nuevoEstadoTexto.toUpperCase()
@@ -60,7 +66,21 @@ public class DonacionService {
       } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException("Estado de donación inválido");
       }
-      donacionOpt.get().setEstado(nuevoEstado);
+      donacion.setEstado(nuevoEstado);
+
+      // TODO Separar en diferentes metodos del service
+      if (nuevoEstado == EstadoDonacionIndependiente.ENTREGA_FALLIDA) {
+        EntregaNoSatisfactoriaEvent evento = new EntregaNoSatisfactoriaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), null);
+        evento.notificarAInvolucrados();
+      } else if (nuevoEstado == EstadoDonacionIndependiente.ENTREGADA) {
+        String fechaYHora = LocalDate.now().toString();
+        EntregaRealizadaEvent evento = new EntregaRealizadaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), fechaYHora, nombreCamion);
+        evento.notificarAInvolucrados();
+      } else if (nuevoEstado == EstadoDonacionIndependiente.EN_TRASLADO) {
+        InicioRutaEvent evento = new InicioRutaEvent(donacion, null);
+        evento.notificarAInvolucrados();
+      }
+
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }

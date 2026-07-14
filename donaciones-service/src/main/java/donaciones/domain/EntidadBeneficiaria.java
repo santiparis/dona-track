@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EntidadBeneficiaria implements Notificable {
+    private final Long id;
     private final String razonSocial;
     private final String direccion;
     private final String telefono;
@@ -18,11 +19,13 @@ public class EntidadBeneficiaria implements Notificable {
     private final List<DonacionIndependiente> donacionesRecibidas = new ArrayList<>();
 
     public EntidadBeneficiaria(
+            Long id,
             String razonSocial,
             String direccion,
             String telefono,
             List<String> correosRepresentantes
     ) {
+        this.id = id;
         this.razonSocial = razonSocial;
         this.direccion = direccion;
         this.telefono = telefono;
@@ -30,6 +33,7 @@ public class EntidadBeneficiaria implements Notificable {
     }
 
     public EntidadBeneficiaria(
+            Long id,
             String razonSocial,
             String direccion,
             String telefono,
@@ -37,7 +41,7 @@ public class EntidadBeneficiaria implements Notificable {
             List<Contacto> contactos,
             Contacto medioPredeterminado
     ) {
-        this(razonSocial, direccion, telefono, correosRepresentantes);
+        this(id, razonSocial, direccion, telefono, correosRepresentantes);
         if (contactos != null) {
             this.contactos.addAll(contactos);
         }
@@ -105,4 +109,7 @@ public class EntidadBeneficiaria implements Notificable {
         return (int) cantidad;
     }
 
+    public Long getId() {
+        return id;
+    }
 }
