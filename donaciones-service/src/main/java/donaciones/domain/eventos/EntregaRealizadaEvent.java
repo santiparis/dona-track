@@ -1,27 +1,20 @@
 package donaciones.domain.eventos;
 
-import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.donante.Persona;
+import donaciones.domain.Donacion;
 
 public class EntregaRealizadaEvent implements CambioDeEstadoEnDonacion {
-    private final Persona donante;
-    private final EntidadBeneficiaria entidad;
+    private final Donacion donacion;
     private final String fechaHora;
     private final String camionResponsable;
 
-    public EntregaRealizadaEvent(Persona donante, EntidadBeneficiaria entidad, String fechaHora, String camionResponsable) {
-        this.donante = donante;
-        this.entidad = entidad;
+    public EntregaRealizadaEvent(Donacion donacion, String fechaHora, String camionResponsable) {
+        this.donacion = donacion;
         this.fechaHora = fechaHora;
         this.camionResponsable = camionResponsable;
     }
 
-    public Persona getDonante() {
-        return donante;
-    }
-
-    public EntidadBeneficiaria getEntidad() {
-        return entidad;
+    public Donacion getDonacion() {
+        return donacion;
     }
 
     public String getFechaHora() {

@@ -15,8 +15,8 @@ public class EntregaNoSatisfactoriaListener implements Listener {
     public void onEvento(CambioDeEstadoEnDonacion evento) {
         EntregaNoSatisfactoriaEvent e = (EntregaNoSatisfactoriaEvent) evento;
         String mensaje = "Alerta: Entrega no satisfactoria.";
-        e.getDonante().notificar(mensaje);
-        e.getEntidad().notificar(mensaje);
+        e.getDonacion().getDonante().notificar(mensaje);
+        e.getDonacion().getEntidadBeneficiaria().notificar(mensaje);
         repoAdmins.obtenerTodos().forEach(admin -> admin.notificar(mensaje));
     }
 }

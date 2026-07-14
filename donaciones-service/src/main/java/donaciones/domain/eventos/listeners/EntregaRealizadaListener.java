@@ -10,7 +10,7 @@ public class EntregaRealizadaListener implements Listener {
         String comprobante = String.format("Comprobante de Entrega - Fecha/Hora: %s | Camión: %s",
                 e.getFechaHora(), e.getCamionResponsable());
 
-        e.getDonante().notificar("Su donación fue entregada con éxito. " + comprobante);
-        e.getEntidad().notificar("Donación recibida satisfactoriamente. " + comprobante);
+        e.getDonacion().getDonante().notificar("Su donación fue entregada con éxito. " + comprobante);
+        e.getDonacion().getEntidadBeneficiaria().notificar("Donación recibida satisfactoriamente. " + comprobante);
     }
 }

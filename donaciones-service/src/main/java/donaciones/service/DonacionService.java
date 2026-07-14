@@ -134,11 +134,11 @@ public class DonacionService {
 
       if (nuevoEstado == EstadoDonacionIndependiente.ENTREGA_FALLIDA) {
         publicador.publicar(
-            new EntregaNoSatisfactoriaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria()));
+            new EntregaNoSatisfactoriaEvent(donacion));
       } else if (nuevoEstado == EstadoDonacionIndependiente.ENTREGADA) {
         String fechaYHora = LocalDate.now().toString();
         publicador.publicar(
-            new EntregaRealizadaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), fechaYHora, nombreCamion));
+            new EntregaRealizadaEvent(donacion, fechaYHora, nombreCamion));
       } else if (nuevoEstado == EstadoDonacionIndependiente.EN_TRASLADO) {
         publicador.publicar(new InicioRutaEvent(donacion, null));
       }

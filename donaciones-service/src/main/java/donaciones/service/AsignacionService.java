@@ -65,7 +65,7 @@ public class AsignacionService {
       donacion.setEntidadBeneficiaria(entidad);
 
       // Enviar notificacion
-      publicador.publicar(new DonacionAsignadaEvent(donacion.getDonante(), entidad));
+      publicador.publicar(new DonacionAsignadaEvent(donacion));
 
     } else {
       throw new IllegalArgumentException("No se encontro la donacion");
