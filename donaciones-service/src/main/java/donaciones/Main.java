@@ -12,7 +12,7 @@ import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
 import donaciones.domain.eventos.listeners.InicioRutaListener;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.repository.RepositorioPersonasAdministradoras;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.AsignacionService;
 import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
@@ -22,7 +22,7 @@ import io.javalin.Javalin;
 public class Main {
   public static void main(String[] args) {
     // Publicador de eventos y listeners
-    RepositorioPersonasAdministradoras adminRepo = new RepositorioPersonasAdministradoras();
+    PersonasAdministradorasRepository adminRepo = new PersonasAdministradorasRepository();
     PublicadorDeEventos publicador = new PublicadorDeEventos();
     publicador.suscribir(DonacionAsignadaEvent.class, new DonacionAsignadaListener());
     publicador.suscribir(InicioRutaEvent.class, new InicioRutaListener());

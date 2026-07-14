@@ -8,7 +8,7 @@ import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
 import donaciones.domain.eventos.listeners.EntregaNoSatisfactoriaListener;
 import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
 import donaciones.domain.eventos.listeners.InicioRutaListener;
-import donaciones.repository.RepositorioPersonasAdministradoras;
+import donaciones.repository.PersonasAdministradorasRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -72,7 +72,7 @@ public class EventosLogisticaYAsignacionTest {
     public void testRequerimientoEntregaNoSatisfactoria_NotificaADonanteEntidadYAdministradoresConMotivo() {
         // Requerimiento: Cuando una entrega falla, notificar a entidad, donante y administradores
         // incluyendo la justificación del incidente.
-        RepositorioPersonasAdministradoras repoAdmins = mock(RepositorioPersonasAdministradoras.class);
+        PersonasAdministradorasRepository repoAdmins = mock(PersonasAdministradorasRepository.class);
         when(repoAdmins.obtenerTodos()).thenReturn(List.of(adminMock));
 
         publicador.suscribir(EntregaNoSatisfactoriaEvent.class, new EntregaNoSatisfactoriaListener(repoAdmins));

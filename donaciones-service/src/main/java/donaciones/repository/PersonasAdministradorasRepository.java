@@ -5,7 +5,7 @@ import donaciones.domain.PersonaAdministradora;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RepositorioPersonasAdministradoras {
+public class PersonasAdministradorasRepository {
 
     private static final List<PersonaAdministradora> administradoras = new ArrayList<>();
 
