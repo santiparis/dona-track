@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Necesidad {
     private final String descripcion;
     private final Map<Subcategoria, Integer> cantidadesRequeridas;
-    private Map<Subcategoria, Integer> cantidadesSuplidas ;
+    private Map<Subcategoria, Integer> cantidadesSuplidas;
     private final PoliticaDeRenovacion renovacion;
 
     public Necesidad(
@@ -17,10 +17,6 @@ public class Necesidad {
     ) {
         this.descripcion = descripcion;
         this.renovacion = renovacion;
-        // con esto rompia por mapa inmutable
-        // this.cantidadesRequeridas = cantidadesRequeridas;
-        // this.cantidadesSuplidas = cantidadesRequeridas;
-        // this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> integer = 0));
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));

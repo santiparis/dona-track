@@ -45,4 +45,16 @@ public class DonacionControllerTest {
 
         verify(ctx, atLeastOnce()).status(HttpStatus.BAD_REQUEST);
     }
+
+    @Test
+    void crearDevuelveMensajeDeErrorCuandoElServicioFalla() {
+        DonacionRequestDTO dto = new DonacionRequestDTO("123", "desc", List.of());
+        when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto);
+        doThrow(new IllegalArgumentException("No se pudo crear la donación"))
+                .when(donacionService).crearDonacion(dto);
+
+        controller.crear(ctx);
+
+        verify(ctx).status(HttpStatus.BAD_REQUEST);
+    }
 }

@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EntidadBeneficiaria implements Notificable {
-    private final String razonSocial;
-    private final String direccion;
-    private final String telefono;
-    private final List<String> correosRepresentantes;
+    private String razonSocial;
+    private String direccion;
+    private String telefono;
+    private List<String> correosRepresentantes;
     private final List<Necesidad> necesidades = new ArrayList<>();
     private final List<Contacto> contactos = new ArrayList<>();
     private Contacto medioPredeterminado;
@@ -60,6 +60,21 @@ public class EntidadBeneficiaria implements Notificable {
         return this.correosRepresentantes;
     }
 
+    public void actualizarDatos(String razonSocial, String direccion, String telefono, List<String> correosRepresentantes) {
+        if (razonSocial != null) {
+            this.razonSocial = razonSocial;
+        }
+        if (direccion != null) {
+            this.direccion = direccion;
+        }
+        if (telefono != null) {
+            this.telefono = telefono;
+        }
+        if (correosRepresentantes != null) {
+            this.correosRepresentantes = correosRepresentantes;
+        }
+    }
+
     public void registrarNecesidad(Necesidad necesidad) {
         if (!this.necesidades.contains(necesidad)) {
             this.necesidades.add(necesidad);
@@ -105,4 +120,13 @@ public class EntidadBeneficiaria implements Notificable {
         return (int) cantidad;
     }
 
+    public void eliminarNecesidad(int index) {
+        this.necesidades.remove(index);
+    }
+
+    public void actualizarNecesidad(int index, Necesidad necesidad) {
+        if (index >= 0 && index < this.necesidades.size()) {
+            this.necesidades.set(index, necesidad);
+        }
+    }
 }

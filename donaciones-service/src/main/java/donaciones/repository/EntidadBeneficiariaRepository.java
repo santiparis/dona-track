@@ -1,26 +1,26 @@
 package donaciones.repository;
 
-import donaciones.domain.Categoria;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.Necesidad;
 import donaciones.domain.Subcategoria;
-import donaciones.domain.PoliticaDeRenovacion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class EntidadBeneficiariaRepository {
 
   private static final List<EntidadBeneficiaria> baseDeDatosSimulada = new ArrayList<>();
+  private final List<EntidadBeneficiaria> entidadesBeneficiarias = new ArrayList<>();
 
   public EntidadBeneficiariaRepository() {
     if (baseDeDatosSimulada.isEmpty()) {
 
       EntidadBeneficiaria e1 = new EntidadBeneficiaria("razon1", "direc1", "tel1", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE1 = new HashMap<>();
-      cantidadesE1.put(new Subcategoria(Categoria.MUEBLES, true, false, "Bancos"), 50);
+      cantidadesE1.put(Subcategoria.BANCOS, 50);
 
       Necesidad necesidadE1 = new Necesidad(
               "faltante alimentos",
@@ -32,8 +32,8 @@ public class EntidadBeneficiariaRepository {
 
       EntidadBeneficiaria e2 = new EntidadBeneficiaria("razon2", "direc2", "tel2", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE2 = new HashMap<>();
-      cantidadesE2.put(new Subcategoria(Categoria.ROPA, true, false, "Remeras"), 15);
-      cantidadesE2.put(new Subcategoria(Categoria.ALIMENTOS, false, false, "Arroz"), 40);
+      cantidadesE2.put(Subcategoria.REMERAS, 15);
+      cantidadesE2.put(Subcategoria.ARROZ, 40);
 
       Necesidad necesidadE2 = new Necesidad(
               "invierno",
@@ -47,6 +47,23 @@ public class EntidadBeneficiariaRepository {
   }
 
   public List<EntidadBeneficiaria> obtenerTodas() {
-    return baseDeDatosSimulada;
+    return new ArrayList<>(baseDeDatosSimulada);
+  }
+
+  public Optional<EntidadBeneficiaria> buscarPorPosicion(int index) {
+    if (index >= 0 && index < baseDeDatosSimulada.size()) {
+      return Optional.of(baseDeDatosSimulada.get(index));
+    }
+    return Optional.empty();
+  }
+
+  public void guardar(EntidadBeneficiaria entidadBeneficiaria) {
+    if (!baseDeDatosSimulada.contains(entidadBeneficiaria)) {
+      baseDeDatosSimulada.add(entidadBeneficiaria);
+    }
+  }
+
+  public void eliminarPorPosicion(int id) {
+    baseDeDatosSimulada.remove(id);
   }
 }
