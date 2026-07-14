@@ -55,7 +55,7 @@ public class AsignacionService {
     Optional<EntidadBeneficiaria> entidadOpt = entidadRepository.obtenerPorId(idEntidad);
 
     if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
-      DonacionIndependiente donacion = donacionOpt.get();
+      Donacion donacion = donacionOpt.get();
       donacion.setEstado(EstadoDonacionIndependiente.ASIGNADA);
       EntidadBeneficiaria entidad = entidadOpt.get();
       donacion.setEntidadBeneficiaria(entidad);

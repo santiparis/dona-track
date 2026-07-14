@@ -1,6 +1,6 @@
 package donaciones.domain.eventos;
 
-import donaciones.domain.DonacionIndependiente;
+import donaciones.domain.Donacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.PersonaAdministradora;
 import donaciones.domain.donante.Persona;
@@ -13,12 +13,14 @@ public class EventosLogisticaYAsignacionTest {
 
     private Persona donanteMock;
     private EntidadBeneficiaria entidadMock;
+    private Donacion donacionMock;
     private PersonaAdministradora adminMock;
 
     @BeforeEach
     public void setup() {
         donanteMock = mock(Persona.class);
         entidadMock = mock(EntidadBeneficiaria.class);
+        donacionMock = mock(Donacion.class);
         adminMock = mock(PersonaAdministradora.class);
     }
 
@@ -39,8 +41,11 @@ public class EventosLogisticaYAsignacionTest {
     public void testRequerimientoInicioRuta_NotificaADonantesYEntidadesConEnlaceAlMapa() {
         // Requerimiento: Al iniciarse la ruta, notificar a entidades y donantes de esa ruta adjuntando
         // el enlace al mapa de seguimiento en tiempo real.
+        when(donacionMock.getDonante()).thenReturn(donanteMock);
+        when(donacionMock.getEntidadBeneficiaria()).thenReturn(entidadMock);
+        //when(donanteMock.notificar(anyString())).thenReturn(null);
         CambioDeEstadoEnDonacion cambio = new InicioRutaEvent(
-                mock(DonacionIndependiente.class),
+                donacionMock,
                 "https://donatrack.org/mapa/123"
         );
         cambio.notificarAInvolucrados();

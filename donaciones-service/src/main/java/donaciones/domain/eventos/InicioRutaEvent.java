@@ -1,12 +1,12 @@
 package donaciones.domain.eventos;
 
-import donaciones.domain.DonacionIndependiente;
+import donaciones.domain.Donacion;
 
 public class InicioRutaEvent implements CambioDeEstadoEnDonacion {
-    private final DonacionIndependiente donacion;
+    private final Donacion donacion;
     private final String urlMapaSeguimiento;
 
-    public InicioRutaEvent(DonacionIndependiente donacion, String urlMapaSeguimiento) {
+    public InicioRutaEvent(Donacion donacion, String urlMapaSeguimiento) {
         this.donacion = donacion;
         this.urlMapaSeguimiento = urlMapaSeguimiento;
     }
