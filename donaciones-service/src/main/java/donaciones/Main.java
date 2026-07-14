@@ -16,6 +16,9 @@ import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.AsignacionService;
 import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
+import donaciones.retrofit_client.LogisticaAPICalls;
+import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.repository.DonanteRepository;
 import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
 
@@ -31,18 +34,23 @@ public class Main {
 
     DonacionRepository donacionesRepository = new DonacionRepository();
     RepositorioPersonas personasRepository = new RepositorioPersonas();
+    DonanteRepository donanteRepo = new DonanteRepository();
+    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
+
+    RetrofitConfig retrofitConfig = new RetrofitConfig();
+    LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
+
     DonacionService service = new DonacionService(donacionesRepository, personasRepository, publicador);
     DonacionController controller = new DonacionController(service);
-
-    donaciones.repository.DonanteRepository donanteRepo = new donaciones.repository.DonanteRepository();
     DonanteService donanteService = new DonanteService(donanteRepo);
     DonanteController donanteController = new DonanteController(donanteService);
 
-    EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
+    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, publicador);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, publicador);
+
     AsignacionController asignacionController = new AsignacionController(asignacionService);
+
 
     Javalin app = Javalin.create().start(8081);
 

@@ -1,0 +1,23 @@
+@startuml
+
+left to right direction
+
+node "DonaTrack" {
+        [Negocio] as DTNegocio
+        [Logistica] as DTlogistica
+
+}
+
+actor Donante as A1
+actor :Entidad Beneficiaria: as A2
+actor Administrador as A3
+actor Chofer as A4
+
+A1 --> DTNegocio
+A2 -up-> DTNegocio
+A3 -up-> DTNegocio
+A4 --> DTlogistica
+
+component ComponenteExterno
+
+@enduml
