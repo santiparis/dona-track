@@ -16,12 +16,19 @@ public class EntregaRealizadaEvent implements CambioDeEstadoEnDonacion {
         this.camionResponsable = camionResponsable;
     }
 
-    @Override
-    public void notificarAInvolucrados() {
-        String comprobante = String.format("Comprobante de Entrega - Fecha/Hora: %s | Camión: %s",
-                fechaHora, camionResponsable);
+    public Persona getDonante() {
+        return donante;
+    }
 
-        donante.notificar("Su donación fue entregada con éxito. " + comprobante);
-        entidad.notificar("Donación recibida satisfactoriamente. " + comprobante);
+    public EntidadBeneficiaria getEntidad() {
+        return entidad;
+    }
+
+    public String getFechaHora() {
+        return fechaHora;
+    }
+
+    public String getCamionResponsable() {
+        return camionResponsable;
     }
 }

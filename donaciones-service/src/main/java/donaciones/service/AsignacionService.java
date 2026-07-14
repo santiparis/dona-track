@@ -4,6 +4,7 @@ import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.eventos.DonacionAsignadaEvent;
+import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
@@ -18,9 +19,12 @@ public class AsignacionService {
 
   private final DonacionRepository donacionRepository;
   private final EntidadBeneficiariaRepository entidadRepository;
-  public AsignacionService(DonacionRepository donacionRepository, EntidadBeneficiariaRepository entidadRepository) {
+  private final PublicadorDeEventos publicador;
+
+  public AsignacionService(DonacionRepository donacionRepository, EntidadBeneficiariaRepository entidadRepository, PublicadorDeEventos publicador) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
+    this.publicador = publicador;
   }
 
   // ejecucion y ranking
@@ -61,8 +65,7 @@ public class AsignacionService {
       donacion.setEntidadBeneficiaria(entidad);
 
       // Enviar notificacion
-      DonacionAsignadaEvent evento = new DonacionAsignadaEvent(donacion.getDonante(), entidad);
-      evento.notificarAInvolucrados();
+      publicador.publicar(new DonacionAsignadaEvent(donacion.getDonante(), entidad));
 
     } else {
       throw new IllegalArgumentException("No se encontro la donacion");

@@ -5,6 +5,7 @@ import donaciones.domain.donante.Persona;
 import donaciones.domain.eventos.EntregaNoSatisfactoriaEvent;
 import donaciones.domain.eventos.EntregaRealizadaEvent;
 import donaciones.domain.eventos.InicioRutaEvent;
+import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionRequestDTO;
@@ -21,10 +22,12 @@ import java.util.Random;
 public class DonacionService {
   private final DonacionRepository donacionesRepository;
   private final RepositorioPersonas personasRepository;
+  private final PublicadorDeEventos publicador;
 
-  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository) {
+  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository, PublicadorDeEventos publicador) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
+    this.publicador = publicador;
   }
 
   public void crearDonacion(DonacionRequestDTO dto) {
@@ -118,17 +121,15 @@ public class DonacionService {
       }
       donacion.setEstado(nuevoEstado);
 
-      // TODO Separar en diferentes metodos del service
       if (nuevoEstado == EstadoDonacionIndependiente.ENTREGA_FALLIDA) {
-        EntregaNoSatisfactoriaEvent evento = new EntregaNoSatisfactoriaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), null);
-        evento.notificarAInvolucrados();
+        publicador.publicar(
+            new EntregaNoSatisfactoriaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria()));
       } else if (nuevoEstado == EstadoDonacionIndependiente.ENTREGADA) {
         String fechaYHora = LocalDate.now().toString();
-        EntregaRealizadaEvent evento = new EntregaRealizadaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), fechaYHora, nombreCamion);
-        evento.notificarAInvolucrados();
+        publicador.publicar(
+            new EntregaRealizadaEvent(donacion.getDonante(), donacion.getEntidadBeneficiaria(), fechaYHora, nombreCamion));
       } else if (nuevoEstado == EstadoDonacionIndependiente.EN_TRASLADO) {
-        InicioRutaEvent evento = new InicioRutaEvent(donacion, null);
-        evento.notificarAInvolucrados();
+        publicador.publicar(new InicioRutaEvent(donacion, null));
       }
 
     } else {

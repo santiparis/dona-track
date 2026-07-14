@@ -11,11 +11,11 @@ public class InicioRutaEvent implements CambioDeEstadoEnDonacion {
         this.urlMapaSeguimiento = urlMapaSeguimiento;
     }
 
-    @Override
-    public void notificarAInvolucrados() {
-        String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: " + urlMapaSeguimiento;
+    public Donacion getDonacion() {
+        return donacion;
+    }
 
-        donacion.getDonante().notificar(mensaje);
-        donacion.getEntidadBeneficiaria().notificar(mensaje);
+    public String getUrlMapaSeguimiento() {
+        return urlMapaSeguimiento;
     }
 }

@@ -4,6 +4,11 @@ import donaciones.domain.Donacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.PersonaAdministradora;
 import donaciones.domain.donante.Persona;
+import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
+import donaciones.domain.eventos.listeners.EntregaNoSatisfactoriaListener;
+import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
+import donaciones.domain.eventos.listeners.InicioRutaListener;
+import donaciones.repository.RepositorioPersonasAdministradoras;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -13,15 +18,15 @@ public class EventosLogisticaYAsignacionTest {
 
     private Persona donanteMock;
     private EntidadBeneficiaria entidadMock;
-    private Donacion donacionMock;
     private PersonaAdministradora adminMock;
+    private PublicadorDeEventos publicador;
 
     @BeforeEach
     public void setup() {
         donanteMock = mock(Persona.class);
         entidadMock = mock(EntidadBeneficiaria.class);
-        donacionMock = mock(Donacion.class);
         adminMock = mock(PersonaAdministradora.class);
+        publicador = new PublicadorDeEventos();
     }
 
     @Test
@@ -30,8 +35,8 @@ public class EventosLogisticaYAsignacionTest {
         // y a entidad beneficiaria ("Se le ha asignado satisfactoriamente una nueva donación.").
         when(entidadMock.getRazonSocial()).thenReturn("Comedor Los Niños");
 
-        CambioDeEstadoEnDonacion cambio = new DonacionAsignadaEvent(donanteMock, entidadMock);
-        cambio.notificarAInvolucrados();
+        publicador.suscribir(DonacionAsignadaEvent.class, new DonacionAsignadaListener());
+        publicador.publicar(new DonacionAsignadaEvent(donanteMock, entidadMock));
 
         verify(donanteMock, times(1)).notificar(contains("Comedor Los Niños"));
         verify(entidadMock, times(1)).notificar(contains("Se le ha asignado satisfactoriamente"));
@@ -41,14 +46,12 @@ public class EventosLogisticaYAsignacionTest {
     public void testRequerimientoInicioRuta_NotificaADonantesYEntidadesConEnlaceAlMapa() {
         // Requerimiento: Al iniciarse la ruta, notificar a entidades y donantes de esa ruta adjuntando
         // el enlace al mapa de seguimiento en tiempo real.
+        Donacion donacionMock = mock(Donacion.class);
         when(donacionMock.getDonante()).thenReturn(donanteMock);
         when(donacionMock.getEntidadBeneficiaria()).thenReturn(entidadMock);
-        //when(donanteMock.notificar(anyString())).thenReturn(null);
-        CambioDeEstadoEnDonacion cambio = new InicioRutaEvent(
-                donacionMock,
-                "https://donatrack.org/mapa/123"
-        );
-        cambio.notificarAInvolucrados();
+
+        publicador.suscribir(InicioRutaEvent.class, new InicioRutaListener());
+        publicador.publicar(new InicioRutaEvent(donacionMock, "https://donatrack.org/mapa/123"));
 
         verify(donanteMock, times(1)).notificar(contains("https://donatrack.org/mapa/123"));
         verify(entidadMock, times(1)).notificar(contains("https://donatrack.org/mapa/123"));
@@ -58,10 +61,8 @@ public class EventosLogisticaYAsignacionTest {
     public void testRequerimientoEntregaRealizada_NotificaComprobanteADonanteYEntidad() {
         // Requerimiento: Cuando la entidad confirma la recepción, notificar a la entidad y al donante
         // adjuntando comprobante con fecha, hora y camión responsable.
-        CambioDeEstadoEnDonacion cambio = new EntregaRealizadaEvent(
-                donanteMock, entidadMock, "2026-07-01 14:00", "CAM-999"
-        );
-        cambio.notificarAInvolucrados();
+        publicador.suscribir(EntregaRealizadaEvent.class, new EntregaRealizadaListener());
+        publicador.publicar(new EntregaRealizadaEvent(donanteMock, entidadMock, "2026-07-01 14:00", "CAM-999"));
 
         verify(donanteMock, times(1)).notificar(contains("CAM-999"));
         verify(entidadMock, times(1)).notificar(contains("CAM-999"));
@@ -71,10 +72,11 @@ public class EventosLogisticaYAsignacionTest {
     public void testRequerimientoEntregaNoSatisfactoria_NotificaADonanteEntidadYAdministradoresConMotivo() {
         // Requerimiento: Cuando una entrega falla, notificar a entidad, donante y administradores
         // incluyendo la justificación del incidente.
-        CambioDeEstadoEnDonacion cambio = new EntregaNoSatisfactoriaEvent(
-                donanteMock, entidadMock, List.of(adminMock)
-        );
-        cambio.notificarAInvolucrados();
+        RepositorioPersonasAdministradoras repoAdmins = mock(RepositorioPersonasAdministradoras.class);
+        when(repoAdmins.obtenerTodos()).thenReturn(List.of(adminMock));
+
+        publicador.suscribir(EntregaNoSatisfactoriaEvent.class, new EntregaNoSatisfactoriaListener(repoAdmins));
+        publicador.publicar(new EntregaNoSatisfactoriaEvent(donanteMock, entidadMock));
 
         verify(donanteMock, times(1)).notificar(contains("Alerta: Entrega no satisfactoria."));
         verify(entidadMock, times(1)).notificar(contains("Alerta: Entrega no satisfactoria."));

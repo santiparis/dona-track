@@ -1,0 +1,97 @@
+@startuml
+
+  interface CambioDeEstadoEnDonacion {
+  }
+
+  interface Listener {
+    + onEvento(evento: CambioDeEstadoEnDonacion)
+  }
+
+  class PublicadorDeEventos {
+    - suscriptores: Map<Class, List<Listener>>
+    --
+    + suscribir(tipoEvento: Class, listener: Listener)
+    + publicar(evento: CambioDeEstadoEnDonacion)
+  }
+
+  PublicadorDeEventos o--> "*" Listener : notifica
+
+  class DonacionAsignadaEvent {
+  }
+
+  class InicioRutaEvent {
+  }
+
+  class EntregaRealizadaEvent {
+  }
+
+  class EntregaNoSatisfactoriaEvent {
+  }
+
+  class DonacionAsignadaListener {
+    + onEvento(evento: CambioDeEstadoEnDonacion): void
+  }
+
+  class InicioRutaListener {
+    + onEvento(evento: CambioDeEstadoEnDonacion): void
+  }
+
+  class EntregaRealizadaListener {
+    + onEvento(evento: CambioDeEstadoEnDonacion): void
+  }
+
+  class EntregaNoSatisfactoriaListener {
+    - repoAdmins: RepositorioPersonasAdministradoras
+    --
+    + onEvento(evento: CambioDeEstadoEnDonacion): void
+  }
+
+
+' Eventos implementan la interfaz marcadora
+DonacionAsignadaEvent ..|> CambioDeEstadoEnDonacion
+InicioRutaEvent ..|> CambioDeEstadoEnDonacion
+EntregaRealizadaEvent ..|> CambioDeEstadoEnDonacion
+EntregaNoSatisfactoriaEvent ..|> CambioDeEstadoEnDonacion
+
+' Listeners implementan Listener
+DonacionAsignadaListener .up.|> Listener
+InicioRutaListener .up.|> Listener
+EntregaRealizadaListener .up.|> Listener
+EntregaNoSatisfactoriaListener .up.|> Listener
+
+' Listeners procesan su evento correspondiente
+DonacionAsignadaListener ..> DonacionAsignadaEvent : procesa
+InicioRutaListener ..> InicioRutaEvent : procesa
+EntregaRealizadaListener ..> EntregaRealizadaEvent : procesa
+EntregaNoSatisfactoriaListener ..> EntregaNoSatisfactoriaEvent : procesa
+
+' Listeners notifican a Notificables
+Listener .up.> Notificable : notifica >
+
+' EntregaNoSatisfactoriaListener resuelve admins por sí mismo
+EntregaNoSatisfactoriaListener -up-> RepositorioPersonasAdministradoras : resuelve admins
+
+interface Notificable {
+  + notificar(mensaje: String): Notificacion
+}
+
+abstract class Persona {
+}
+
+class EntidadBeneficiaria {
+}
+
+class PersonaAdministradora {
+}
+
+Persona ..|> Notificable
+EntidadBeneficiaria ..|> Notificable
+PersonaAdministradora ..|> Notificable
+
+class RepositorioPersonasAdministradoras {
+  + obtenerTodos(): List<PersonaAdministradora>
+}
+
+RepositorioPersonasAdministradoras --> "*" PersonaAdministradora : retorna
+
+@enduml

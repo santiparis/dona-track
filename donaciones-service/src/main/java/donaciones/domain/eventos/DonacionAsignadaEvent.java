@@ -12,9 +12,11 @@ public class DonacionAsignadaEvent implements CambioDeEstadoEnDonacion {
         this.entidadBeneficiaria = entidadBeneficiaria;
     }
 
-    @Override
-    public void notificarAInvolucrados() {
-        donante.notificar("Su donación ha sido asignada a la entidad: " + entidadBeneficiaria.getRazonSocial());
-        entidadBeneficiaria.notificar("Se le ha asignado satisfactoriamente una nueva donación.");
+    public Persona getDonante() {
+        return donante;
+    }
+
+    public EntidadBeneficiaria getEntidadBeneficiaria() {
+        return entidadBeneficiaria;
     }
 }
