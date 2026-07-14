@@ -39,17 +39,29 @@ public class EntregasService {
   }
 
   public Entrega confirmarEntrega(String entregaId) {
-    // buscar la entrega, entrega.marcarEntregada(), avisar a donacionesApi.entregaCompletada(entrega)
-
+    return rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entrega -> {
+          entrega.marcarEntregada();
+          return entrega;
+        })
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
   }
 
   public Entrega marcarNoRecibida(String entregaId) {
-    // buscar la entrega, entrega.marcarNoRecibida(), avisar a donacionesApi.entregaFallida(entrega)
-
+    return rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entrega -> {
+          entrega.marcarNoRecibida();
+          return entrega;
+        })
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
   }
 
   public Entrega reingresarADeposito(String entregaId) {
-    // buscar la entrega, entrega.reingresarADeposito()
-
+    return rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entrega -> {
+          entrega.reingresarADeposito();
+          return entrega;
+        })
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
   }
 }

@@ -1,27 +1,29 @@
 package donaciones.domain;
 
-public enum Subcategoria {
-    BANCOS(Categoria.MUEBLE, true, false,"Bancos"),
-    SILLAS(Categoria.MUEBLE, true, false,"Sillas"),
-    MESAS(Categoria.MUEBLE, true, false,"Mesas"),
-    FIDEOS(Categoria.ALIMENTO, false, false,"Fideos"),
-    ARROZ(Categoria.ALIMENTO, false, false,"Arroz"),
-    LEGUMBRES(Categoria.ALIMENTO, false, false,"Legumbres"),
-    ACEITE(Categoria.ALIMENTO, false, false,"Aceite"),
-    LECHE(Categoria.ALIMENTO, false, true,"Leche"),
-    CAMPERAS(Categoria.VESTIMENTA, true, false,"Camperas"),
-    REMERAS(Categoria.VESTIMENTA, true, false,"Remeras"),
-    PANTALONES(Categoria.VESTIMENTA, true, false,"Pantalones"),
-    ROPA_INFANTIL(Categoria.VESTIMENTA, true, false,"Ropa infantil"),
-    FRAZADAS(Categoria.ABRIGO, true, false,"Frazadas"),
-    COLCHONES(Categoria.DESCANSO, true, false,"Colchones");
+import java.util.Objects;
+
+public class Subcategoria {
+    public static final Subcategoria BANCOS = new Subcategoria(Categoria.MUEBLES, true, false, "Bancos");
+    public static final Subcategoria SILLAS = new Subcategoria(Categoria.MUEBLES, true, false, "Sillas");
+    public static final Subcategoria MESAS = new Subcategoria(Categoria.MUEBLES, true, false, "Mesas");
+    public static final Subcategoria FIDEOS = new Subcategoria(Categoria.ALIMENTOS, false, false, "Fideos");
+    public static final Subcategoria ARROZ = new Subcategoria(Categoria.ALIMENTOS, false, false, "Arroz");
+    public static final Subcategoria LEGUMBRES = new Subcategoria(Categoria.ALIMENTOS, false, false, "Legumbres");
+    public static final Subcategoria ACEITE = new Subcategoria(Categoria.ALIMENTOS, false, false, "Aceite");
+    public static final Subcategoria LECHE = new Subcategoria(Categoria.ALIMENTOS, false, true, "Leche");
+    public static final Subcategoria CAMPERAS = new Subcategoria(Categoria.ROPA, true, false, "Camperas");
+    public static final Subcategoria REMERAS = new Subcategoria(Categoria.ROPA, true, false, "Remeras");
+    public static final Subcategoria PANTALONES = new Subcategoria(Categoria.ROPA, true, false, "Pantalones");
+    public static final Subcategoria ROPA_INFANTIL = new Subcategoria(Categoria.ROPA, true, false, "Ropa infantil");
+    public static final Subcategoria FRAZADAS = new Subcategoria(Categoria.MUEBLES, true, false, "Frazadas");
+    public static final Subcategoria COLCHONES = new Subcategoria(Categoria.MUEBLES, true, false, "Colchones");
 
     private final Categoria categoria;
     private final boolean requiereEstado;
     private final boolean requiereVencimiento;
     private final String nombre;
 
-    Subcategoria(
+    public Subcategoria(
             Categoria categoria,
             boolean requiereEstado,
             boolean requiereVencimiento,
@@ -44,7 +46,23 @@ public enum Subcategoria {
     public boolean requiereVencimiento() {
         return this.requiereVencimiento;
     }
-    public String nombre(){
-      return this.nombre;
+
+    public String nombre() {
+        return this.nombre;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Subcategoria that)) return false;
+        return requiereEstado == that.requiereEstado
+                && requiereVencimiento == that.requiereVencimiento
+                && categoria == that.categoria
+                && Objects.equals(nombre, that.nombre);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(categoria, requiereEstado, requiereVencimiento, nombre);
     }
 }
