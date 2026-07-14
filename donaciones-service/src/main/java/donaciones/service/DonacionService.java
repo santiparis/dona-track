@@ -2,46 +2,96 @@ package donaciones.service;
 
 import donaciones.domain.*;
 import donaciones.domain.donante.Persona;
-import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
+import donaciones.service.excepcion.CategoriaInvalidaException;
+import donaciones.service.excepcion.DonanteNoEncontradoException;
+import donaciones.service.excepcion.EstadoBienInvalidoException;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public class DonacionService {
-  private final DonacionRepository repository;
+  private final DonacionRepository donacionesRepository;
+  private final RepositorioPersonas personasRepository;
 
-  public DonacionService(DonacionRepository repository) {
-    this.repository = repository;
+  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository) {
+    this.donacionesRepository = donacionesRepository;
+    this.personasRepository = personasRepository;
   }
 
   public void crearDonacion(DonacionRequestDTO dto) {
-    Persona personaMock = new PersonaHumana(
-            "donante", "prueba", 30, null, dto.documentoDonante(), null, "Calle 123", new ArrayList<>(), null, null
-    );
-    List<Bien> bienesDelDominio = dto.bienes().stream()
-            .map(bienDto -> {
-              Subcategoria subcat = null;
+    List<Bien> bienesDelDominio = this.crearListaBienes(dto.bienes());
 
-              return new Bien(
-                      subcat,
-                      bienDto.cantidad(),
-                      bienDto.unidad(),
-                      bienDto.descripcion(),
-                      null,
-                      null,
-                      null
-              );
-            })
-            .toList();
-    DonacionEntrante entrante = new DonacionEntrante(personaMock, dto.descripcion(), bienesDelDominio);
-    entrante.getDonacionesIndependientes().forEach(repository::guardar);
+    for (Bien bien : bienesDelDominio) {
+      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+
+      if (persona.isPresent()) {
+        this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
+      } else {
+        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+      }
+    }
   }
 
-  public List<DonacionIndependiente> listarDonaciones() {
-    return repository.obtenerTodas();
+  public List<Bien> crearListaBienes(List<BienDTO> bienesDto) {
+    return bienesDto.stream()
+        .map(bienDto -> {
+          Subcategoria subcat = this.crearSubcategoria(bienDto.categoria(), bienDto.requiereEstado(), bienDto.requiereVencimiento(), bienDto.nombreSubcategoria());
+          EstadoBien estado;
+
+          if (bienDto.estado() != null) {
+            estado = this.parsearEstado(bienDto.estado());
+          } else {
+            estado = null;
+          }
+
+          LocalDate vencimiento;
+          if (bienDto.vencimiento() != null) {
+            vencimiento = LocalDate.parse(bienDto.vencimiento());
+          } else {
+            vencimiento = null;
+          }
+
+          return new Bien(
+              subcat,
+              bienDto.cantidad(),
+              bienDto.unidad(),
+              bienDto.descripcion(),
+              bienDto.foto(),
+              estado,
+              vencimiento
+          );
+        })
+        .toList();
+  }
+
+  public Subcategoria crearSubcategoria(String categoria, boolean requiereEstado, boolean requiereVencimiento, String nombre) {
+    Categoria categoriaEnum = this.parsearCategoria(categoria);
+    return new Subcategoria(categoriaEnum, requiereEstado, requiereVencimiento, nombre);
+  }
+
+  public Categoria parsearCategoria(String categoria) {
+    try {
+      return Categoria.valueOf(categoria.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new CategoriaInvalidaException("Categoría inválida: " + categoria, e);
+    }
+  }
+
+  public EstadoBien parsearEstado(String nombreEstado) {
+    try {
+      return EstadoBien.valueOf(nombreEstado.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new EstadoBienInvalidoException("Estado de bien inválido: " + nombreEstado, e);
+    }
+  }
+
+  public List<Donacion> listarDonaciones() {
+    return donacionesRepository.obtenerTodas();
   }
 
   public void cambiarEstado(int id, String nuevoEstadoTexto) {
@@ -50,7 +100,7 @@ public class DonacionService {
       throw new IllegalArgumentException("Debe indicar el nuevo estado");
     }
 
-    Optional<DonacionIndependiente> donacionOpt = repository.buscarPorPosicion(id);
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
       EstadoDonacionIndependiente nuevoEstado;
       try {
@@ -67,9 +117,9 @@ public class DonacionService {
   }
 
   public void eliminarDonacion(int id) {
-    Optional<DonacionIndependiente> donacionOpt = repository.buscarPorPosicion(id);
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
     if (donacionOpt.isPresent()) {
-      repository.borrarPorPosicion(id);
+      donacionesRepository.borrarPorPosicion(id);
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }
