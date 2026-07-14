@@ -38,6 +38,7 @@ public class EntregasService {
     return ruta;
   }
 
+<<<<<<< Updated upstream
   public Entrega confirmarEntrega(String entregaId) {
     return rutasRepository.buscarEntregaPorId(entregaId)
         .map(entrega -> {
@@ -63,5 +64,32 @@ public class EntregasService {
           return entrega;
         })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+=======
+
+    // buscar la entrega, entrega.marcarEntregada(), avisar a donacionesApi.entregaCompletada(entrega)
+    public Entrega confirmarEntrega(String entregaId) throws IOException {
+      Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+          .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+
+      entrega.marcarEntregada();
+      donacionesApi.entregaCompletada(entrega).execute();
+      return entrega;
+    }
+
+  public Entrega marcarNoRecibida(String entregaId) throws IOException {
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+    entrega.marcarNoRecibida();
+    donacionesApi.entregaFallida(entrega).execute();
+    return entrega;
+  }
+
+  public Entrega reingresarADeposito(String entregaId) {
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+
+    entrega.reingresarADeposito();
+    return entrega;
+>>>>>>> Stashed changes
   }
 }

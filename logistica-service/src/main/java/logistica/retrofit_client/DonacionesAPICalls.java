@@ -8,13 +8,15 @@ import retrofit2.http.POST;
 
 
 // necesita ejecutarse con .execute() -> sinc o .enqueue(callback) -> async
+// Void: solo interesa el status HTTP; Retrofit ignora el body de la respuesta
 public interface DonacionesAPICalls {
   @POST("/donaciones/rutasIniciadas")
-  // <String> para recibir "OK"
-  Call<String> rutaIniciada(@Body Ruta ruta);
+  Call<Void> rutaIniciada(@Body Ruta ruta);
 
-  @POST("/donaciones/entregaEstado")
-  Call<String> entregaCompletada(@Body Entrega entrega);
-  Call<String> entregaFallida(@Body Entrega entrega);
+  @POST("/donaciones/entregaCompletada")
+  Call<Void> entregaCompletada(@Body Entrega entrega);
+
+  @POST("/donaciones/entregaFallida")
+  Call<Void> entregaFallida(@Body Entrega entrega);
 
 }
