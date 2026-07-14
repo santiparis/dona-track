@@ -1,11 +1,14 @@
 package donaciones.domain;
 
 import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
 
-public class DonacionIndependiente {
+public class Donacion {
     private final Long ID;
     private final Persona donante;
     private EntidadBeneficiaria entidadBeneficiaria;
@@ -14,10 +17,10 @@ public class DonacionIndependiente {
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
 
-    public DonacionIndependiente(
-        Long ID,
+    public Donacion(
+        Persona donante,
         Bien bien,
-        Persona donante
+        Long ID
     ) {
         this.ID = ID;
         this.donante = donante;

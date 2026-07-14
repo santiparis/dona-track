@@ -3,6 +3,7 @@ package donaciones;
 import donaciones.controller.AsignacionController;
 import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
+import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.service.AsignacionService;
@@ -12,8 +13,9 @@ import io.javalin.Javalin;
 
 public class Main {
   public static void main(String[] args) {
-    DonacionRepository repository = new DonacionRepository();
-    DonacionService service = new DonacionService(repository);
+    DonacionRepository donacionesRepository = new DonacionRepository();
+    RepositorioPersonas personasRepository = new RepositorioPersonas();
+    DonacionService service = new DonacionService(donacionesRepository, personasRepository);
     DonacionController controller = new DonacionController(service);
 
     donaciones.repository.DonanteRepository donanteRepo = new donaciones.repository.DonanteRepository();
@@ -21,7 +23,7 @@ public class Main {
     DonanteController donanteController = new DonanteController(donanteService);
 
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
-    AsignacionService asignacionService = new AsignacionService(repository, entidadRepo);
+    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo);
     AsignacionController asignacionController = new AsignacionController(asignacionService);
 
     Javalin app = Javalin.create().start(8081);

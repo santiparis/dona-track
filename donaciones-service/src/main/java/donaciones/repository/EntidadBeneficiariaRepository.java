@@ -1,5 +1,6 @@
 package donaciones.repository;
 
+import donaciones.domain.Categoria;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.Necesidad;
 import donaciones.domain.Subcategoria;
@@ -20,7 +21,7 @@ public class EntidadBeneficiariaRepository {
 
       EntidadBeneficiaria e1 = new EntidadBeneficiaria(1L, "razon1", "direc1", "tel1", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE1 = new HashMap<>();
-      cantidadesE1.put(Subcategoria.BANCOS, 50);
+      cantidadesE1.put(new Subcategoria(Categoria.MUEBLES, true, false, "Bancos"), 50);
 
       Necesidad necesidadE1 = new Necesidad(
               "faltante alimentos",
@@ -32,8 +33,8 @@ public class EntidadBeneficiariaRepository {
 
       EntidadBeneficiaria e2 = new EntidadBeneficiaria(2L, "razon2", "direc2", "tel2", new ArrayList<>());
       Map<Subcategoria, Integer> cantidadesE2 = new HashMap<>();
-      cantidadesE2.put(Subcategoria.REMERAS, 15);
-      cantidadesE2.put(Subcategoria.ARROZ, 40);
+      cantidadesE2.put(new Subcategoria(Categoria.ROPA, true, false, "Remeras"), 15);
+      cantidadesE2.put(new Subcategoria(Categoria.ALIMENTOS, false, false, "Arroz"), 40);
 
       Necesidad necesidadE2 = new Necesidad(
               "invierno",

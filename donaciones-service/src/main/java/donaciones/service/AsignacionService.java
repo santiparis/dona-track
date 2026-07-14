@@ -1,13 +1,13 @@
 package donaciones.service;
 
-import donaciones.domain.DonacionIndependiente;
+import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacionIndependiente;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.eventos.DonacionAsignadaEvent;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 import donaciones.domain.algoritmos.EstrategiaAsignacion;
@@ -25,13 +25,13 @@ public class AsignacionService {
 
   // ejecucion y ranking
   public List<EntidadRankingDTO> ejecutarAlgoritmoYObtenerRanking(int donacionId, String criterio) {
-    Optional<DonacionIndependiente> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
+    Optional<Donacion> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
 
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No existe la donacion");
     }
 
-    DonacionIndependiente donacion = donacionOpt.get();
+    Donacion donacion = donacionOpt.get();
     List<EntidadBeneficiaria> todasLasEntidades = entidadRepository.obtenerTodas();
     EstrategiaAsignacion algoritmo;
     if (criterio.equalsIgnoreCase("prioridad")) {
@@ -51,7 +51,7 @@ public class AsignacionService {
 
   // seleccion final
   public void confirmarAsignacion(int donacionId, Long idEntidad, String nombreEntidad) {
-    Optional<DonacionIndependiente> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
+    Optional<Donacion> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
     Optional<EntidadBeneficiaria> entidadOpt = entidadRepository.obtenerPorId(idEntidad);
 
     if (donacionOpt.isPresent() && entidadOpt.isPresent()) {

@@ -16,7 +16,7 @@ public class EntidadBeneficiaria implements Notificable {
     private final List<Necesidad> necesidades = new ArrayList<>();
     private final List<Contacto> contactos = new ArrayList<>();
     private Contacto medioPredeterminado;
-    private final List<DonacionIndependiente> donacionesRecibidas = new ArrayList<>();
+    private final List<Donacion> donacionesRecibidas = new ArrayList<>();
 
     public EntidadBeneficiaria(
             Long id,
@@ -93,7 +93,7 @@ public class EntidadBeneficiaria implements Notificable {
         }
     }
 
-    public boolean satisfaceNecesidad(DonacionIndependiente donacion) {
+    public boolean satisfaceNecesidad(Donacion donacion) {
         if (donacion.getBien() == null) {
             return false;
         }
