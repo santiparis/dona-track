@@ -1,19 +1,25 @@
 package donaciones.domain;
 
+import donaciones.domain.donante.Persona;
+import donaciones.domain.donante.PersonaHumana;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-public class DonacionIndependiente {
+public class Donacion {
+    private final Persona donante;
     private final Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;
     private final List<RegistroCambioEstado<EstadoDonacionIndependiente>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
 
-    public DonacionIndependiente(
+    public Donacion(
+        Persona donante,
         Bien bien
     ) {
+        this.donante = donante;
         this.bien = bien;
         this.fecha = LocalDate.now();
         this.historialEstados.add(new RegistroCambioEstado<>(null, this.estado, new java.util.Date(), null));

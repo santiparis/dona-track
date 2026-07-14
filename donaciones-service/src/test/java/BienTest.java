@@ -2,6 +2,7 @@ import donaciones.domain.Bien;
 import donaciones.domain.EstadoBien;
 import donaciones.domain.Subcategoria;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BienTest {
