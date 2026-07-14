@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 public class Donacion {
     private final Long ID;
-    private final Persona donante;
+    private Persona donante;
     private EntidadBeneficiaria entidadBeneficiaria;
     private Bien bien;
     private EstadoDonacionIndependiente estado = EstadoDonacionIndependiente.EN_DEPOSITO;

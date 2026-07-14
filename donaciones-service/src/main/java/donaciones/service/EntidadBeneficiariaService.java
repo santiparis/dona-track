@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class EntidadBeneficiariaService {
   private final EntidadBeneficiariaRepository entidadesRepository;
@@ -27,7 +28,7 @@ public class EntidadBeneficiariaService {
   }
 
   public void postEntidadBeneficiaria(EntidadBeneficiariaDTO dto) {
-    entidadesRepository.guardar(new EntidadBeneficiaria(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
+    entidadesRepository.guardar(new EntidadBeneficiaria(new Random().nextLong(), dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
   }
 
   public void putEntidadBeneficiaria(int id, EntidadBeneficiariaDTO dto) {
