@@ -1,7 +1,7 @@
 package donaciones.dto;
 
 public record DonacionLogisticaDTO(
-    String donacionID,
+    Long donacionID,
     int cantidadBienes,
     String unidad,
     String destino,

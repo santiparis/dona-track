@@ -10,6 +10,13 @@ import java.util.Optional;
  */
 public class RepositorioPersonas {
     private final List<Persona> personas = new ArrayList<>();
+    private static long idSequence = 1L;
+
+    public Optional<Persona> buscarPorId(Long id) {
+        return personas.stream()
+            .filter(p -> p.getId() != null && p.getId().equals(id))
+            .findFirst();
+    }
 
     public Optional<Persona> buscarPorEmail(String email) {
         return personas.stream()
@@ -24,7 +31,14 @@ public class RepositorioPersonas {
     }
 
     public void agregar(Persona persona) {
+        if (persona.getId() == null) {
+            persona.setId(idSequence++);
+        }
         personas.add(persona);
+    }
+
+    public void eliminarPorId(Long id) {
+        personas.removeIf(p -> p.getId() != null && p.getId().equals(id));
     }
 
     public void eliminarPorDocumento(String documento) {

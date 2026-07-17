@@ -1,6 +1,7 @@
 package logistica.service;
 
 import logistica.retrofit_client.DonacionesAPICalls;
+import logistica.domain.Donacion;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;
@@ -12,6 +13,11 @@ import java.util.Optional;
 
 public class EntregasService {
 
+  // nombres de estado que entiende donaciones-service (EstadoDonacionIndependiente)
+  private static final String EN_TRASLADO = "EN_TRASLADO";
+  private static final String ENTREGADA = "ENTREGADA";
+  private static final String ENTREGA_FALLIDA = "ENTREGA_FALLIDA";
+
   private final RutasRepository rutasRepository;
   private final DonacionesAPICalls donacionesApi;
 
@@ -20,11 +26,11 @@ public class EntregasService {
     this.donacionesApi = donacionesApi;
   }
 
-  public Optional<Entrega> buscarPorId(String id) {
+  public Optional<Entrega> buscarPorId(Long id) {
     return rutasRepository.buscarEntregaPorId(id);
   }
 
-  public Optional<Ruta> buscarRutaPorId(String id) {
+  public Optional<Ruta> buscarRutaPorId(Long id) {
     return rutasRepository.buscarPorId(id);
   }
 
@@ -73,12 +79,18 @@ public class EntregasService {
     }
   }
 
-  public Entrega reingresarADeposito(String entregaId) {
-    return rutasRepository.buscarEntregaPorId(entregaId)
-        .map(entrega -> {
-          entrega.reingresarADeposito();
-          return entrega;
-        })
+  public Entrega reingresarADeposito(Long entregaId) {
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+
+    entrega.reingresarADeposito();
+    return entrega;
+  }
+
+  // donaciones cambia el estado por donacion; una entrega puede agrupar varias
+  private void notificarEstado(Entrega entrega, String nuevoEstado, String nombreCamion) throws IOException {
+    for (Donacion donacion : entrega.getListaDonaciones()) {
+      donacionesApi.cambiarEstado(donacion.getDonacionID(), nuevoEstado, nombreCamion).execute();
+    }
   }
 }

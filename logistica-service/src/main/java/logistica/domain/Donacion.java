@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Donacion {
-  final String donacionID;
+  final Long donacionID;
   final int cantidadBienes;
   final String unidad;
   final String destino;
   final String entidadNombre;
 
   @JsonCreator
-  public Donacion(@JsonProperty("donacionID") String donacionID,
+  public Donacion(@JsonProperty("donacionID") Long donacionID,
                    @JsonProperty("cantidadBienes") int cantidad,
                    @JsonProperty("unidad") String unidad,
                    @JsonProperty("destino") String coordenadas,
@@ -23,7 +23,7 @@ public class Donacion {
     this.entidadNombre = entidadNombre;
   }
 
-  public String getDonacionID() {
+  public Long getDonacionID() {
     return donacionID;
   }
 

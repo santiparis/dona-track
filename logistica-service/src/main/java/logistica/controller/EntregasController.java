@@ -18,11 +18,15 @@ public class EntregasController {
   public record ErrorResponse(String mensaje) {}
 
   public void obtenerEntrega(Context ctx) {
-    String id = ctx.pathParam("id");
-    entregasService.buscarPorId(id).ifPresentOrElse(
-        ctx::json,
-        () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada: " + id))
-    );
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      entregasService.buscarPorId(id).ifPresentOrElse(
+          ctx::json,
+          () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada: " + id))
+      );
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 
   public void confirmar(Context ctx) throws IOException {

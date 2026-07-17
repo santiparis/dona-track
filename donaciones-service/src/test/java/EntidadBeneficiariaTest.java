@@ -17,7 +17,7 @@ public class EntidadBeneficiariaTest {
 
     @BeforeEach
     void setUp() {
-        entidad = new EntidadBeneficiaria(1L, "Comedor Sol", "Calle 1", "1111-1111", List.of("sol@comedor.org"));
+        entidad = new EntidadBeneficiaria("Comedor Sol", "Calle 1", "1111-1111", List.of("sol@comedor.org"));
         necesidad = new Necesidad("necesitan fideos", new SinRenovacion(), Map.of(Subcategoria.FIDEOS, 10));
     }
 

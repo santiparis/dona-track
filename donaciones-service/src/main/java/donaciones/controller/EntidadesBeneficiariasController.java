@@ -94,7 +94,7 @@ public class EntidadesBeneficiariasController {
   }
 
   public void postNecesidades(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
@@ -106,12 +106,12 @@ public class EntidadesBeneficiariasController {
   }
 
   public void putNecesidad(Context ctx) {
-    int idEntidad = Integer.parseInt(ctx.pathParam("id"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      entidadesService.putNecesidad(idEntidad, idNecesidad, dto);
+      entidadesService.putNecesidad(id, idNecesidad, dto);
       ctx.result("Necesidad actualizada correctamente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);
@@ -119,8 +119,8 @@ public class EntidadesBeneficiariasController {
   }
 
   public void patchNecesidad(Context ctx) {
-    int idEntidad = Integer.parseInt(ctx.pathParam("id"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long idEntidad = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
@@ -132,11 +132,11 @@ public class EntidadesBeneficiariasController {
   }
 
   public void deleteNecesidad(Context ctx) {
-    int idEntidad = Integer.parseInt(ctx.pathParam("idEntidad"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
-      entidadesService.deleteNecesidad(idEntidad, idNecesidad);
+      entidadesService.deleteNecesidad(id, idNecesidad);
       ctx.result("Necesidad eliminada correctamente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);

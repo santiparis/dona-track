@@ -49,8 +49,8 @@ public class DonanteService {
     return repository.obtenerTodas();
   }
 
-  public void actualizarDonante(String documento, DonanteRequestDTO dto) {
-    Optional<Persona> donanteOpt = repository.buscarPorDocumento(documento);
+  public void actualizarDonante(Long id, DonanteRequestDTO dto) {
+    Optional<Persona> donanteOpt = repository.buscarPorId(id);
 
     if (donanteOpt.isPresent()) {
       Persona donanteExistente = donanteOpt.get();

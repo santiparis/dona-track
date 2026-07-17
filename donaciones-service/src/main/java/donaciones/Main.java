@@ -67,8 +67,8 @@ public class Main {
 
     app.get("/api/donantes", donanteController::listar);
     app.post("/api/donantes", donanteController::crear);
-    app.put("/api/donantes/{documento}", donanteController::actualizar);
-    app.delete("/api/donantes/{documento}", donanteController::eliminar);
+    app.put("/api/donantes/{id}", donanteController::actualizar);
+    app.delete("/api/donantes/{id}", donanteController::eliminar);
 
     app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
     app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
@@ -80,9 +80,9 @@ public class Main {
     app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
     app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
     app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
-    app.delete("/api/entidades-beneficiarias/{idEntidad}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
+    app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
 
     app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
-    app.post("/api/donaciones/{id}/asignar/{idEntidad}", asignacionController::seleccionarEntidad);
+    app.post("/api/donaciones/{id}/asignaciones/{idEntidad}", asignacionController::seleccionarEntidad);
   }
 }

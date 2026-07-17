@@ -8,13 +8,28 @@ import java.util.Optional;
 
 public class CamionesRepository {
   private final List<Camion> camiones = new ArrayList<>();
+  private static long idSequence = 1L;
 
   public void agregar(Camion camion) {
+    if (camion.getId() == null) {
+      camion.setId(idSequence++);
+    }
     camiones.add(camion);
   }
 
   public void agregarTodos(List<Camion> nuevos) {
+    for (Camion c : nuevos) {
+      if (c.getId() == null) {
+        c.setId(idSequence++);
+      }
+    }
     camiones.addAll(nuevos);
+  }
+
+  public Optional<Camion> buscarPorId(Long id) {
+    return camiones.stream()
+        .filter(c -> c.getId() != null && c.getId().equals(id))
+        .findFirst();
   }
 
   public Optional<Camion> buscarPorPatente(String patente) {
@@ -33,13 +48,17 @@ public class CamionesRepository {
         .toList();
   }
 
-  public void eliminarCamion(String patente) {
-    this.buscarPorPatente(patente).ifPresent(this.camiones::remove);
+  public void eliminarPorId(Long id) {
+    camiones.removeIf(c -> c.getId() != null && c.getId().equals(id));
   }
 
-  public void reemplazarCamion(String patente, Camion nuevoCamion) {
+  public void reemplazarCamionPorId(Long id, Camion nuevoCamion) {
     for (int i = 0; i < camiones.size(); i++) {
-      if (camiones.get(i).getPatente().equals(patente)) {
+      Camion c = camiones.get(i);
+      if (c.getId() != null && c.getId().equals(id)) {
+        if (nuevoCamion.getId() == null) {
+          nuevoCamion.setId(id);
+        }
         camiones.set(i, nuevoCamion);
         return;
       }

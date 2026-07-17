@@ -35,7 +35,7 @@ public class DonacionControllerTest {
 
     @Test
     void crearDevuelveCreatedCuandoElServicioTerminaBien() {
-        DonacionRequestDTO dto = new DonacionRequestDTO("123", "desc", List.of());
+        DonacionRequestDTO dto = new DonacionRequestDTO(123L, "desc", List.of());
         when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto);
 
         controller.crear(ctx);
@@ -50,7 +50,7 @@ public class DonacionControllerTest {
         when(ctx.queryParam("nuevo")).thenReturn(" ");
         when(ctx.queryParam("nombreCamion")).thenReturn(" ");
         doThrow(new IllegalArgumentException("Debe indicar el nuevo estado"))
-                .when(donacionService).cambiarEstado(1, " ", " ");
+                .when(donacionService).cambiarEstado(1L, " ", " ");
 
         controller.cambiarEstado(ctx);
 
@@ -59,7 +59,7 @@ public class DonacionControllerTest {
 
     @Test
     void crearDevuelveMensajeDeErrorCuandoElServicioFalla() {
-        DonacionRequestDTO dto = new DonacionRequestDTO("123", "desc", List.of());
+        DonacionRequestDTO dto = new DonacionRequestDTO(123L, "desc", List.of());
         when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto);
         doThrow(new IllegalArgumentException("No se pudo crear la donación"))
                 .when(donacionService).crearDonacion(dto);
