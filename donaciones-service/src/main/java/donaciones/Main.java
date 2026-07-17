@@ -63,8 +63,8 @@ public class Main {
 
     app.get("/api/donantes", donanteController::listar);
     app.post("/api/donantes", donanteController::crear);
-    app.put("/api/donantes/{documento}", donanteController::actualizar);
-    app.delete("/api/donantes/{documento}", donanteController::eliminar);
+    app.put("/api/donantes/{id}", donanteController::actualizar);
+    app.delete("/api/donantes/{id}", donanteController::eliminar);
 
     app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
     app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);

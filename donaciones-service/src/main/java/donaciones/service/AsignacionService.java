@@ -37,8 +37,8 @@ public class AsignacionService {
   }
 
   // ejecucion y ranking
-  public List<EntidadRankingDTO> ejecutarAlgoritmoYObtenerRanking(int donacionId, String criterio) {
-    Optional<Donacion> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
+  public List<EntidadRankingDTO> ejecutarAlgoritmoYObtenerRanking(Long donacionId, String criterio) {
+    Optional<Donacion> donacionOpt = donacionRepository.buscarPorId(donacionId);
 
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No existe la donacion");
@@ -63,8 +63,8 @@ public class AsignacionService {
   }
 
   // seleccion final
-  public void confirmarAsignacion(int donacionId, Long idEntidad, String nombreEntidad) {
-    Optional<Donacion> donacionOpt = donacionRepository.buscarPorPosicion(donacionId);
+  public void confirmarAsignacion(Long donacionId, Long idEntidad, String nombreEntidad) {
+    Optional<Donacion> donacionOpt = donacionRepository.buscarPorId(donacionId);
     Optional<EntidadBeneficiaria> entidadOpt = entidadRepository.obtenerPorId(idEntidad);
 
     if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
@@ -78,7 +78,7 @@ public class AsignacionService {
 
       try {
         DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
-                String.valueOf(donacionId),
+                donacionId,
                 donacion.getBien().getCantidad(),
                 "unidades",
                 "direccion",

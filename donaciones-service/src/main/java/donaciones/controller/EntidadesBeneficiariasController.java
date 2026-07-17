@@ -28,7 +28,7 @@ public class EntidadesBeneficiariasController {
   }
 
   public void putEntidadBeneficiaria(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
 
     try {
@@ -40,7 +40,7 @@ public class EntidadesBeneficiariasController {
   }
 
   public void patchEntidadBeneficiaria(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     donaciones.dto.EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(donaciones.dto.EntidadBeneficiariaPatchDTO.class);
 
     try {
@@ -52,7 +52,7 @@ public class EntidadesBeneficiariasController {
   }
 
   public void deleteEntidadBeneficiaria(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
 
     try {
       entidadesService.deleteEntidadBeneficiaria(id);
@@ -63,12 +63,12 @@ public class EntidadesBeneficiariasController {
   }
 
   public void getNecesidades(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     ctx.json(entidadesService.getNecesidades(id));
   }
 
   public void postNecesidades(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
@@ -80,8 +80,8 @@ public class EntidadesBeneficiariasController {
   }
 
   public void putNecesidad(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
@@ -93,8 +93,8 @@ public class EntidadesBeneficiariasController {
   }
 
   public void patchNecesidad(Context ctx) {
-    int idEntidad = Integer.parseInt(ctx.pathParam("id"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long idEntidad = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
@@ -106,8 +106,8 @@ public class EntidadesBeneficiariasController {
   }
 
   public void deleteNecesidad(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
-    int idNecesidad = Integer.parseInt(ctx.pathParam("idNecesidad"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
+    Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
       entidadesService.deleteNecesidad(id, idNecesidad);

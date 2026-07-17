@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Dona-Track (Logística + Donaciones)",
-    "description": "Colección de demo. ORDEN sugerido para la presentación:\n1) Levantar donaciones.Main (8081), logistica.Main (7070), MockPlanificador (9090) y opcionalmente MockGps.\n2) Correr los requests numerados en orden.\n\nLos ids de ruta/entrega son UUID generados en runtime: el request '05 Crear ruta (callback)' los guarda solos en variables {{rutaId}} y {{entregaId}}.\n\nOJO con la máquina de estados: para 'confirmar' o 'no-recibida' la entrega tiene que estar EN_TRASLADO, así que SIEMPRE correr '07 Iniciar ruta' antes.",
+    "description": "Colección de demo. ORDEN sugerido para la presentación:\n1) Levantar donaciones.Main (8081), logistica.Main (7070), MockPlanificador (9090) y opcionalmente MockGps.\n2) Correr los requests numerados en orden.\n\nLos ids de ruta/entrega son numéricos Long autoincrementables: el request '05 Crear ruta (callback)' los guarda solos en variables {{rutaId}} y {{entregaId}}.\n\nOJO con la máquina de estados: para 'confirmar' o 'no-recibida' la entrega tiene que estar EN_TRASLADO, así que SIEMPRE correr '07 Iniciar ruta' antes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -9,7 +9,7 @@
     { "key": "baseDonaciones", "value": "http://localhost:8081" },
     { "key": "rutaId", "value": "" },
     { "key": "entregaId", "value": "" },
-    { "key": "patente", "value": "AB123CD" }
+    { "key": "camionId", "value": "1" }
   ],
   "item": [
     {
@@ -28,7 +28,7 @@
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "[\n  { \"donacionID\": \"0\", \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" },\n  { \"donacionID\": \"1\", \"cantidadBienes\": 2, \"unidad\": \"unidades\", \"destino\": \"Calle 9 de Julio 55\", \"entidadNombre\": \"razon2\" }\n]" },
+            "body": { "mode": "raw", "raw": "[\n  { \"donacionID\": 1, \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" },\n  { \"donacionID\": 2, \"cantidadBienes\": 2, \"unidad\": \"unidades\", \"destino\": \"Calle 9 de Julio 55\", \"entidadNombre\": \"razon2\" }\n]" },
             "url": { "raw": "{{baseLogistica}}/api/donaciones", "host": ["{{baseLogistica}}"], "path": ["api", "donaciones"] }
           }
         },
@@ -61,7 +61,7 @@
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"AB123CD\",\n      \"paradas\": [\n        { \"donaciones\": [ { \"donacionID\": \"0\", \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" } ] }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"AB123CD\",\n      \"paradas\": [\n        { \"donaciones\": [ { \"donacionID\": 1, \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" } ] }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}" },
             "url": { "raw": "{{baseLogistica}}/api/rutas", "host": ["{{baseLogistica}}"], "path": ["api", "rutas"] }
           }
         },
@@ -95,7 +95,7 @@
             "method": "PATCH",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": { "mode": "raw", "raw": "{ \"latitud\": -34.6037, \"longitud\": -58.3816, \"velocidad\": 47.5 }" },
-            "url": { "raw": "{{baseLogistica}}/api/camiones/{{patente}}/localizacion", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "{{patente}}", "localizacion"] }
+            "url": { "raw": "{{baseLogistica}}/api/camiones/1/localizacion", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "1", "localizacion"] }
           }
         },
         {
@@ -108,8 +108,21 @@
           }
         },
         {
-          "name": "12 (CRUD) Baja de camión",
-          "request": { "method": "DELETE", "url": { "raw": "{{baseLogistica}}/api/camiones/NUEVO01", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "NUEVO01"] } }
+          "name": "12 (CRUD) Obtener camión por id",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/api/camiones/{{camionId}}", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "{{camionId}}"] } }
+        },
+        {
+          "name": "13 (CRUD) Actualización de camión",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"patente\": \"AB123CD-MOD\", \"volumen\": 25.0, \"altura\": 2.8, \"cargaMax\": 6000 }" },
+            "url": { "raw": "{{baseLogistica}}/api/camiones/{{camionId}}", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "{{camionId}}"] }
+          }
+        },
+        {
+          "name": "14 (CRUD) Baja de camión",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseLogistica}}/api/camiones/2", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "2"] } }
         }
       ]
     },
@@ -148,12 +161,12 @@
                 "method": "PUT",
                 "header": [ { "key": "Content-Type", "value": "application/json" } ],
                 "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"FISICA\",\n  \"documento\": \"35123456\",\n  \"nombre\": \"María Laura\",\n  \"apellido\": \"González\",\n  \"edad\": 43,\n  \"direccion\": \"Av. Santa Fe 2000, CABA\",\n  \"razonSocial\": null,\n  \"rubro\": null\n}" },
-                "url": { "raw": "{{baseDonaciones}}/api/donantes/35123456", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "35123456"] }
+                "url": { "raw": "{{baseDonaciones}}/api/donantes/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "1"] }
               }
             },
             {
               "name": "Eliminar donante",
-              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donantes/35123456", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "35123456"] } }
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donantes/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "1"] } }
             }
           ]
         },
@@ -249,7 +262,7 @@
               "request": {
                 "method": "POST",
                 "header": [ { "key": "Content-Type", "value": "application/json" } ],
-                "body": { "mode": "raw", "raw": "{\n  \"documentoDonante\": \"35123456\",\n  \"descripcion\": \"Donación de lácteos y abrigos de invierno\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 10,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera larga vida\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche.jpg\"\n    },\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"Camperas\",\n      \"cantidad\": 5,\n      \"unidad\": \"unidades\",\n      \"descripcion\": \"Camperas impermeables talle L\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}" },
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donación de lácteos y abrigos de invierno\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 10,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera larga vida\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche.jpg\"\n    },\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"Camperas\",\n      \"cantidad\": 5,\n      \"unidad\": \"unidades\",\n      \"descripcion\": \"Camperas impermeables talle L\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}" },
                 "url": { "raw": "{{baseDonaciones}}/api/donaciones", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones"] }
               }
             },
@@ -258,8 +271,8 @@
               "request": {
                 "method": "PUT",
                 "header": [ { "key": "Content-Type", "value": "application/json" } ],
-                "body": { "mode": "raw", "raw": "{\n  \"documentoDonante\": \"35123456\",\n  \"descripcion\": \"Donación modificada - solo cajas de leche\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 15,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera y descremada\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche_v2.jpg\"\n    }\n  ]\n}" },
-                "url": { "raw": "{{baseDonaciones}}/api/donaciones/0", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "0"] }
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donación modificada - solo cajas de leche\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 15,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera y descremada\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche_v2.jpg\"\n    }\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] }
               }
             },
             {
@@ -267,8 +280,8 @@
               "request": {
                 "method": "PATCH",
                 "header": [ { "key": "Content-Type", "value": "application/json" } ],
-                "body": { "mode": "raw", "raw": "{\n  \"documentoDonante\": \"35123456\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 20,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Leche en polvo adicionada\",\n      \"estado\": \"EXCELENTE\",\n      \"vencimiento\": \"2027-06-30\",\n      \"foto\": null\n    }\n  ]\n}" },
-                "url": { "raw": "{{baseDonaciones}}/api/donaciones/0", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "0"] }
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 20,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Leche en polvo adicionada\",\n      \"estado\": \"EXCELENTE\",\n      \"vencimiento\": \"2027-06-30\",\n      \"foto\": null\n    }\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] }
               }
             },
             {
@@ -276,9 +289,9 @@
               "request": {
                 "method": "PATCH",
                 "url": {
-                  "raw": "{{baseDonaciones}}/api/donaciones/0/estado?nuevo=EN_TRASLADO&nombreCamion=Camion 01 (AB123CD)",
+                  "raw": "{{baseDonaciones}}/api/donaciones/1/estado?nuevo=EN_TRASLADO&nombreCamion=Camion 01 (AB123CD)",
                   "host": ["{{baseDonaciones}}"],
-                  "path": ["api", "donaciones", "0", "estado"],
+                  "path": ["api", "donaciones", "1", "estado"],
                   "query": [
                     { "key": "nuevo", "value": "EN_TRASLADO" },
                     { "key": "nombreCamion", "value": "Camion 01 (AB123CD)" }
@@ -288,7 +301,7 @@
             },
             {
               "name": "Eliminar donación",
-              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donaciones/0", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "0"] } }
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] } }
             }
           ]
         },
@@ -297,7 +310,7 @@
           "item": [
             {
               "name": "Obtener ranking y sugerencias de asignación",
-              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donaciones/0/sugerencias", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "0", "sugerencias"] } }
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donaciones/1/sugerencias", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1", "sugerencias"] } }
             },
             {
               "name": "Seleccionar y asignar entidad beneficiaria",
@@ -305,7 +318,7 @@
                 "method": "POST",
                 "header": [ { "key": "Content-Type", "value": "application/json" } ],
                 "body": { "mode": "raw", "raw": "{\n  \"nombreEntidadSeleccionada\": \"Comedor Infantil Los Bajitos\"\n}" },
-                "url": { "raw": "{{baseDonaciones}}/api/donaciones/0/asignaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "0", "asignaciones", "1"] }
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1/asignaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1", "asignaciones", "1"] }
               }
             }
           ]

@@ -28,10 +28,11 @@ public class EntidadBeneficiariaServiceTest {
 
     @Test
     void putEntidadBeneficiariaParcialModificaSoloLosCamposRecibidos() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Vieja", "Dir vieja", "111", List.of("a@b.com"));
-        when(repository.buscarPorPosicion(0)).thenReturn(Optional.of(entidad));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Vieja", "Dir vieja", "111", List.of("a@b.com"));
+        entidad.setId(1L);
+        when(repository.buscarPorId(0L)).thenReturn(Optional.of(entidad));
 
-        service.patchEntidadBeneficiaria(0, new EntidadBeneficiariaPatchDTO("Nueva", null, null, null));
+        service.patchEntidadBeneficiaria(0L, new EntidadBeneficiariaPatchDTO("Nueva", null, null, null));
 
         assertEquals("Nueva", entidad.getRazonSocial());
         assertEquals("Dir vieja", entidad.getDireccion());
@@ -40,10 +41,11 @@ public class EntidadBeneficiariaServiceTest {
 
     @Test
     void putEntidadBeneficiariaSobrescribeLosDatosCompletos() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Vieja", "Dir vieja", "111", List.of("a@b.com"));
-        when(repository.buscarPorPosicion(2)).thenReturn(Optional.of(entidad));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Vieja", "Dir vieja", "111", List.of("a@b.com"));
+        entidad.setId(1L);
+        when(repository.buscarPorId(2L)).thenReturn(Optional.of(entidad));
 
-        service.putEntidadBeneficiaria(2, new EntidadBeneficiariaDTO("Nueva", "Dir nueva", "222", List.of("b@c.com")));
+        service.putEntidadBeneficiaria(2L, new EntidadBeneficiariaDTO("Nueva", "Dir nueva", "222", List.of("b@c.com")));
 
         assertEquals("Nueva", entidad.getRazonSocial());
         assertEquals("Dir nueva", entidad.getDireccion());
@@ -51,8 +53,8 @@ public class EntidadBeneficiariaServiceTest {
     }
     @Test
     void deleteEntidadBeneficiariaLanzaExcepcionSiNoExiste() {
-        when(repository.buscarPorPosicion(99)).thenReturn(Optional.empty());
+        when(repository.buscarPorId(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntidadBeneficiariaNoEncontradaException.class, () -> service.deleteEntidadBeneficiaria(99));
+        assertThrows(EntidadBeneficiariaNoEncontradaException.class, () -> service.deleteEntidadBeneficiaria(99L));
     }
 }

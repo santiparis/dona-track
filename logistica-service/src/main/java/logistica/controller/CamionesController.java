@@ -30,23 +30,37 @@ public class CamionesController {
     }
   }
 
+  public void getCamion(Context ctx) {
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(camionesService.getCamionPorId(id));
+    } catch (NumberFormatException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
+    } catch (NoSuchElementException e) {
+      ctx.status(HttpStatus.NOT_FOUND).json(new ErrorResponse(e.getMessage()));
+    }
+  }
+
   public void putCamion(Context ctx) {
     try {
-      String patente = ctx.pathParam("patente");
+      Long id = Long.parseLong(ctx.pathParam("id"));
       CamionDTO dto = ctx.bodyAsClass(CamionDTO.class);
-      Camion camionActualizado = this.camionesService.actualizarCamion(patente, dto);
+      Camion camionActualizado = this.camionesService.actualizarCamion(id, dto);
       ctx.status(HttpStatus.OK).json(camionActualizado);
+    } catch (NumberFormatException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
     }
   }
 
   public void deleteCamion(Context ctx) {
-    String patente = ctx.pathParam("patente");
-
     try {
-      this.camionesService.deleteCamion(patente);
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      this.camionesService.deleteCamion(id);
       ctx.status(HttpStatus.NO_CONTENT);
+    } catch (NumberFormatException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
     }
@@ -54,10 +68,12 @@ public class CamionesController {
 
   public void actualizarLocalizacion(Context ctx) {
     try {
-      String patente = ctx.pathParam("patente");
+      Long id = Long.parseLong(ctx.pathParam("id"));
       LocalizacionDTO dto = ctx.bodyAsClass(LocalizacionDTO.class);
-      this.camionesService.actualizarLocalizacion(patente, dto);
+      this.camionesService.actualizarLocalizacion(id, dto);
       ctx.status(HttpStatus.OK);
+    } catch (NumberFormatException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
     }

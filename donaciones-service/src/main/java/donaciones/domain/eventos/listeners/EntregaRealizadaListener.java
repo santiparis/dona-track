@@ -7,7 +7,7 @@ public class EntregaRealizadaListener implements Listener {
     @Override
     public void onEvento(CambioDeEstadoEnDonacion evento) {
         EntregaRealizadaEvent e = (EntregaRealizadaEvent) evento;
-        String prefijo = "[Donación #" + e.getDonacion().getID() + "] ";
+        String prefijo = "[Donación #" + e.getDonacion().getId() + "] ";
         String comprobante = String.format("Comprobante de Entrega - Fecha/Hora: %s | Camión: %s",
                 e.getFechaHora(), e.getCamionResponsable());
 

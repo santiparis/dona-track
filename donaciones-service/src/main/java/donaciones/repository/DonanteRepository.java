@@ -7,20 +7,26 @@ import java.util.Optional;
 
 public class DonanteRepository {
   private static final List<Persona> baseDeDatosSimulada = new ArrayList<>();
+  private static long idSequence = 1L;
 
   public void guardar(Persona persona) {
-    baseDeDatosSimulada.add(persona);
+    if (persona.getId() == null) {
+      persona.setId(idSequence++);
+    }
+    if (!baseDeDatosSimulada.contains(persona)) {
+      baseDeDatosSimulada.add(persona);
+    }
   }
 
   public List<Persona> obtenerTodos() {
     return baseDeDatosSimulada;
   }
 
-  public Optional<Persona> buscarPorDocumento(String documento) {
-    return baseDeDatosSimulada.stream().filter(persona -> persona.getDocumento().equals(documento)).findFirst();
+  public Optional<Persona> buscarPorId(Long id) {
+    return baseDeDatosSimulada.stream().filter(persona -> persona.getId() != null && persona.getId().equals(id)).findFirst();
   }
 
-  public void borrarPorDocumento(String documento) {
-    baseDeDatosSimulada.removeIf(persona -> persona.getDocumento().equals(documento));
+  public void borrarPorId(Long id) {
+    baseDeDatosSimulada.removeIf(persona -> persona.getId() != null && persona.getId().equals(id));
   }
 }

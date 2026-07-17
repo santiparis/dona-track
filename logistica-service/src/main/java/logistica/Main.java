@@ -42,12 +42,13 @@ public class Main {
 
       // Gestión de flota de camiones
       config.routes.get("/api/camiones", camionesController::getCamiones);
+      config.routes.get("/api/camiones/{id}", camionesController::getCamion);
       config.routes.post("/api/camiones", camionesController::postCamiones);
-      config.routes.delete("/api/camiones/{patente}", camionesController::deleteCamion);
-      config.routes.put("/api/camiones/{patente}", camionesController::putCamion);
+      config.routes.delete("/api/camiones/{id}", camionesController::deleteCamion);
+      config.routes.put("/api/camiones/{id}", camionesController::putCamion);
 
       // Actualización de la localización de un camión
-      config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
+      config.routes.patch("/api/camiones/{id}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
       config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);

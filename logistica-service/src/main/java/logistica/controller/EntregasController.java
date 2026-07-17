@@ -16,25 +16,41 @@ public class EntregasController {
   public record ErrorResponse(String mensaje) {}
 
   public void obtenerEntrega(Context ctx) {
-    String id = ctx.pathParam("id");
-    entregasService.buscarPorId(id).ifPresentOrElse(
-        ctx::json,
-        () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada: " + id))
-    );
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      entregasService.buscarPorId(id).ifPresentOrElse(
+          ctx::json,
+          () -> ctx.status(404).json(new ErrorResponse("Entrega no encontrada: " + id))
+      );
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 
   public void confirmar(Context ctx) throws IOException {
-    String id = ctx.pathParam("id");
-    ctx.json(entregasService.confirmarEntrega(id));
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(entregasService.confirmarEntrega(id));
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 
   public void marcarNoRecibida(Context ctx) throws IOException {
-    String id = ctx.pathParam("id");
-    ctx.json(entregasService.marcarNoRecibida(id));
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(entregasService.marcarNoRecibida(id));
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 
   public void reingresarADeposito(Context ctx) {
-    String id = ctx.pathParam("id");
-    ctx.json(entregasService.reingresarADeposito(id));
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(entregasService.reingresarADeposito(id));
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 }
