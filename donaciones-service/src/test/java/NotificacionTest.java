@@ -53,6 +53,19 @@ public class NotificacionTest {
     }
 
     @Test
+    public void testNotificacionAEntidadBeneficiariaMedianteServicio() {
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
+        Contacto contactoWa = new Contacto(estrategiaMock, "+5491100001111");
+        entidad.registrarContacto(contactoWa, true);
+
+        String mensaje = "Aviso para entidad: Se le ha asignado satisfactoriamente una nueva donación.";
+        Notificacion notif = entidad.notificar(mensaje);
+
+        assertEquals(EstadoNotificacion.COMPLETADA, notif.getEstado());
+        verify(estrategiaMock, times(1)).enviar(eq("+5491100001111"), eq(mensaje));
+    }
+
+    @Test
     public void testEnvioDeEmailsDeBienvenida() {
         Contacto contactoUsuario1 = new Contacto(estrategiaMock, "juanignaciopereyra01@gmail.com");
         Contacto contactoUsuario2 = new Contacto(estrategiaMock, "parispueblasantiago@gmail.com");

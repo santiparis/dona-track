@@ -3,6 +3,6 @@ package donaciones.dto;
 import java.util.List;
 
 public record DonacionPatchDTO(
-    String documentoDonante,
+    Long idDonante,
     List<BienDTO> bienes
 ) {}

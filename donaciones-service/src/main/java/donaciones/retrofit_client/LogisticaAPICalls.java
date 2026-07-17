@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface LogisticaAPICalls {
 
-  @POST("/donaciones")
+  @POST("api/donaciones")
   Call<String> enviarDonaciones(@Body List<DonacionLogisticaDTO> donaciones);
 }

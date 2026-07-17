@@ -14,11 +14,14 @@ public class EntidadBeneficiariaRepository {
 
   private static final List<EntidadBeneficiaria> baseDeDatosSimulada = new ArrayList<>();
   private final List<EntidadBeneficiaria> entidadesBeneficiarias = new ArrayList<>();
+  private static long idSequence = 3L;
+  private static long necesidadIdSequence = 3L;
 
   public EntidadBeneficiariaRepository() {
     if (baseDeDatosSimulada.isEmpty()) {
 
-      EntidadBeneficiaria e1 = new EntidadBeneficiaria(1L, "razon1", "direc1", "tel1", new ArrayList<>());
+      EntidadBeneficiaria e1 = new EntidadBeneficiaria("razon1", "direc1", "tel1", new ArrayList<>());
+      e1.setId(1L);
       Map<Subcategoria, Integer> cantidadesE1 = new HashMap<>();
       cantidadesE1.put(Subcategoria.BANCOS, 50);
 
@@ -27,10 +30,12 @@ public class EntidadBeneficiariaRepository {
               null,
               cantidadesE1
       );
+      necesidadE1.setId(1L);
       e1.getNecesidades().add(necesidadE1);
       baseDeDatosSimulada.add(e1);
 
-      EntidadBeneficiaria e2 = new EntidadBeneficiaria(2L, "razon2", "direc2", "tel2", new ArrayList<>());
+      EntidadBeneficiaria e2 = new EntidadBeneficiaria("razon2", "direc2", "tel2", new ArrayList<>());
+      e2.setId(2L);
       Map<Subcategoria, Integer> cantidadesE2 = new HashMap<>();
       cantidadesE2.put(Subcategoria.REMERAS, 15);
       cantidadesE2.put(Subcategoria.ARROZ, 40);
@@ -40,6 +45,7 @@ public class EntidadBeneficiariaRepository {
               null,
               cantidadesE2
       );
+      necesidadE2.setId(2L);
 
       e2.getNecesidades().add(necesidadE2);
       baseDeDatosSimulada.add(e2);
@@ -50,26 +56,31 @@ public class EntidadBeneficiariaRepository {
     return new ArrayList<>(baseDeDatosSimulada);
   }
 
-  public Optional<EntidadBeneficiaria> buscarPorPosicion(int index) {
-    if (index >= 0 && index < baseDeDatosSimulada.size()) {
-      return Optional.of(baseDeDatosSimulada.get(index));
-    }
-    return Optional.empty();
+  public Optional<EntidadBeneficiaria> buscarPorId(Long id) {
+    return baseDeDatosSimulada.stream()
+            .filter(entidad -> entidad.getId() != null && entidad.getId().equals(id))
+            .findFirst();
+  }
+
+  public void eliminarPorId(Long id) {
+    baseDeDatosSimulada.removeIf(entidad -> entidad.getId() != null && entidad.getId().equals(id));
   }
 
   public void guardar(EntidadBeneficiaria entidadBeneficiaria) {
+    if (entidadBeneficiaria.getId() == null) {
+      entidadBeneficiaria.setId(idSequence++);
+    }
+    for (Necesidad nec : entidadBeneficiaria.getNecesidades()) {
+      if (nec.getId() == null) {
+        nec.setId(necesidadIdSequence++);
+      }
+    }
     if (!baseDeDatosSimulada.contains(entidadBeneficiaria)) {
       baseDeDatosSimulada.add(entidadBeneficiaria);
     }
   }
 
-  public void eliminarPorPosicion(int id) {
-    baseDeDatosSimulada.remove(id);
-  }
-
   public Optional<EntidadBeneficiaria> obtenerPorId(Long idEntidad) {
-    return baseDeDatosSimulada.stream()
-            .filter(entidad -> entidad.getId().equals(idEntidad))
-            .findFirst();
+    return buscarPorId(idEntidad);
   }
 }

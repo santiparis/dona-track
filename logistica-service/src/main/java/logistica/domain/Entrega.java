@@ -1,12 +1,8 @@
 package logistica.domain;
 
-import logistica.retrofit_client.DonacionesAPICalls;
-
 import java.util.List;
-import java.util.UUID;
-
 public class Entrega {
-  final String id;
+  Long id;
   final List<Donacion> listaDonaciones;
   String destino;
   String entidadNombre;
@@ -15,15 +11,17 @@ public class Entrega {
 
   public Entrega(List<Donacion> listaDonaciones, String destino, String entidadNombre) {
     this.listaDonaciones = listaDonaciones;
-    this.id = UUID.randomUUID().toString();
-
     this.destino = destino;
     this.entidadNombre = entidadNombre;
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
-  public String getId() {
+  public Long getId() {
     return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public EstadoEntrega getEstado() {

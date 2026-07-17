@@ -23,7 +23,7 @@ public class MockGps {
 
   // contrato de integracion: el endpoint de ingesta que expone logistica
   interface LogisticaGps {
-    @PATCH("/camiones/{patente}")
+    @PATCH("api/camiones/{patente}/localizacion")
     Call<Void> reportar(@Path("patente") String patente, @Body LocalizacionDTO reporte);
   }
 

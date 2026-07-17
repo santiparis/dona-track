@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Necesidad {
+    private Long id;
     private final String descripcion;
     private final Map<Subcategoria, Integer> cantidadesRequeridas;
     private Map<Subcategoria, Integer> cantidadesSuplidas;
@@ -20,6 +21,14 @@ public class Necesidad {
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public PoliticaDeRenovacion getRenovacion() {

@@ -7,7 +7,7 @@ import java.util.List;
 import java.time.LocalDate;
 
 public class Donacion {
-    private final Long ID;
+    private Long id;
     private Persona donante;
     private EntidadBeneficiaria entidadBeneficiaria;
     private Bien bien;
@@ -17,10 +17,8 @@ public class Donacion {
 
     public Donacion(
         Persona donante,
-        Bien bien,
-        Long ID
+        Bien bien
     ) {
-        this.ID = ID;
         this.donante = donante;
         this.bien = bien;
         this.fecha = LocalDate.now();
@@ -59,8 +57,12 @@ public class Donacion {
         return this.fecha;
     }
 
-    public Long getID() {
-        return ID;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Persona getDonante() {

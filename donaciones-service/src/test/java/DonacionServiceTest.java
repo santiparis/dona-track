@@ -36,10 +36,10 @@ public class DonacionServiceTest {
     @Test
     void crearDonacionGuardaUnaDonacionCuandoElDonanteExiste() {
         Persona donante = mock(Persona.class);
-        when(personasRepository.buscarPorDocumento("123")).thenReturn(Optional.of(donante));
+        when(personasRepository.buscarPorId(123L)).thenReturn(Optional.of(donante));
 
         DonacionRequestDTO dto = new DonacionRequestDTO(
-                "123",
+                123L,
                 "donación de prueba",
                 List.of(new BienDTO(false, false, "Fideos", 5, "kg", "descripción", null, null, null))
         );
@@ -51,10 +51,10 @@ public class DonacionServiceTest {
 
     @Test
     void crearDonacionLanzaExcepcionSiElDonanteNoExiste() {
-        when(personasRepository.buscarPorDocumento("404")).thenReturn(Optional.empty());
+        when(personasRepository.buscarPorId(404L)).thenReturn(Optional.empty());
 
         DonacionRequestDTO dto = new DonacionRequestDTO(
-                "404",
+                404L,
                 "donación inválida",
                 List.of(new BienDTO(false, false, "Fideos", 1, "kg", "desc", null, null, null))
         );

@@ -28,11 +28,11 @@ public class DonanteController {
   }
 
   public void actualizar(Context ctx) {
-    String documento = ctx.pathParam("documento");
+    Long id = Long.parseLong(ctx.pathParam("id"));
     DonanteRequestDTO dto = ctx.bodyAsClass(DonanteRequestDTO.class);
 
     try {
-      donanteService.actualizarDonante(documento, dto);
+      donanteService.actualizarDonante(id, dto);
       ctx.result("Datos del donante actualizados");
     } catch (IllegalArgumentException e) {
       ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
@@ -40,8 +40,8 @@ public class DonanteController {
   }
 
   public void eliminar(Context ctx) {
-    String documento = ctx.pathParam("documento");
-    donanteService.eliminarDonante(documento);
+    Long id = Long.parseLong(ctx.pathParam("id"));
+    donanteService.eliminarDonante(id);
     ctx.result("Donante eliminado");
   }
 }

@@ -14,7 +14,7 @@ import retrofit2.http.Query;
 public interface DonacionesAPICalls {
 
   @PATCH("/api/donaciones/{id}/estado")
-  Call<Void> cambiarEstado(@Path("id") String donacionId,
+  Call<Void> cambiarEstado(@Path("id") Long donacionId,
                            @Query("nuevo") String nuevoEstado,
                            @Query("nombreCamion") String nombreCamion);
 }

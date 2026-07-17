@@ -29,7 +29,7 @@ public class DonacionController {
   }
 
   public void cambiarEstado(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     String nuevoEstadoTexto = ctx.queryParam("nuevo");
     String nombreCamion =  ctx.queryParam("nombreCamion");
 
@@ -42,7 +42,7 @@ public class DonacionController {
   }
 
   public void actualizar(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     DonacionRequestDTO dto = ctx.bodyAsClass(DonacionRequestDTO.class);
 
     try {
@@ -54,7 +54,7 @@ public class DonacionController {
   }
 
   public void actualizarParcial(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
     donaciones.dto.DonacionPatchDTO dto = ctx.bodyAsClass(donaciones.dto.DonacionPatchDTO.class);
 
     try {
@@ -66,7 +66,7 @@ public class DonacionController {
   }
 
   public void eliminar(Context ctx) {
-    int id = Integer.parseInt(ctx.pathParam("id"));
+    Long id = Long.parseLong(ctx.pathParam("id"));
 
     try {
       donacionService.eliminarDonacion(id);

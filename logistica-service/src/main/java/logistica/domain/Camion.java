@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Camion {
+  private Long id;
   final String patente;
   final double volumen;
   final double altura;
@@ -25,11 +26,17 @@ public class Camion {
     this.disponibilidad = true;
   }
 
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
   public void actualizarLocalizacion(Coordenadas nuevaLocalizacion) {
     this.localizacion = nuevaLocalizacion;
   }
-
-
 
   public Boolean estaDisponible(){
     return this.disponibilidad == true;

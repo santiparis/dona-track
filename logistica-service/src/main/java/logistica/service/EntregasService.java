@@ -25,15 +25,15 @@ public class EntregasService {
     this.donacionesApi = donacionesApi;
   }
 
-  public Optional<Entrega> buscarPorId(String id) {
+  public Optional<Entrega> buscarPorId(Long id) {
     return rutasRepository.buscarEntregaPorId(id);
   }
 
-  public Optional<Ruta> buscarRutaPorId(String id) {
+  public Optional<Ruta> buscarRutaPorId(Long id) {
     return rutasRepository.buscarPorId(id);
   }
 
-  public Ruta iniciarRuta(String rutaId) throws IOException {
+  public Ruta iniciarRuta(Long rutaId) throws IOException {
     Ruta ruta = rutasRepository.buscarPorId(rutaId)
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));
 
@@ -46,7 +46,7 @@ public class EntregasService {
     return ruta;
   }
 
-  public Entrega confirmarEntrega(String entregaId) throws IOException {
+  public Entrega confirmarEntrega(Long entregaId) throws IOException {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
 
@@ -59,7 +59,7 @@ public class EntregasService {
     return entrega;
   }
 
-  public Entrega marcarNoRecibida(String entregaId) throws IOException {
+  public Entrega marcarNoRecibida(Long entregaId) throws IOException {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
     entrega.marcarNoRecibida();
@@ -67,7 +67,7 @@ public class EntregasService {
     return entrega;
   }
 
-  public Entrega reingresarADeposito(String entregaId) {
+  public Entrega reingresarADeposito(Long entregaId) {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
 

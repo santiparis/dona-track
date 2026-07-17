@@ -9,7 +9,7 @@ import java.util.List;
 
 public class EntidadBeneficiaria implements Notificable {
 
-    private final Long id;
+    private Long id;
     private String razonSocial;
     private String direccion;
     private String telefono;
@@ -20,13 +20,11 @@ public class EntidadBeneficiaria implements Notificable {
     private final List<Donacion> donacionesRecibidas = new ArrayList<>();
 
     public EntidadBeneficiaria(
-            Long id,
             String razonSocial,
             String direccion,
             String telefono,
             List<String> correosRepresentantes
     ) {
-        this.id = id;
         this.razonSocial = razonSocial;
         this.direccion = direccion;
         this.telefono = telefono;
@@ -34,7 +32,6 @@ public class EntidadBeneficiaria implements Notificable {
     }
 
     public EntidadBeneficiaria(
-            Long id,
             String razonSocial,
             String direccion,
             String telefono,
@@ -42,7 +39,7 @@ public class EntidadBeneficiaria implements Notificable {
             List<Contacto> contactos,
             Contacto medioPredeterminado
     ) {
-        this(id, razonSocial, direccion, telefono, correosRepresentantes);
+        this(razonSocial, direccion, telefono, correosRepresentantes);
         if (contactos != null) {
             this.contactos.addAll(contactos);
         }
@@ -125,17 +122,26 @@ public class EntidadBeneficiaria implements Notificable {
         return (int) cantidad;
     }
 
-    public void eliminarNecesidad(int index) {
-        this.necesidades.remove(index);
+    public void eliminarNecesidadPorId(Long idNecesidad) {
+        this.necesidades.removeIf(n -> n.getId() != null && n.getId().equals(idNecesidad));
     }
 
-    public void actualizarNecesidad(int index, Necesidad necesidad) {
-        if (index >= 0 && index < this.necesidades.size()) {
-            this.necesidades.set(index, necesidad);
+    public void actualizarNecesidadPorId(Long idNecesidad, Necesidad necesidad) {
+        for (int i = 0; i < this.necesidades.size(); i++) {
+            Necesidad actual = this.necesidades.get(i);
+            if (actual.getId() != null && actual.getId().equals(idNecesidad)) {
+                necesidad.setId(idNecesidad);
+                this.necesidades.set(i, necesidad);
+                return;
+            }
         }
     }
   
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

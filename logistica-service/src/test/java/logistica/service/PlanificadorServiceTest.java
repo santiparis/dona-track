@@ -67,8 +67,8 @@ public class PlanificadorServiceTest {
 
   @Test
   public void enviaLasDonacionesPendientesYLasSacaDelPoolSiElPlanificadorConfirma() throws IOException {
-    donacionesRepository.agregar(new Donacion("D1", 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
-    donacionesRepository.agregar(new Donacion("D2", 2, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
+    donacionesRepository.agregar(new Donacion(1L, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
+    donacionesRepository.agregar(new Donacion(2L, 2, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
 
     planificadorService.enviarPlanificacion();
 
@@ -86,7 +86,7 @@ public class PlanificadorServiceTest {
   @Test
   public void respetaElLimiteDeCienDonacionesPorBatch() throws IOException {
     for (int i = 0; i < 150; i++) {
-      donacionesRepository.agregar(new Donacion("D" + i, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
+      donacionesRepository.agregar(new Donacion((long) i, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol"));
     }
 
     planificadorService.enviarPlanificacion();
