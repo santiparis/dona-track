@@ -16,19 +16,22 @@ public class CamionesServiceTest {
 
   private CamionesRepository camionesRepository;
   private CamionesService camionesService;
+  private Long camionId;
 
   @BeforeEach
   public void setUp() {
     camionesRepository = new CamionesRepository();
-    camionesRepository.agregar(new Camion("AB123CD", 10, 2, 1000));
+    Camion c = new Camion("AB123CD", 10, 2, 1000);
+    camionesRepository.agregar(c);
+    camionId = c.getId();
     camionesService = new CamionesService(camionesRepository);
   }
 
   @Test
   public void actualizarLocalizacionGuardaCoordenadasYVelocidad() {
-    camionesService.actualizarLocalizacion("AB123CD", new LocalizacionDTO(-34.60, -58.42, 47.5));
+    camionesService.actualizarLocalizacion(camionId, new LocalizacionDTO(-34.60, -58.42, 47.5));
 
-    Camion camion = camionesRepository.buscarPorPatente("AB123CD").orElseThrow();
+    Camion camion = camionesRepository.buscarPorId(camionId).orElseThrow();
     assertEquals(-34.60, camion.getLocalizacion().getLatitud());
     assertEquals(-58.42, camion.getLocalizacion().getLongitud());
     assertEquals(47.5, camion.getVelocidad());
@@ -39,9 +42,9 @@ public class CamionesServiceTest {
     var dto = new LocalizacionDTO(-34.60, -58.42, -5);
 
     assertThrows(IllegalArgumentException.class,
-        () -> camionesService.actualizarLocalizacion("AB123CD", dto));
+        () -> camionesService.actualizarLocalizacion(camionId, dto));
 
-    Camion camion = camionesRepository.buscarPorPatente("AB123CD").orElseThrow();
+    Camion camion = camionesRepository.buscarPorId(camionId).orElseThrow();
     assertNull(camion.getLocalizacion());
     assertEquals(0, camion.getVelocidad());
   }
@@ -51,7 +54,7 @@ public class CamionesServiceTest {
     var dto = new LocalizacionDTO(120, -58.42, 20);
 
     assertThrows(IllegalArgumentException.class,
-        () -> camionesService.actualizarLocalizacion("AB123CD", dto));
+        () -> camionesService.actualizarLocalizacion(camionId, dto));
   }
 
   @Test
@@ -59,6 +62,6 @@ public class CamionesServiceTest {
     var dto = new LocalizacionDTO(-34.60, -58.42, 20);
 
     assertThrows(NoSuchElementException.class,
-        () -> camionesService.actualizarLocalizacion("NOEXISTE", dto));
+        () -> camionesService.actualizarLocalizacion(999999L, dto));
   }
 }

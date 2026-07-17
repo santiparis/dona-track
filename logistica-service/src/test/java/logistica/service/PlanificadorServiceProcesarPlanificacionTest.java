@@ -38,7 +38,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void creaUnaRutaConSuEntregaParaElCamionAsignado() {
-    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var donacion = new Donacion(1L, 1, "kg", "Calle 123", "Comedor Sol");
     var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("AB123CD", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());
@@ -52,7 +52,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void guardaLaRutaCreadaEnElRepositorio() {
-    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var donacion = new Donacion(1L, 1, "kg", "Calle 123", "Comedor Sol");
     var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("AB123CD", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());
@@ -64,7 +64,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void reencolaLasDonacionesNoAsignadas() {
-    var noAsignada = new Donacion("D2", 1, "kg", null, null);
+    var noAsignada = new Donacion(2L, 1, "kg", null, null);
     var resultado = new PlanificacionCallbackRequest(List.of(), List.of(noAsignada));
 
     planificadorService.procesarPlanificacion(resultado);
@@ -74,7 +74,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   @Test
   void tiraExcepcionSiElCamionAsignadoNoExiste() {
-    var donacion = new Donacion("D1", 1, "kg", "Calle 123", "Comedor Sol");
+    var donacion = new Donacion(1L, 1, "kg", "Calle 123", "Comedor Sol");
     var parada = new ParadaPlanificada(List.of(donacion));
     var asignacion = new AsignacionCamion("PATENTE-INEXISTENTE", List.of(parada));
     var resultado = new PlanificacionCallbackRequest(List.of(asignacion), List.of());

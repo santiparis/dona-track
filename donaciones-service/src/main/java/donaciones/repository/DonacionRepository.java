@@ -7,27 +7,29 @@ import java.util.List;
 import java.util.Optional;
 
 public class DonacionRepository {
-  private static final List<Donacion> baseDeDatosSimulada = new ArrayList<>();
-  private static int idSequence = 1;
+  private static final List<Donacion> donaciones = new ArrayList<>();
+  private static long idSequence = 1L;
 
   public void guardar(Donacion donacion) {
-    baseDeDatosSimulada.add(donacion);
+    if (donacion.getId() == null) {
+      donacion.setId(idSequence++);
+    }
+    if (!donaciones.contains(donacion)) {
+      donaciones.add(donacion);
+    }
   }
 
   public List<Donacion> obtenerTodas() {
-    return baseDeDatosSimulada;
+    return donaciones;
   }
 
-  public Optional<Donacion> buscarPorPosicion(int index) {
-    if (index >= 0 && index < baseDeDatosSimulada.size()) {
-      return Optional.of(baseDeDatosSimulada.get(index));
-    }
-    return Optional.empty();
+  public Optional<Donacion> buscarPorId(Long id) {
+    return donaciones.stream()
+            .filter(d -> d.getId() != null && d.getId().equals(id))
+            .findFirst();
   }
 
-  public void borrarPorPosicion(int index) {
-    if (index >= 0 && index < baseDeDatosSimulada.size()) {
-      baseDeDatosSimulada.remove(index);
-    }
+  public void borrarPorId(Long id) {
+    donaciones.removeIf(d -> d.getId() != null && d.getId().equals(id));
   }
 }

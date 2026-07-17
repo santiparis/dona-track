@@ -1,24 +1,25 @@
 package logistica.domain;
 
 import java.util.List;
-import java.util.UUID;
-
 public class Ruta {
 
-  final String id;
+  Long id;
   Camion camion;
   List<Entrega> entregas;
   EstadoRuta estado;
 
   public Ruta(Camion camion, List<Entrega> entregas) {
-    this.id = UUID.randomUUID().toString();
     this.camion = camion;
     this.entregas = entregas;
     this.estado = EstadoRuta.PLANIFICADA;
   }
 
-  public String getId() {
+  public Long getId() {
     return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public Camion getCamion() {

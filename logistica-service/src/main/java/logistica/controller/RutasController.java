@@ -17,18 +17,24 @@ public class RutasController {
   public record ErrorResponse(String mensaje) {}
 
   public void obtenerRuta(Context ctx) {
-    String id = ctx.pathParam("id");
-    entregasService.buscarRutaPorId(id).ifPresentOrElse(
-        ctx::json,
-        () -> ctx.status(404).json(new ErrorResponse("Ruta no encontrada: " + id))
-    );
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      entregasService.buscarRutaPorId(id).ifPresentOrElse(
+          ctx::json,
+          () -> ctx.status(404).json(new ErrorResponse("Ruta no encontrada: " + id))
+      );
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
+    }
   }
 
   public void iniciarRuta(Context ctx) {
-    String id = ctx.pathParam("id");
     try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
       var ruta = entregasService.iniciarRuta(id);
       ctx.json(ruta);
+    } catch (NumberFormatException e) {
+      ctx.status(400).json(new ErrorResponse("ID inválido"));
     } catch (NoSuchElementException e) {
       ctx.status(404).json(new ErrorResponse(e.getMessage()));
     } catch (IllegalStateException e) {
