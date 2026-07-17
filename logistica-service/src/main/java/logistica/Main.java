@@ -59,6 +59,9 @@ public class Main {
       //endpoints consumidos por el planificador externo (callback con las rutas armadas)
       config.routes.post("/api/rutas", planificadorController::obtenerRutas);
 
+      // listado general de rutas planificadas
+      config.routes.get("/rutas", rutasController::obtenerRutas);
+
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
       config.routes.get("/api/rutas/{id}", rutasController::obtenerRuta);
 

@@ -16,6 +16,10 @@ public class RutasController {
 
   public record ErrorResponse(String mensaje) {}
 
+  public void obtenerRutas(Context ctx) {
+    ctx.json(entregasService.listarRutas());
+  }
+
   public void obtenerRuta(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));

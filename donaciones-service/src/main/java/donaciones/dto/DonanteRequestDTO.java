@@ -1,5 +1,7 @@
 package donaciones.dto;
 
+import java.util.List;
+
 public record DonanteRequestDTO(
         String tipo,
         String documento,
@@ -10,5 +12,6 @@ public record DonanteRequestDTO(
         String direccion,
 
         String razonSocial,
-        String rubro
+        String rubro,
+        List<ContactoDTO> contactos
 ) {}

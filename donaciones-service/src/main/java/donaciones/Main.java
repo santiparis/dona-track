@@ -4,6 +4,7 @@ import donaciones.controller.AsignacionController;
 import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
+import donaciones.controller.IntegracionLogisticaController;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.eventos.*;
 import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
@@ -18,7 +19,6 @@ import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
-import donaciones.repository.DonanteRepository;
 import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
 
@@ -34,7 +34,6 @@ public class Main {
 
     DonacionRepository donacionesRepository = new DonacionRepository();
     RepositorioPersonas personasRepository = new RepositorioPersonas();
-    DonanteRepository donanteRepo = new DonanteRepository();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
     RetrofitConfig retrofitConfig = new RetrofitConfig();
@@ -42,8 +41,9 @@ public class Main {
 
     DonacionService service = new DonacionService(donacionesRepository, personasRepository, publicador);
     DonacionController controller = new DonacionController(service);
-    DonanteService donanteService = new DonanteService(donanteRepo);
+    DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
+    IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
 
     AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, publicador);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
@@ -60,6 +60,10 @@ public class Main {
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
     app.patch("/api/donaciones/{id}/estado", controller::cambiarEstado);
     app.delete("/api/donaciones/{id}", controller::eliminar);
+
+    app.post("/donaciones/rutasIniciadas", integracionLogisticaController::rutasIniciadas);
+    app.post("/donaciones/entregaCompletada", integracionLogisticaController::entregaCompletada);
+    app.post("/donaciones/entregaFallida", integracionLogisticaController::entregaFallida);
 
     app.get("/api/donantes", donanteController::listar);
     app.post("/api/donantes", donanteController::crear);

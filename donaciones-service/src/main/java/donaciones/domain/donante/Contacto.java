@@ -15,6 +15,12 @@ public class Contacto {
         return valor;
     }
 
+    public String getEstrategia() {
+        return estrategiaDeNotificacion.getClass().getSimpleName()
+            .replace("NotificacionPor", "")
+            .toUpperCase();
+    }
+
     public boolean enviar(String mensaje) {
         return estrategiaDeNotificacion.enviar(valor, mensaje);
     }

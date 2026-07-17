@@ -7,6 +7,7 @@ import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -33,38 +34,49 @@ public class EntregasService {
     return rutasRepository.buscarPorId(id);
   }
 
-  public Ruta iniciarRuta(Long rutaId) throws IOException {
+  public List<Ruta> listarRutas() {
+    return rutasRepository.obtenerTodas();
+  }
+
+  public Ruta iniciarRuta(String rutaId) throws IOException {
     Ruta ruta = rutasRepository.buscarPorId(rutaId)
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));
 
     ruta.iniciar();
-    // notifica a donaciones el inicio de ruta, una donacion a la vez
-    for (Entrega entrega : ruta.getEntregas()) {
-      notificarEstado(entrega, EN_TRASLADO, null);
-    }
+    donacionesApi.rutaIniciada(ruta).execute();
 
     return ruta;
   }
 
-  public Entrega confirmarEntrega(Long entregaId) throws IOException {
-    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
-        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
 
-    entrega.marcarEntregada();
-    // el comprobante debe registrar que camion realizo la entrega
-    String patente = rutasRepository.buscarRutaPorEntregaId(entregaId)
-        .map(ruta -> ruta.getCamion().getPatente())
-        .orElse(null);
-    notificarEstado(entrega, ENTREGADA, patente);
-    return entrega;
+  public Entrega confirmarEntrega(String entregaId) {
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entregaEncontrada -> {
+          entregaEncontrada.marcarEntregada();
+          return entregaEncontrada;
+        })
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+    try {
+      donacionesApi.entregaCompletada(entrega).execute();
+      return entrega;
+    } catch (IOException e) {
+      throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
+    }
   }
 
-  public Entrega marcarNoRecibida(Long entregaId) throws IOException {
+  public Entrega marcarNoRecibida(String entregaId) {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entregaEncontrada -> {
+          entregaEncontrada.marcarNoRecibida();
+          return entregaEncontrada;
+        })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
-    entrega.marcarNoRecibida();
-    notificarEstado(entrega, ENTREGA_FALLIDA, null);
-    return entrega;
+    try {
+      donacionesApi.entregaFallida(entrega).execute();
+      return entrega;
+    } catch (IOException e) {
+      throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
+    }
   }
 
   public Entrega reingresarADeposito(Long entregaId) {

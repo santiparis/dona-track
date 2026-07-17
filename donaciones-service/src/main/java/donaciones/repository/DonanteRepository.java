@@ -4,6 +4,7 @@ import donaciones.domain.donante.Persona;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 public class DonanteRepository {
   private static final List<Persona> baseDeDatosSimulada = new ArrayList<>();
@@ -22,8 +23,8 @@ public class DonanteRepository {
     return baseDeDatosSimulada;
   }
 
-  public Optional<Persona> buscarPorId(Long id) {
-    return baseDeDatosSimulada.stream().filter(persona -> persona.getId() != null && persona.getId().equals(id)).findFirst();
+  public Optional<Persona> buscarPorDocumento(String documento) {
+    return baseDeDatosSimulada.stream().filter(persona -> Objects.equals(persona.getDocumento(), documento)).findFirst();
   }
 
   public void borrarPorId(Long id) {
