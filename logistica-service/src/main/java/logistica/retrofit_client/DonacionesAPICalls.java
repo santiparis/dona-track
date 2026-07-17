@@ -5,12 +5,9 @@ import retrofit2.http.PATCH;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
-// Cliente hacia donaciones-service.
-// Donaciones expone UN unico cambio de estado por donacion (lee id por path y estado/camion por query);
-// segun el estado publica el evento correspondiente:
-//   EN_TRASLADO -> InicioRuta, ENTREGADA -> EntregaRealizada, ENTREGA_FALLIDA -> EntregaNoSatisfactoria.
-// Logistica informa el hecho; donaciones decide y aplica el cambio sobre su donacion.
-// nombreCamion solo se usa para ENTREGADA (comprobante); si es null Retrofit omite el query param.
+// Cliente hacia donaciones-service..
+// Logistica informa el hecho, donaciones decide y aplica el cambio sobre su donacion.
+
 public interface DonacionesAPICalls {
 
   @PATCH("/api/donaciones/{id}/estado")

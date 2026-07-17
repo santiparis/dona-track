@@ -23,9 +23,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Mock del componente EXTERNO de planificacion de rutas.
  *   1. recibe el POST con las donaciones asignadas + camiones disponibles,
- *   2. responde "OK" al instante (la integracion es asincronica),
- *   3. arma las rutas y, tras un delay, las devuelve por el callback de logistica.
- *
+ *   2. arma las rutas y, tras un delay, las devuelve por el callback de logistica.
  */
 public class MockPlanificador {
 
