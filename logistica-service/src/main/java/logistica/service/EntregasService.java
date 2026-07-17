@@ -6,6 +6,7 @@ import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -27,12 +28,15 @@ public class EntregasService {
     return rutasRepository.buscarPorId(id);
   }
 
+  public List<Ruta> listarRutas() {
+    return rutasRepository.obtenerTodas();
+  }
+
   public Ruta iniciarRuta(String rutaId) throws IOException {
     Ruta ruta = rutasRepository.buscarPorId(rutaId)
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));
 
     ruta.iniciar();
-    //inicia las request
     donacionesApi.rutaIniciada(ruta).execute();
 
     return ruta;
@@ -40,21 +44,33 @@ public class EntregasService {
 
 
   public Entrega confirmarEntrega(String entregaId) {
-    return rutasRepository.buscarEntregaPorId(entregaId)
-        .map(entrega -> {
-          entrega.marcarEntregada();
-          return entrega;
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entregaEncontrada -> {
+          entregaEncontrada.marcarEntregada();
+          return entregaEncontrada;
         })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+    try {
+      donacionesApi.entregaCompletada(entrega).execute();
+      return entrega;
+    } catch (IOException e) {
+      throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
+    }
   }
 
   public Entrega marcarNoRecibida(String entregaId) {
-    return rutasRepository.buscarEntregaPorId(entregaId)
-        .map(entrega -> {
-          entrega.marcarNoRecibida();
-          return entrega;
+    Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
+        .map(entregaEncontrada -> {
+          entregaEncontrada.marcarNoRecibida();
+          return entregaEncontrada;
         })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
+    try {
+      donacionesApi.entregaFallida(entrega).execute();
+      return entrega;
+    } catch (IOException e) {
+      throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
+    }
   }
 
   public Entrega reingresarADeposito(String entregaId) {

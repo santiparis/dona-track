@@ -1,5 +1,6 @@
 package donaciones.domain.donante;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import donaciones.domain.notificacion.Notificable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,13 +69,15 @@ public abstract class Persona implements Notificable {
         this.medioPredeterminado = medioPredeterminado;
     }
 
+    @JsonIgnore
     public Usuario getUsuario() {
         return usuario;
     }
 
-  public String getEmail() {
-    return contactos.get(0).getValor();
-  }
+    @JsonIgnore
+    public String getEmail() {
+        return this.contactos.isEmpty() ? null : this.contactos.get(0).getValor();
+    }
 
   public abstract void actualizarseDesde(Persona donanteConNuevosDatos);
 

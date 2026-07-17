@@ -1,0 +1,347 @@
+{
+  "info": {
+    "_postman_id": "8d2a5b3c-4b5a-4d10-9d5c-4b2b1b7c9d11",
+    "name": "Dona Track - Integracion Logistica y Donaciones",
+    "description": "Coleccion para probar ambos microservicios en local. Flujo recomendado: crear donante, crear donacion, asignar donacion a una entidad beneficiaria y luego probar los endpoints de logistica. El callback de rutas puede dispararse manualmente con POST /rutas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Donaciones Service",
+      "item": [
+        {
+          "name": "Listar donantes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/donantes"
+          }
+        },
+        {
+          "name": "Crear donante humano",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"documento\": \"{{donanteDocumento}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Perez\",\n  \"edad\": 35,\n  \"direccion\": \"Calle Falsa 123\",\n  \"razonSocial\": null,\n  \"rubro\": null,\n  \"contactos\": [\n    {\n      \"estrategia\": \"EMAIL\",\n      \"valor\": \"ana.perez@example.com\"\n    },\n    {\n      \"estrategia\": \"WHATSAPP\",\n      \"valor\": \"+5491122334455\"\n    }\n  ]\n}"
+            },
+            "url": "http://localhost:8081/api/donantes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Devuelve 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.environment.set('donanteDocumento', '30123456');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear donacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoDonante\": \"{{donanteDocumento}}\",\n  \"descripcion\": \"Donacion de prueba para integracion\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}"
+            },
+            "url": "http://localhost:8081/api/donaciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Devuelve 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar donaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/donaciones"
+          }
+        },
+        {
+          "name": "Listar entidades beneficiarias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/entidades-beneficiarias"
+          }
+        },
+        {
+          "name": "Crear entidad beneficiaria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"Comedor Prueba\",\n  \"direccion\": \"Av. Integracion 123\",\n  \"telefono\": \"1122334455\",\n  \"correosRepresentantes\": [\n    \"contacto@comedorprueba.com\"\n  ]\n}"
+            },
+            "url": "http://localhost:8081/api/entidades-beneficiarias"
+          }
+        },
+        {
+          "name": "Asignar donacion a entidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEntidadSeleccionada\": \"Comedor Prueba\"\n}"
+            },
+            "url": "http://localhost:8081/api/donaciones/{{donacionIndex}}/asignar/{{entidadId}}"
+          },
+          "description": "Usa donacionIndex = 0 para la primera donacion creada y entidadId = 1 para la entidad semilla del repo."
+        },
+        {
+          "name": "Consultar ranking de sugerencias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/donaciones/{{donacionIndex}}/sugerencias?criterio=semantica"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Logistica Service",
+      "item": [
+        {
+          "name": "Listar camiones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:7070/camiones"
+          }
+        },
+        {
+          "name": "Crear camion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"{{patenteCamion}}\",\n  \"volumen\": 45,\n  \"altura\": 3.2,\n  \"cargaMax\": 12000\n}"
+            },
+            "url": "http://localhost:7070/camiones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Devuelve 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "try {",
+                  "  const body = JSON.parse(pm.request.body.raw);",
+                  "  if (body && body.patente) {",
+                  "    pm.environment.set('patenteCamion', body.patente);",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar camion",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"{{patenteCamion}}\",\n  \"volumen\": 50,\n  \"altura\": 3.4,\n  \"cargaMax\": 13000\n}"
+            },
+            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+          }
+        },
+        {
+          "name": "Actualizar localizacion camion",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816\n}"
+            },
+            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+          }
+        },
+        {
+          "name": "Eliminar camion",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+          }
+        },
+        {
+          "name": "Recibir donaciones desde donaciones-service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"donacionID\": \"D-001\",\n    \"cantidadBienes\": 10,\n    \"unidad\": \"kg\",\n    \"destino\": \"Av. Integracion 123\",\n    \"entidadNombre\": \"Comedor Prueba\"\n  }\n]"
+            },
+            "url": "http://localhost:7070/donaciones"
+          }
+        },
+        {
+          "name": "Recibir callback de rutas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"{{patenteCamion}}\",\n      \"paradas\": [\n        {\n          \"donaciones\": [\n            {\n              \"donacionID\": \"D-001\",\n              \"cantidadBienes\": 10,\n              \"unidad\": \"kg\",\n              \"destino\": \"Av. Integracion 123\",\n              \"entidadNombre\": \"Comedor Prueba\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}"
+            },
+            "url": "http://localhost:7070/rutas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Devuelve 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "try {",
+                  "  const rutas = pm.response.json();",
+                  "  if (Array.isArray(rutas) && rutas.length > 0) {",
+                  "    pm.environment.set('rutaId', rutas[0].id);",
+                  "    const entregas = rutas[0].entregas || [];",
+                  "    if (entregas.length > 0) {",
+                  "      pm.environment.set('entregaId', entregas[0].id);",
+                  "    }",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar rutas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:7070/rutas"
+          }
+        },
+        {
+          "name": "Consultar ruta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:7070/rutas/{{rutaId}}"
+          }
+        },
+        {
+          "name": "Iniciar ruta",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "http://localhost:7070/rutas/{{rutaId}}/iniciar"
+          }
+        },
+        {
+          "name": "Consultar entrega",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:7070/entregas/{{entregaId}}"
+          }
+        },
+        {
+          "name": "Confirmar entrega",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "http://localhost:7070/entregas/{{entregaId}}/confirmar"
+          }
+        },
+        {
+          "name": "Marcar entrega no recibida",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "http://localhost:7070/entregas/{{entregaId}}/no-recibida"
+          }
+        },
+        {
+          "name": "Reingresar entrega al deposito",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "http://localhost:7070/entregas/{{entregaId}}/reingresar-deposito"
+          }
+        }
+      ]
+    }
+  ]
+}
