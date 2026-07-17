@@ -41,36 +41,36 @@ public class Main {
       config.routes.get("/", ctx -> ctx.result("logistica-service OK"));
 
       // Gestión de flota de camiones
-      config.routes.get("/camiones", camionesController::getCamiones);
-      config.routes.post("/camiones", camionesController::postCamiones);
-      config.routes.delete("/camiones/{patente}", camionesController::deleteCamion);
-      config.routes.put("/camiones/{patente}", camionesController::putCamion);
+      config.routes.get("/api/camiones", camionesController::getCamiones);
+      config.routes.post("/api/camiones", camionesController::postCamiones);
+      config.routes.delete("/api/camiones/{patente}", camionesController::deleteCamion);
+      config.routes.put("/api/camiones/{patente}", camionesController::putCamion);
 
       // Actualización de la localización de un camión
-      config.routes.patch("/camiones/{patente}", camionesController::actualizarLocalizacion);
+      config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
-      config.routes.post("/donaciones", donacionesController::obtenerDonaciones);
+      config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);
 
       //dispara la planificacion (lo llama el cron via HTTP, o a demanda)
-      config.routes.post("/planificar", planificadorController::planificar);
+      config.routes.post("/api/planificaciones", planificadorController::planificar);
 
       //endpoints consumidos por el planificador externo (callback con las rutas armadas)
-      config.routes.post("/rutas", planificadorController::obtenerRutas);
+      config.routes.post("/api/rutas", planificadorController::obtenerRutas);
 
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
-      config.routes.get("/rutas/{id}", rutasController::obtenerRuta);
+      config.routes.get("/api/rutas/{id}", rutasController::obtenerRuta);
 
       //endpoint que usa el chofer para iniciar su ruta
-      config.routes.post("/rutas/{id}/iniciar", rutasController::iniciarRuta);
+      config.routes.post("/api/rutas/{id}/inicio", rutasController::iniciarRuta);
 
       //lectura de una entrega (para que un objeto consulte el estado)
-      config.routes.get("/entregas/{id}", entregasController::obtenerEntrega);
+      config.routes.get("/api/entregas/{id}", entregasController::obtenerEntrega);
 
       //endpoints que usa la entidad beneficiaria para confirmar/rechazar la recepcion
-      config.routes.post("/entregas/{id}/confirmar", entregasController::confirmar);
-      config.routes.post("/entregas/{id}/no-recibida", entregasController::marcarNoRecibida);
-      config.routes.post("/entregas/{id}/reingresar-deposito", entregasController::reingresarADeposito);
+      config.routes.post("/api/entregas/{id}/confirmacion", entregasController::confirmar);
+      config.routes.post("/api/entregas/{id}/rechazo", entregasController::marcarNoRecibida);
+      config.routes.post("/api/entregas/{id}/reingreso", entregasController::reingresarADeposito);
 
     }).start(7070);
   }

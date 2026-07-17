@@ -76,9 +76,9 @@ public class Main {
     app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
     app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
     app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
-    app.delete("/api/entidades-beneficiarias/{idEntidad}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
+    app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
 
     app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
-    app.post("/api/donaciones/{id}/asignar/{idEntidad}", asignacionController::seleccionarEntidad);
+    app.post("/api/donaciones/{id}/asignaciones/{idEntidad}", asignacionController::seleccionarEntidad);
   }
 }

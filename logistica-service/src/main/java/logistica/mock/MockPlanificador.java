@@ -31,7 +31,7 @@ public class MockPlanificador {
 
   // contrato del callback: donde el mock devuelve las rutas armadas a logistica
   interface LogisticaCallback {
-    @POST("/rutas")
+    @POST("api/rutas")
     Call<Void> devolverRutas(@Body PlanificacionCallbackRequest resultado);
   }
 
