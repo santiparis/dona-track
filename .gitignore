@@ -38,6 +38,8 @@ build/
 ### claude
 CLAUDE.md
 
-### SendGrid ###
+### Variables de Entorno Locales ###
 sendgrid.env
+twilio.env
+*.env
 
