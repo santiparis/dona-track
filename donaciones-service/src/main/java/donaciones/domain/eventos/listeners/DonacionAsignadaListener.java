@@ -7,7 +7,7 @@ public class DonacionAsignadaListener implements Listener {
     @Override
     public void onEvento(CambioDeEstadoEnDonacion evento) {
         DonacionAsignadaEvent e = (DonacionAsignadaEvent) evento;
-        String prefijo = "[Donación #" + e.getDonacion().getID() + "] ";
+        String prefijo = "[Donación #" + e.getDonacion().getId() + "] ";
         e.getDonacion().getDonante().notificar(
             prefijo + "Su donación ha sido asignada a la entidad: " + e.getDonacion().getEntidadBeneficiaria().getRazonSocial());
         e.getDonacion().getEntidadBeneficiaria().notificar(

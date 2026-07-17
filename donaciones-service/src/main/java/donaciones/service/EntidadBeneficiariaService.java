@@ -28,61 +28,62 @@ public class EntidadBeneficiariaService {
   }
 
   public void postEntidadBeneficiaria(EntidadBeneficiariaDTO dto) {
-    entidadesRepository.guardar(new EntidadBeneficiaria(new Random().nextLong(), dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
+    entidadesRepository.guardar(new EntidadBeneficiaria(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
   }
 
-  public void putEntidadBeneficiaria(int id, EntidadBeneficiariaDTO dto) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(id)
+  public void putEntidadBeneficiaria(Long id, EntidadBeneficiariaDTO dto) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(id)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
     entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
   }
 
-  public void patchEntidadBeneficiaria(int id, EntidadBeneficiariaPatchDTO dto) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(id)
+  public void patchEntidadBeneficiaria(Long id, EntidadBeneficiariaPatchDTO dto) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(id)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
     entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
   }
 
-  public void deleteEntidadBeneficiaria(int id) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(id)
+  public void deleteEntidadBeneficiaria(Long id) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(id)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
-    entidadesRepository.eliminarPorPosicion(id);
+    entidadesRepository.eliminarPorId(id);
   }
 
-  public List<Necesidad> getNecesidades(int id) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(id)
+  public List<Necesidad> getNecesidades(Long id) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(id)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
     return entidad.getNecesidades();
   }
 
-  public void postNecesidad(int id, NecesidadDTO dto) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(id)
+  public void postNecesidad(Long id, NecesidadDTO dto) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(id)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
     Necesidad necesidad = this.crearNecesidad(dto);
     entidad.registrarNecesidad(necesidad);
+    entidadesRepository.guardar(entidad);
   }
 
-  public void putNecesidad(int idEntidad, int idNecesidad, NecesidadDTO dto) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(idEntidad)
+  public void putNecesidad(Long idEntidad, Long idNecesidad, NecesidadDTO dto) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(idEntidad)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
-    Necesidad necesidad = this.buscarNecesidad(entidad, idNecesidad);
+    this.buscarNecesidad(entidad, idNecesidad);
     Necesidad nuevaNecesidad = this.crearNecesidad(dto);
-    entidad.actualizarNecesidad(idNecesidad, nuevaNecesidad);
+    entidad.actualizarNecesidadPorId(idNecesidad, nuevaNecesidad);
   }
 
-  public void patchNecesidad(int idEntidad, int idNecesidad, NecesidadDTO dto) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(idEntidad)
+  public void patchNecesidad(Long idEntidad, Long idNecesidad, NecesidadDTO dto) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(idEntidad)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
-    Necesidad necesidadActual = this.buscarNecesidad(entidad, idNecesidad);
+    this.buscarNecesidad(entidad, idNecesidad);
     Necesidad necesidadActualizada = this.crearNecesidad(dto);
-    entidad.actualizarNecesidad(idNecesidad, necesidadActualizada);
+    entidad.actualizarNecesidadPorId(idNecesidad, necesidadActualizada);
   }
 
   private Necesidad crearNecesidad(NecesidadDTO dto) {
@@ -126,21 +127,18 @@ public class EntidadBeneficiariaService {
     }
   }
 
-  public void deleteNecesidad(int idEntidad, int idNecesidad) {
-    EntidadBeneficiaria entidad = entidadesRepository.buscarPorPosicion(idEntidad)
+  public void deleteNecesidad(Long idEntidad, Long idNecesidad) {
+    EntidadBeneficiaria entidad = entidadesRepository.buscarPorId(idEntidad)
         .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
 
-    if (idNecesidad < 0 || idNecesidad >= entidad.getNecesidades().size()) {
-      throw new NecesidadNoEncontradaException("No se encontró la necesidad");
-    }
-
-    entidad.eliminarNecesidad(idNecesidad);
+    this.buscarNecesidad(entidad, idNecesidad);
+    entidad.eliminarNecesidadPorId(idNecesidad);
   }
 
-  private Necesidad buscarNecesidad(EntidadBeneficiaria entidad, int idNecesidad) {
-    if (idNecesidad < 0 || idNecesidad >= entidad.getNecesidades().size()) {
-      throw new NecesidadNoEncontradaException("No se encontró la necesidad");
-    }
-    return entidad.getNecesidades().get(idNecesidad);
+  private Necesidad buscarNecesidad(EntidadBeneficiaria entidad, Long idNecesidad) {
+    return entidad.getNecesidades().stream()
+        .filter(n -> n.getId() != null && n.getId().equals(idNecesidad))
+        .findFirst()
+        .orElseThrow(() -> new NecesidadNoEncontradaException("No se encontró la necesidad"));
   }
 }

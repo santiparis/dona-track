@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 public class DonacionService {
   private final DonacionRepository donacionesRepository;
@@ -36,12 +35,12 @@ public class DonacionService {
     List<Bien> bienesDelDominio = this.crearListaBienes(dto.bienes());
 
     for (Bien bien : bienesDelDominio) {
-      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
 
       if (persona.isPresent()) {
-        this.donacionesRepository.guardar(new Donacion(persona.get(), bien, new Random().nextLong()));
+        this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
       }
     }
   }
@@ -112,13 +111,13 @@ public class DonacionService {
     return donacionesRepository.obtenerTodas();
   }
 
-  public void cambiarEstado(int id, String nuevoEstadoTexto, String nombreCamion) {
+  public void cambiarEstado(Long id, String nuevoEstadoTexto, String nombreCamion) {
 
     if (nuevoEstadoTexto == null || nuevoEstadoTexto.isBlank()) {
       throw new IllegalArgumentException("Debe indicar el nuevo estado");
     }
 
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
     if (donacionOpt.isPresent()) {
       EstadoDonacion nuevoEstado;
       Donacion donacion = donacionOpt.get();
@@ -148,8 +147,8 @@ public class DonacionService {
     }
   }
 
-  public void actualizarDonacion(int id, DonacionRequestDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+  public void actualizarDonacion(Long id, DonacionRequestDTO dto) {
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
@@ -162,20 +161,20 @@ public class DonacionService {
       bienActualizado = bienes.get(0);
     }
 
-    if (dto.documentoDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+    if (dto.idDonante() != null) {
+      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
       if (persona.isPresent()) {
         donacionExistente.actualizarDatos(persona.get(), bienActualizado);
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
       }
     } else {
       donacionExistente.actualizarDatos(null, bienActualizado);
     }
   }
 
-  public void actualizarDonacionParcial(int id, DonacionPatchDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+  public void actualizarDonacionParcial(Long id, DonacionPatchDTO dto) {
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
@@ -184,12 +183,12 @@ public class DonacionService {
     Persona personaActualizada = null;
     Bien bienActualizado = null;
 
-    if (dto.documentoDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorDocumento(dto.documentoDonante());
+    if (dto.idDonante() != null) {
+      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
       if (persona.isPresent()) {
         personaActualizada = persona.get();
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con documento: " + dto.documentoDonante());
+        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
       }
     }
 
@@ -201,10 +200,10 @@ public class DonacionService {
     donacionExistente.actualizarDatos(personaActualizada, bienActualizado);
   }
 
-  public void eliminarDonacion(int id) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorPosicion(id);
+  public void eliminarDonacion(Long id) {
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
     if (donacionOpt.isPresent()) {
-      donacionesRepository.borrarPorPosicion(id);
+      donacionesRepository.borrarPorId(id);
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }

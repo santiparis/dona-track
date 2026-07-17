@@ -57,23 +57,23 @@ public class CamionesControllerTest {
   void putCamionDevuelveOkConElCamionActualizado() {
     var dto = new CamionDTO("AB123CD", 12, 2.5, 1500);
     var camionActualizado = new Camion("AB123CD", 12, 2.5, 1500);
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    when(ctx.pathParam("id")).thenReturn("1");
     when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
-    when(camionesService.actualizarCamion("AB123CD", dto)).thenReturn(camionActualizado);
+    when(camionesService.actualizarCamion(1L, dto)).thenReturn(camionActualizado);
 
     controller.putCamion(ctx);
 
-    verify(camionesService).actualizarCamion("AB123CD", dto);
+    verify(camionesService).actualizarCamion(1L, dto);
     verify(ctx, atLeastOnce()).status(HttpStatus.OK);
   }
 
   @Test
   void putCamionDevuelveBadRequestCuandoLaPatenteNoCoincide() {
     var dto = new CamionDTO("XY987ZW", 12, 2.5, 1500);
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    when(ctx.pathParam("id")).thenReturn("1");
     when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
     doThrow(new IllegalArgumentException("La patente del camión debe coincidir con la de la ruta"))
-        .when(camionesService).actualizarCamion("AB123CD", dto);
+        .when(camionesService).actualizarCamion(1L, dto);
 
     controller.putCamion(ctx);
 
@@ -83,10 +83,10 @@ public class CamionesControllerTest {
   @Test
   void putCamionDevuelveNotFoundCuandoNoExiste() {
     var dto = new CamionDTO("AB123CD", 12, 2.5, 1500);
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    when(ctx.pathParam("id")).thenReturn("1");
     when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
     doThrow(new NoSuchElementException("Camión inexistente"))
-        .when(camionesService).actualizarCamion("AB123CD", dto);
+        .when(camionesService).actualizarCamion(1L, dto);
 
     controller.putCamion(ctx);
 
@@ -95,19 +95,19 @@ public class CamionesControllerTest {
 
   @Test
   void deleteCamionDevuelveNoContentCuandoSeEliminaBien() {
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    when(ctx.pathParam("id")).thenReturn("1");
 
     controller.deleteCamion(ctx);
 
-    verify(camionesService).deleteCamion("AB123CD");
+    verify(camionesService).deleteCamion(1L);
     verify(ctx, atLeastOnce()).status(HttpStatus.NO_CONTENT);
   }
 
   @Test
   void deleteCamionDevuelveNotFoundCuandoNoExiste() {
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    when(ctx.pathParam("id")).thenReturn("1");
     doThrow(new NoSuchElementException("Camión inexistente"))
-        .when(camionesService).deleteCamion("AB123CD");
+        .when(camionesService).deleteCamion(1L);
 
     controller.deleteCamion(ctx);
 
@@ -116,11 +116,11 @@ public class CamionesControllerTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaCoordenadaEsInvalida() {
-    var dto = new LocalizacionDTO(120, -58);
-    when(ctx.pathParam("patente")).thenReturn("AB123CD");
+    var dto = new LocalizacionDTO(120, -58, 20);
+    when(ctx.pathParam("id")).thenReturn("1");
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(dto);
     doThrow(new IllegalArgumentException("Latitud inválida"))
-        .when(camionesService).actualizarLocalizacion("AB123CD", dto);
+        .when(camionesService).actualizarLocalizacion(1L, dto);
 
     controller.actualizarLocalizacion(ctx);
 

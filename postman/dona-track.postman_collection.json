@@ -1,0 +1,329 @@
+{
+  "info": {
+    "name": "Dona-Track (Logística + Donaciones)",
+    "description": "Colección de demo. ORDEN sugerido para la presentación:\n1) Levantar donaciones.Main (8081), logistica.Main (7070), MockPlanificador (9090) y opcionalmente MockGps.\n2) Correr los requests numerados en orden.\n\nLos ids de ruta/entrega son numéricos Long autoincrementables: el request '05 Crear ruta (callback)' los guarda solos en variables {{rutaId}} y {{entregaId}}.\n\nOJO con la máquina de estados: para 'confirmar' o 'no-recibida' la entrega tiene que estar EN_TRASLADO, así que SIEMPRE correr '07 Iniciar ruta' antes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseLogistica", "value": "http://localhost:7070" },
+    { "key": "baseDonaciones", "value": "http://localhost:8081" },
+    { "key": "rutaId", "value": "" },
+    { "key": "entregaId", "value": "" },
+    { "key": "camionId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "LOGÍSTICA (:7070)",
+      "item": [
+        {
+          "name": "01 Health",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/", "host": ["{{baseLogistica}}"], "path": [""] } }
+        },
+        {
+          "name": "02 Listar camiones (flota)",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/api/camiones", "host": ["{{baseLogistica}}"], "path": ["api", "camiones"] } }
+        },
+        {
+          "name": "03 Feed donaciones a planificar (lo que manda donaciones)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "[\n  { \"donacionID\": 1, \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" },\n  { \"donacionID\": 2, \"cantidadBienes\": 2, \"unidad\": \"unidades\", \"destino\": \"Calle 9 de Julio 55\", \"entidadNombre\": \"razon2\" }\n]" },
+            "url": { "raw": "{{baseLogistica}}/api/donaciones", "host": ["{{baseLogistica}}"], "path": ["api", "donaciones"] }
+          }
+        },
+        {
+          "name": "04 Disparar planificación (async -> MockPlanificador)",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/api/planificaciones", "host": ["{{baseLogistica}}"], "path": ["api", "planificaciones"] } },
+          "response": []
+        },
+        {
+          "name": "05 Crear ruta (callback del planificador) [guarda ids]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const rutas = pm.response.json();",
+                  "if (Array.isArray(rutas) && rutas.length > 0) {",
+                  "  pm.collectionVariables.set('rutaId', rutas[0].id);",
+                  "  console.log('rutaId =', rutas[0].id);",
+                  "  if (rutas[0].entregas && rutas[0].entregas.length > 0) {",
+                  "    pm.collectionVariables.set('entregaId', rutas[0].entregas[0].id);",
+                  "    console.log('entregaId =', rutas[0].entregas[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"AB123CD\",\n      \"paradas\": [\n        { \"donaciones\": [ { \"donacionID\": 1, \"cantidadBienes\": 5, \"unidad\": \"unidades\", \"destino\": \"Av Falsa 123\", \"entidadNombre\": \"razon1\" } ] }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}" },
+            "url": { "raw": "{{baseLogistica}}/api/rutas", "host": ["{{baseLogistica}}"], "path": ["api", "rutas"] }
+          }
+        },
+        {
+          "name": "06 Ver ruta",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/api/rutas/{{rutaId}}", "host": ["{{baseLogistica}}"], "path": ["api", "rutas", "{{rutaId}}"] } }
+        },
+        {
+          "name": "07 Iniciar ruta (chofer) -> entregas EN_TRASLADO + notifica donaciones",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/api/rutas/{{rutaId}}/inicio", "host": ["{{baseLogistica}}"], "path": ["api", "rutas", "{{rutaId}}", "inicio"] } }
+        },
+        {
+          "name": "08 Confirmar entrega (beneficiario) -> ENTREGADA + camión",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/api/entregas/{{entregaId}}/confirmacion", "host": ["{{baseLogistica}}"], "path": ["api", "entregas", "{{entregaId}}", "confirmacion"] } }
+        },
+        {
+          "name": "08b (alt) Marcar NO recibida -> NO_RECIBIDA",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/api/entregas/{{entregaId}}/rechazo", "host": ["{{baseLogistica}}"], "path": ["api", "entregas", "{{entregaId}}", "rechazo"] } }
+        },
+        {
+          "name": "08c (alt) Reingresar a depósito -> PENDIENTE",
+          "request": { "method": "POST", "url": { "raw": "{{baseLogistica}}/api/entregas/{{entregaId}}/reingreso", "host": ["{{baseLogistica}}"], "path": ["api", "entregas", "{{entregaId}}", "reingreso"] } }
+        },
+        {
+          "name": "09 Ver entrega",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/api/entregas/{{entregaId}}", "host": ["{{baseLogistica}}"], "path": ["api", "entregas", "{{entregaId}}"] } }
+        },
+        {
+          "name": "10 GPS: actualizar ubicación + velocidad",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"latitud\": -34.6037, \"longitud\": -58.3816, \"velocidad\": 47.5 }" },
+            "url": { "raw": "{{baseLogistica}}/api/camiones/1/localizacion", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "1", "localizacion"] }
+          }
+        },
+        {
+          "name": "11 (CRUD) Alta de camión",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"patente\": \"NUEVO01\", \"volumen\": 20.0, \"altura\": 2.5, \"cargaMax\": 5000 }" },
+            "url": { "raw": "{{baseLogistica}}/api/camiones", "host": ["{{baseLogistica}}"], "path": ["api", "camiones"] }
+          }
+        },
+        {
+          "name": "12 (CRUD) Obtener camión por id",
+          "request": { "method": "GET", "url": { "raw": "{{baseLogistica}}/api/camiones/{{camionId}}", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "{{camionId}}"] } }
+        },
+        {
+          "name": "13 (CRUD) Actualización de camión",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{ \"patente\": \"AB123CD-MOD\", \"volumen\": 25.0, \"altura\": 2.8, \"cargaMax\": 6000 }" },
+            "url": { "raw": "{{baseLogistica}}/api/camiones/{{camionId}}", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "{{camionId}}"] }
+          }
+        },
+        {
+          "name": "14 (CRUD) Baja de camión",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseLogistica}}/api/camiones/2", "host": ["{{baseLogistica}}"], "path": ["api", "camiones", "2"] } }
+        }
+      ]
+    },
+    {
+      "name": "DONACIONES (:8081)",
+      "description": "Dominio de Donaciones (microservicio en puerto 8081) con 22 endpoints y ejemplos de payloads realistas.",
+      "item": [
+        {
+          "name": "01. Donantes",
+          "item": [
+            {
+              "name": "Listar todos los donantes",
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donantes", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes"] } }
+            },
+            {
+              "name": "Crear donante (Persona Física)",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"FISICA\",\n  \"documento\": \"35123456\",\n  \"nombre\": \"María\",\n  \"apellido\": \"González\",\n  \"edad\": 42,\n  \"direccion\": \"Av. Corrientes 1234, CABA\",\n  \"razonSocial\": null,\n  \"rubro\": null\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donantes", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes"] }
+              }
+            },
+            {
+              "name": "Crear donante (Persona Jurídica)",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"documento\": \"30-71112223-4\",\n  \"nombre\": null,\n  \"apellido\": null,\n  \"edad\": null,\n  \"direccion\": \"Calle Falsa 123, CABA\",\n  \"razonSocial\": \"Supermercados Solidarios S.A.\",\n  \"rubro\": \"Alimentos\"\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donantes", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes"] }
+              }
+            },
+            {
+              "name": "Actualizar donante",
+              "request": {
+                "method": "PUT",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"FISICA\",\n  \"documento\": \"35123456\",\n  \"nombre\": \"María Laura\",\n  \"apellido\": \"González\",\n  \"edad\": 43,\n  \"direccion\": \"Av. Santa Fe 2000, CABA\",\n  \"razonSocial\": null,\n  \"rubro\": null\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donantes/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "1"] }
+              }
+            },
+            {
+              "name": "Eliminar donante",
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donantes/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donantes", "1"] } }
+            }
+          ]
+        },
+        {
+          "name": "02. Entidades Beneficiarias",
+          "item": [
+            {
+              "name": "Listar entidades beneficiarias",
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias"] } }
+            },
+            {
+              "name": "Crear entidad beneficiaria",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"razonSocial\": \"Comedor Infantil Los Bajitos\",\n  \"direccion\": \"Calle Rivadavia 4500, CABA\",\n  \"telefono\": \"+54 11 4444-5555\",\n  \"correosRepresentantes\": [\n    \"contacto@losbajitos.org\",\n    \"coordinacion@losbajitos.org\"\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias"] }
+              }
+            },
+            {
+              "name": "Actualizar entidad beneficiaria (completo - PUT)",
+              "request": {
+                "method": "PUT",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"razonSocial\": \"Comedor Infantil Los Bajitos (Sede Central)\",\n  \"direccion\": \"Calle Rivadavia 4550, CABA\",\n  \"telefono\": \"+54 11 4444-5556\",\n  \"correosRepresentantes\": [\n    \"info@losbajitos.org\"\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1"] }
+              }
+            },
+            {
+              "name": "Actualizar entidad beneficiaria (parcial - PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"razonSocial\": \"Comedor Infantil Los Bajitos - Renombrado\",\n  \"direccion\": \"Av. Rivadavia 4600, CABA\",\n  \"telefono\": \"+54 11 4444-9999\",\n  \"correosRepresentantes\": [\n    \"nuevo@losbajitos.org\"\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1"] }
+              }
+            },
+            {
+              "name": "Eliminar entidad beneficiaria",
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1"] } }
+            }
+          ]
+        },
+        {
+          "name": "03. Necesidades de Entidades",
+          "item": [
+            {
+              "name": "Listar necesidades de una entidad",
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1/necesidades", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1", "necesidades"] } }
+            },
+            {
+              "name": "Crear necesidad para una entidad",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Leche entera de vaca o en polvo para meriendas diarias\",\n  \"renovacion\": true,\n  \"cantidadesRequeridas\": {\n    \"Leche\": 50,\n    \"Galletitas\": 30\n  },\n  \"fechaInicio\": \"2026-07-01\",\n  \"periodo\": \"MENSUAL\"\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1/necesidades", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1", "necesidades"] }
+              }
+            },
+            {
+              "name": "Actualizar necesidad (PUT)",
+              "request": {
+                "method": "PUT",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Leche entera larga vida exclusivamente\",\n  \"renovacion\": true,\n  \"cantidadesRequeridas\": {\n    \"Leche\": 100\n  },\n  \"fechaInicio\": \"2026-07-15\",\n  \"periodo\": \"QUINCENAL\"\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1/necesidades/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1", "necesidades", "1"] }
+              }
+            },
+            {
+              "name": "Actualizar necesidad (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Leche entera larga vida + cacao en polvo\",\n  \"renovacion\": false,\n  \"cantidadesRequeridas\": {\n    \"Leche\": 80,\n    \"Cacao\": 20\n  },\n  \"fechaInicio\": \"2026-07-16\",\n  \"periodo\": \"SEMANAL\"\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1/necesidades/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1", "necesidades", "1"] }
+              }
+            },
+            {
+              "name": "Eliminar necesidad",
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/entidades-beneficiarias/1/necesidades/1", "host": ["{{baseDonaciones}}"], "path": ["api", "entidades-beneficiarias", "1", "necesidades", "1"] } }
+            }
+          ]
+        },
+        {
+          "name": "04. Donaciones",
+          "item": [
+            {
+              "name": "Listar donaciones",
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donaciones", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones"] } }
+            },
+            {
+              "name": "Crear donación con bienes",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donación de lácteos y abrigos de invierno\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 10,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera larga vida\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche.jpg\"\n    },\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"Camperas\",\n      \"cantidad\": 5,\n      \"unidad\": \"unidades\",\n      \"descripcion\": \"Camperas impermeables talle L\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones"] }
+              }
+            },
+            {
+              "name": "Actualizar donación (PUT)",
+              "request": {
+                "method": "PUT",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donación modificada - solo cajas de leche\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 15,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Cajas de leche entera y descremada\",\n      \"estado\": \"BUENO\",\n      \"vencimiento\": \"2026-12-31\",\n      \"foto\": \"https://ejemplo.com/fotos/leche_v2.jpg\"\n    }\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] }
+              }
+            },
+            {
+              "name": "Actualizar donación (PATCH - parcial)",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"idDonante\": 1,\n  \"bienes\": [\n    {\n      \"requiereEstado\": true,\n      \"requiereVencimiento\": true,\n      \"nombreSubcategoria\": \"Leche\",\n      \"cantidad\": 20,\n      \"unidad\": \"litros\",\n      \"descripcion\": \"Leche en polvo adicionada\",\n      \"estado\": \"EXCELENTE\",\n      \"vencimiento\": \"2027-06-30\",\n      \"foto\": null\n    }\n  ]\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] }
+              }
+            },
+            {
+              "name": "Cambiar estado de donación (ej. disparado por Logística)",
+              "request": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseDonaciones}}/api/donaciones/1/estado?nuevo=EN_TRASLADO&nombreCamion=Camion 01 (AB123CD)",
+                  "host": ["{{baseDonaciones}}"],
+                  "path": ["api", "donaciones", "1", "estado"],
+                  "query": [
+                    { "key": "nuevo", "value": "EN_TRASLADO" },
+                    { "key": "nombreCamion", "value": "Camion 01 (AB123CD)" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Eliminar donación",
+              "request": { "method": "DELETE", "url": { "raw": "{{baseDonaciones}}/api/donaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1"] } }
+            }
+          ]
+        },
+        {
+          "name": "05. Asignaciones y Sugerencias de Entidades",
+          "item": [
+            {
+              "name": "Obtener ranking y sugerencias de asignación",
+              "request": { "method": "GET", "url": { "raw": "{{baseDonaciones}}/api/donaciones/1/sugerencias", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1", "sugerencias"] } }
+            },
+            {
+              "name": "Seleccionar y asignar entidad beneficiaria",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"nombreEntidadSeleccionada\": \"Comedor Infantil Los Bajitos\"\n}" },
+                "url": { "raw": "{{baseDonaciones}}/api/donaciones/1/asignaciones/1", "host": ["{{baseDonaciones}}"], "path": ["api", "donaciones", "1", "asignaciones", "1"] }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

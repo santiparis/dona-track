@@ -22,7 +22,6 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Mock del componente EXTERNO de planificacion de rutas.
- * Corre como proceso aparte (puerto 9090) y simula al proveedor tercero:
  *   1. recibe el POST con las donaciones asignadas + camiones disponibles,
  *   2. responde "OK" al instante (la integracion es asincronica),
  *   3. arma las rutas y, tras un delay, las devuelve por el callback de logistica.
@@ -32,7 +31,7 @@ public class MockPlanificador {
 
   // contrato del callback: donde el mock devuelve las rutas armadas a logistica
   interface LogisticaCallback {
-    @POST("/rutas")
+    @POST("api/rutas")
     Call<Void> devolverRutas(@Body PlanificacionCallbackRequest resultado);
   }
 

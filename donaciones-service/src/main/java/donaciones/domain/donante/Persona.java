@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Persona implements Notificable {
+    private Long id;
     private final TipoDoc tipoDoc;
     private String documento;
     private String nombre;
@@ -13,6 +14,14 @@ public abstract class Persona implements Notificable {
     private Contacto medioPredeterminado;
     private final Usuario usuario;
     private LocalDateTime ultimaInteraccion = LocalDateTime.now();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     Persona(
             TipoDoc tipoDoc,
