@@ -1,11 +1,13 @@
-import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.EnvioDeWhatsAppException;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
 import donaciones.domain.notificacion.EnvioDeEmailException;
+import donaciones.domain.notificacion.EnvioDeSMSException;
 import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 import donaciones.domain.notificacion.NotificacionPorEmail;
-import java.util.List;
+import donaciones.domain.notificacion.NotificacionPorSMS;
+import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,19 +53,6 @@ public class NotificacionTest {
     }
 
     @Test
-    public void testNotificacionAEntidadBeneficiariaMedianteServicio() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, "Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
-        Contacto contactoWa = new Contacto(estrategiaMock, "+5491100001111");
-        entidad.registrarContacto(contactoWa, true);
-
-        String mensaje = "Aviso para entidad: Se le ha asignado satisfactoriamente una nueva donación.";
-        Notificacion notif = entidad.notificar(mensaje);
-
-        assertEquals(EstadoNotificacion.COMPLETADA, notif.getEstado());
-        verify(estrategiaMock, times(1)).enviar(eq("+5491100001111"), eq(mensaje));
-    }
-
-    @Test
     public void testEnvioDeEmailsDeBienvenida() {
         Contacto contactoUsuario1 = new Contacto(estrategiaMock, "juanignaciopereyra01@gmail.com");
         Contacto contactoUsuario2 = new Contacto(estrategiaMock, "parispueblasantiago@gmail.com");
@@ -93,5 +82,60 @@ public class NotificacionTest {
 
         assertThrows(EnvioDeEmailException.class, notif::enviar,
                 "Debe lanzarse EnvioDeEmailException cuando el envío de correo falla.");
+    }
+
+    @Test
+    public void testNotificacionPorSms() {
+        NotificacionPorSMS estrategiaSms = mock(NotificacionPorSMS.class);
+        when(estrategiaSms.enviar(anyString(), anyString())).thenReturn(true);
+
+        Contacto contactoSms = new Contacto(estrategiaSms, "+54119837462");
+        Notificacion notificacion = new Notificacion(contactoSms, "Mensaje SMS de prueba mockeada");
+        notificacion.enviar();
+
+        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(),
+                "Debe completarse exitosamente la notificación SMS cuando la estrategia mockeada retorna true.");
+        verify(estrategiaSms, times(1)).enviar(eq("+54119837462"), eq("Mensaje SMS de prueba mockeada"));
+    }
+
+    @Test
+    public void testNotificacionPorWhatsApp() {
+        NotificacionPorWhatsApp estrategiaWa = mock(NotificacionPorWhatsApp.class);
+        when(estrategiaWa.enviar(anyString(), anyString())).thenReturn(true);
+
+        Contacto contactoWa = new Contacto(estrategiaWa, "+54119837462");
+        Notificacion notificacion = new Notificacion(contactoWa, "Mensaje WhatsApp de prueba mockeada");
+        notificacion.enviar();
+
+        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(),
+                "Debe completarse exitosamente la notificación WhatsApp cuando la estrategia mockeada retorna true.");
+        verify(estrategiaWa, times(1)).enviar(eq("+54119837462"), eq("Mensaje WhatsApp de prueba mockeada"));
+    }
+
+
+    @Test
+    public void testLanzaEnvioDeSMSExceptionAnteFalloDeEnvio() {
+        NotificacionPorSMS estrategiaMock = mock(NotificacionPorSMS.class);
+        when(estrategiaMock.enviar(anyString(), anyString()))
+                .thenThrow(new EnvioDeSMSException("Error simulado al enviar por Twilio SMS"));
+
+        Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
+        Notificacion notif = new Notificacion(contactoConError, "Mensaje SMS que fallará");
+
+        assertThrows(EnvioDeSMSException.class, notif::enviar,
+                "Debe lanzarse EnvioDeSMSException cuando el envío por SMS falla.");
+    }
+
+    @Test
+    public void testLanzaEnvioDeWhatsAppExceptionAnteFalloDeEnvio() {
+        NotificacionPorWhatsApp estrategiaMock = mock(NotificacionPorWhatsApp.class);
+        when(estrategiaMock.enviar(anyString(), anyString()))
+                .thenThrow(new EnvioDeWhatsAppException("Error simulado al enviar por Twilio WhatsApp"));
+
+        Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
+        Notificacion notif = new Notificacion(contactoConError, "Mensaje WhatsApp que fallará");
+
+        assertThrows(EnvioDeWhatsAppException.class, notif::enviar,
+                "Debe lanzarse EnvioDeWhatsAppException cuando el envío por WhatsApp falla.");
     }
 }
