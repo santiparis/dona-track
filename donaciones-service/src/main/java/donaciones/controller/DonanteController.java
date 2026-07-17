@@ -53,9 +53,9 @@ public class DonanteController {
 
   public void actualizar(Context ctx) {
     try {
-      String documento = ctx.pathParam("documento");
+      Long id = Long.parseLong(ctx.pathParam("id"));
       DonanteRequestDTO dto = ctx.bodyAsClass(DonanteRequestDTO.class);
-      donanteService.actualizarDonante(documento, dto);
+      donanteService.actualizarDonante(id, dto);
       ctx.result("Datos del donante actualizados");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al actualizar donante: {}", e.getMessage());
@@ -68,8 +68,8 @@ public class DonanteController {
 
   public void eliminar(Context ctx) {
     try {
-      String documento = ctx.pathParam("documento");
-      donanteService.eliminarDonante(documento);
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      donanteService.eliminarDonante(id);
       ctx.result("Donante eliminado");
     } catch (RuntimeException e) {
       logger.error("Error al eliminar donante", e);

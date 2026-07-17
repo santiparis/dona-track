@@ -75,8 +75,8 @@ public class DonanteService {
     }
   }
 
-  public void eliminarDonante(String documento) {
-    repository.eliminarPorDocumento(documento);
+  public void eliminarDonante(Long id) {
+    repository.eliminarPorId(id);
   }
 
   private List<Contacto> crearContactos(List<ContactoDTO> contactosDto) {

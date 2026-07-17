@@ -59,7 +59,7 @@ public class DonacionController {
 
   public void cambiarEstado(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       String nuevoEstadoTexto = ctx.queryParam("nuevo");
       String nombreCamion =  ctx.queryParam("nombreCamion");
       donacionService.cambiarEstado(id, nuevoEstadoTexto, nombreCamion);
@@ -75,7 +75,7 @@ public class DonacionController {
 
   public void actualizar(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       DonacionRequestDTO dto = ctx.bodyAsClass(DonacionRequestDTO.class);
       donacionService.actualizarDonacion(id, dto);
       ctx.result("Donación actualizada");
@@ -90,7 +90,7 @@ public class DonacionController {
 
   public void actualizarParcial(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       donaciones.dto.DonacionPatchDTO dto = ctx.bodyAsClass(donaciones.dto.DonacionPatchDTO.class);
       donacionService.actualizarDonacionParcial(id, dto);
       ctx.result("Donación actualizada parcialmente");
@@ -105,7 +105,7 @@ public class DonacionController {
 
   public void eliminar(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       donacionService.eliminarDonacion(id);
       ctx.result("Donacion eliminada");
     } catch (IllegalArgumentException e) {
@@ -119,7 +119,7 @@ public class DonacionController {
 
   private static DonacionResponseDTO toResponseDTO(Donacion donacion) {
     return new DonacionResponseDTO(
-        donacion.getID(),
+        donacion.getId(),
         toDonanteResponseDTO(donacion.getDonante()),
         toBienResponseDTO(donacion.getBien()),
         donacion.getEstado() == null ? null : donacion.getEstado().name(),

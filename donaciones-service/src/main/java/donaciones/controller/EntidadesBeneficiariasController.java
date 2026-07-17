@@ -41,7 +41,7 @@ public class EntidadesBeneficiariasController {
 
   public void putEntidadBeneficiaria(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
       entidadesService.putEntidadBeneficiaria(id, dto);
       ctx.result("Entidad beneficiaria actualizada");
@@ -56,7 +56,7 @@ public class EntidadesBeneficiariasController {
 
   public void patchEntidadBeneficiaria(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       donaciones.dto.EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(donaciones.dto.EntidadBeneficiariaPatchDTO.class);
       entidadesService.patchEntidadBeneficiaria(id, dto);
       ctx.result("Entidad beneficiaria actualizada parcialmente");
@@ -71,7 +71,7 @@ public class EntidadesBeneficiariasController {
 
   public void deleteEntidadBeneficiaria(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       entidadesService.deleteEntidadBeneficiaria(id);
       ctx.result("Entidad beneficiaria eliminada correctamente");
     } catch (IllegalArgumentException e) {
@@ -85,7 +85,7 @@ public class EntidadesBeneficiariasController {
 
   public void getNecesidades(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       ctx.json(entidadesService.getNecesidades(id));
     } catch (RuntimeException e) {
       logger.error("Error al listar necesidades", e);

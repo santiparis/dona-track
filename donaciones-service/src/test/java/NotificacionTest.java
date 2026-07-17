@@ -1,3 +1,4 @@
+import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.notificacion.EnvioDeWhatsAppException;
 import donaciones.domain.notificacion.EstadoNotificacion;
@@ -10,6 +11,8 @@ import donaciones.domain.notificacion.NotificacionPorSMS;
 import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
