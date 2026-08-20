@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "8d2a5b3c-4b5a-4d10-9d5c-4b2b1b7c9d11",
     "name": "Dona Track - Integracion Logistica y Donaciones",
-    "description": "Coleccion para probar ambos microservicios en local. Flujo recomendado: crear donante, crear donacion, asignar donacion a una entidad beneficiaria y luego probar los endpoints de logistica. El callback de rutas puede dispararse manualmente con POST /rutas.",
+    "description": "Coleccion para probar ambos microservicios en local tras la refactorizacion REST con IDs autoincrementables (Long). Flujo recomendado: crear donante, crear donacion, asignar donacion a una entidad beneficiaria y luego probar los endpoints de logistica. El callback de rutas puede dispararse manualmente con POST /api/rutas.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -29,7 +29,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"documento\": \"{{donanteDocumento}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Perez\",\n  \"edad\": 35,\n  \"direccion\": \"Calle Falsa 123\",\n  \"razonSocial\": null,\n  \"rubro\": null,\n  \"contactos\": [\n    {\n      \"estrategia\": \"EMAIL\",\n      \"valor\": \"ana.perez@example.com\"\n    },\n    {\n      \"estrategia\": \"WHATSAPP\",\n      \"valor\": \"+5491122334455\"\n    }\n  ]\n}"
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"documento\": \"30123456\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Perez\",\n  \"edad\": 35,\n  \"direccion\": \"Calle Falsa 123\",\n  \"razonSocial\": null,\n  \"rubro\": null,\n  \"contactos\": [\n    {\n      \"estrategia\": \"EMAIL\",\n      \"valor\": \"ana.perez@example.com\"\n    },\n    {\n      \"estrategia\": \"WHATSAPP\",\n      \"valor\": \"+5491122334455\"\n    }\n  ]\n}"
             },
             "url": "http://localhost:8081/api/donantes"
           },
@@ -42,11 +42,35 @@
                   "pm.test('Devuelve 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "pm.environment.set('donanteDocumento', '30123456');"
+                  "try {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.id) {",
+                  "    pm.environment.set('donanteId', body.id);",
+                  "  } else {",
+                  "    pm.environment.set('donanteId', 1);",
+                  "  }",
+                  "} catch (e) { pm.environment.set('donanteId', 1); }"
                 ]
               }
             }
           ]
+        },
+        {
+          "name": "Actualizar donante",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"documento\": \"30123456\",\n  \"nombre\": \"Ana Laura\",\n  \"apellido\": \"Perez\",\n  \"edad\": 36,\n  \"direccion\": \"Calle Falsa 1234\",\n  \"razonSocial\": null,\n  \"rubro\": null,\n  \"contactos\": [\n    {\n      \"estrategia\": \"EMAIL\",\n      \"valor\": \"ana.perez@example.com\"\n    }\n  ]\n}"
+            },
+            "url": "http://localhost:8081/api/donantes/{{donanteId}}"
+          }
         },
         {
           "name": "Crear donacion",
@@ -60,7 +84,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"documentoDonante\": \"{{donanteDocumento}}\",\n  \"descripcion\": \"Donacion de prueba para integracion\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}"
+              "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donacion de prueba para integracion\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}"
             },
             "url": "http://localhost:8081/api/donaciones"
           },
@@ -72,7 +96,15 @@
                 "exec": [
                   "pm.test('Devuelve 201', function () {",
                   "  pm.response.to.have.status(201);",
-                  "});"
+                  "});",
+                  "try {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.id) {",
+                  "    pm.environment.set('donacionId', body.id);",
+                  "  } else {",
+                  "    pm.environment.set('donacionId', 1);",
+                  "  }",
+                  "} catch (e) { pm.environment.set('donacionId', 1); }"
                 ]
               }
             }
@@ -109,6 +141,32 @@
               "raw": "{\n  \"razonSocial\": \"Comedor Prueba\",\n  \"direccion\": \"Av. Integracion 123\",\n  \"telefono\": \"1122334455\",\n  \"correosRepresentantes\": [\n    \"contacto@comedorprueba.com\"\n  ]\n}"
             },
             "url": "http://localhost:8081/api/entidades-beneficiarias"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.id) {",
+                  "    pm.environment.set('entidadId', body.id);",
+                  "  } else {",
+                  "    pm.environment.set('entidadId', 1);",
+                  "  }",
+                  "} catch (e) { pm.environment.set('entidadId', 1); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar ranking de sugerencias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:8081/api/donaciones/1/sugerencias?criterio=semantica"
           }
         },
         {
@@ -125,17 +183,9 @@
               "mode": "raw",
               "raw": "{\n  \"nombreEntidadSeleccionada\": \"Comedor Prueba\"\n}"
             },
-            "url": "http://localhost:8081/api/donaciones/{{donacionIndex}}/asignar/{{entidadId}}"
+            "url": "http://localhost:8081/api/donaciones/1/asignaciones/1"
           },
-          "description": "Usa donacionIndex = 0 para la primera donacion creada y entidadId = 1 para la entidad semilla del repo."
-        },
-        {
-          "name": "Consultar ranking de sugerencias",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "http://localhost:8081/api/donaciones/{{donacionIndex}}/sugerencias?criterio=semantica"
-          }
+          "description": "Asigna la donación ID 1 a la entidad ID 1."
         }
       ]
     },
@@ -147,7 +197,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:7070/camiones"
+            "url": "http://localhost:7070/api/camiones"
           }
         },
         {
@@ -162,9 +212,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"patente\": \"{{patenteCamion}}\",\n  \"volumen\": 45,\n  \"altura\": 3.2,\n  \"cargaMax\": 12000\n}"
+              "raw": "{\n  \"patente\": \"AB123CD\",\n  \"volumen\": 45,\n  \"altura\": 3.2,\n  \"cargaMax\": 12000\n}"
             },
-            "url": "http://localhost:7070/camiones"
+            "url": "http://localhost:7070/api/camiones"
           },
           "event": [
             {
@@ -176,11 +226,18 @@
                   "  pm.response.to.have.status(201);",
                   "});",
                   "try {",
-                  "  const body = JSON.parse(pm.request.body.raw);",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.id) {",
+                  "    pm.environment.set('camionId', body.id);",
+                  "  } else {",
+                  "    pm.environment.set('camionId', 1);",
+                  "  }",
                   "  if (body && body.patente) {",
                   "    pm.environment.set('patenteCamion', body.patente);",
+                  "  } else {",
+                  "    pm.environment.set('patenteCamion', 'AB123CD');",
                   "  }",
-                  "} catch (e) {}"
+                  "} catch (e) { pm.environment.set('camionId', 1); pm.environment.set('patenteCamion', 'AB123CD'); }"
                 ]
               }
             }
@@ -198,9 +255,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"patente\": \"{{patenteCamion}}\",\n  \"volumen\": 50,\n  \"altura\": 3.4,\n  \"cargaMax\": 13000\n}"
+              "raw": "{\n  \"patente\": \"AB123CD\",\n  \"volumen\": 50,\n  \"altura\": 3.4,\n  \"cargaMax\": 13000\n}"
             },
-            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+            "url": "http://localhost:7070/api/camiones/1"
           }
         },
         {
@@ -217,7 +274,7 @@
               "mode": "raw",
               "raw": "{\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816\n}"
             },
-            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+            "url": "http://localhost:7070/api/camiones/1/localizacion"
           }
         },
         {
@@ -225,7 +282,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": "http://localhost:7070/camiones/{{patenteCamion}}"
+            "url": "http://localhost:7070/api/camiones/1"
           }
         },
         {
@@ -240,9 +297,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "[\n  {\n    \"donacionID\": \"D-001\",\n    \"cantidadBienes\": 10,\n    \"unidad\": \"kg\",\n    \"destino\": \"Av. Integracion 123\",\n    \"entidadNombre\": \"Comedor Prueba\"\n  }\n]"
+              "raw": "[\n  {\n    \"donacionID\": 10,\n    \"cantidadBienes\": 10,\n    \"unidad\": \"kg\",\n    \"destino\": \"Av. Integracion 123\",\n    \"entidadNombre\": \"Comedor Prueba\"\n  }\n]"
             },
-            "url": "http://localhost:7070/donaciones"
+            "url": "http://localhost:7070/api/donaciones"
           }
         },
         {
@@ -257,9 +314,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"{{patenteCamion}}\",\n      \"paradas\": [\n        {\n          \"donaciones\": [\n            {\n              \"donacionID\": \"D-001\",\n              \"cantidadBienes\": 10,\n              \"unidad\": \"kg\",\n              \"destino\": \"Av. Integracion 123\",\n              \"entidadNombre\": \"Comedor Prueba\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}"
+              "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"AB123CD\",\n      \"paradas\": [\n        {\n          \"donaciones\": [\n            {\n              \"donacionID\": 10,\n              \"cantidadBienes\": 10,\n              \"unidad\": \"kg\",\n              \"destino\": \"Av. Integracion 123\",\n              \"entidadNombre\": \"Comedor Prueba\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": []\n}"
             },
-            "url": "http://localhost:7070/rutas"
+            "url": "http://localhost:7070/api/rutas"
           },
           "event": [
             {
@@ -290,7 +347,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:7070/rutas"
+            "url": "http://localhost:7070/api/rutas"
           }
         },
         {
@@ -298,7 +355,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:7070/rutas/{{rutaId}}"
+            "url": "http://localhost:7070/api/rutas/{{rutaId}}"
           }
         },
         {
@@ -306,7 +363,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": "http://localhost:7070/rutas/{{rutaId}}/iniciar"
+            "url": "http://localhost:7070/api/rutas/{{rutaId}}/inicio"
           }
         },
         {
@@ -314,7 +371,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:7070/entregas/{{entregaId}}"
+            "url": "http://localhost:7070/api/entregas/{{entregaId}}"
           }
         },
         {
@@ -322,7 +379,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": "http://localhost:7070/entregas/{{entregaId}}/confirmar"
+            "url": "http://localhost:7070/api/entregas/{{entregaId}}/confirmacion"
           }
         },
         {
@@ -330,7 +387,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": "http://localhost:7070/entregas/{{entregaId}}/no-recibida"
+            "url": "http://localhost:7070/api/entregas/{{entregaId}}/rechazo"
           }
         },
         {
@@ -338,7 +395,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": "http://localhost:7070/entregas/{{entregaId}}/reingresar-deposito"
+            "url": "http://localhost:7070/api/entregas/{{entregaId}}/reingreso"
           }
         }
       ]

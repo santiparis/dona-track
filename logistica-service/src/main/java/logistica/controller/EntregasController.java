@@ -38,7 +38,7 @@ public class EntregasController {
   }
 
   public void reingresarADeposito(Context ctx) {
-    String id = ctx.pathParam("id");
+    Long id = Long.parseLong(ctx.pathParam("id"));
     try {
       ctx.json(entregasService.reingresarADeposito(id));
     } catch (NoSuchElementException e) {
@@ -49,7 +49,7 @@ public class EntregasController {
   }
 
   private void cambiarEstadoEntrega(Context ctx, boolean entregada) throws IOException {
-    String id = ctx.pathParam("id");
+    Long id = Long.parseLong(ctx.pathParam("id"));
     try {
       if (entregada) {
         ctx.json(entregasService.confirmarEntrega(id));

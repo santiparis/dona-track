@@ -18,7 +18,7 @@ public class AsignacionController {
 
   public void obtenerRanking(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       String criterio = ctx.queryParamAsClass("criterio", String.class).getOrDefault("semantica");
       var ranking = asignacionService.ejecutarAlgoritmoYObtenerRanking(id, criterio);
       ctx.json(ranking);
@@ -33,7 +33,7 @@ public class AsignacionController {
 
   public void seleccionarEntidad(Context ctx) {
     try {
-      int id = Integer.parseInt(ctx.pathParam("id"));
+      Long id = Long.parseLong(ctx.pathParam("id"));
       Long idEntidad = Long.parseLong(ctx.pathParam("idEntidad"));
       AsignacionRequestDTO dto = ctx.bodyAsClass(AsignacionRequestDTO.class);
       asignacionService.confirmarAsignacion(id, idEntidad, dto.nombreEntidadSeleccionada());

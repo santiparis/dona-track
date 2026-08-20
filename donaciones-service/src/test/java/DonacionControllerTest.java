@@ -1,7 +1,6 @@
 import donaciones.controller.DonacionController;
 import donaciones.domain.Bien;
 import donaciones.domain.Donacion;
-import donaciones.domain.EstadoBien;
 import donaciones.domain.Subcategoria;
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.donante.PersonaHumana;
@@ -85,7 +84,9 @@ public class DonacionControllerTest {
             null
         );
         Bien bien = new Bien(Subcategoria.FIDEOS, 3, "kg", "Fideos", null, null, null);
-        when(donacionService.listarDonaciones()).thenReturn(List.of(new Donacion(donante, bien, 10L)));
+        Donacion donacion = new Donacion(donante, bien);
+        donacion.setId(10L);
+        when(donacionService.listarDonaciones()).thenReturn(List.of(donacion));
 
         controller.listar(ctx);
 
