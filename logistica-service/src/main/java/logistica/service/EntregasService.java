@@ -38,18 +38,20 @@ public class EntregasService {
     return rutasRepository.obtenerTodas();
   }
 
-  public Ruta iniciarRuta(String rutaId) throws IOException {
+  public Ruta iniciarRuta(Long rutaId) throws IOException {
     Ruta ruta = rutasRepository.buscarPorId(rutaId)
         .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + rutaId));
 
     ruta.iniciar();
-    donacionesApi.rutaIniciada(ruta).execute();
+    for (Entrega entrega : ruta.getEntregas()) {
+      notificarEstado(entrega, EN_TRASLADO, null);
+    }
 
     return ruta;
   }
 
 
-  public Entrega confirmarEntrega(String entregaId) {
+  public Entrega confirmarEntrega(Long entregaId) {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .map(entregaEncontrada -> {
           entregaEncontrada.marcarEntregada();
@@ -57,14 +59,17 @@ public class EntregasService {
         })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
     try {
-      donacionesApi.entregaCompletada(entrega).execute();
+      String nombreCamion = rutasRepository.buscarRutaPorEntregaId(entregaId)
+          .map(ruta -> ruta.getCamion().getPatente())
+          .orElse(null);
+      notificarEstado(entrega, ENTREGADA, nombreCamion);
       return entrega;
     } catch (IOException e) {
       throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
     }
   }
 
-  public Entrega marcarNoRecibida(String entregaId) {
+  public Entrega marcarNoRecibida(Long entregaId) {
     Entrega entrega = rutasRepository.buscarEntregaPorId(entregaId)
         .map(entregaEncontrada -> {
           entregaEncontrada.marcarNoRecibida();
@@ -72,7 +77,7 @@ public class EntregasService {
         })
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaId));
     try {
-      donacionesApi.entregaFallida(entrega).execute();
+      notificarEstado(entrega, ENTREGA_FALLIDA, null);
       return entrega;
     } catch (IOException e) {
       throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
