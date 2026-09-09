@@ -31,8 +31,9 @@ public class NotificacionPorSMS implements EstrategiaDeNotificacion {
                     mensaje
             ).create();
             return message != null && message.getSid() != null;
-        } catch (Exception ex) {
-            throw new EnvioDeSMSException("Fallo al comunicarse con Twilio para envío de SMS: " + ex.getMessage());
+        } catch (RuntimeException ex) {
+            logger.error("Fallo al comunicarse con Twilio para envío de SMS: {}", ex.getMessage());
+            return false;
         }
     }
 

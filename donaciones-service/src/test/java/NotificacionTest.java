@@ -2,7 +2,6 @@ import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.notificacion.EnvioDeSMSException;
 import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 import donaciones.domain.notificacion.NotificacionPorEmail;
 import donaciones.domain.notificacion.NotificacionPorSMS;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -127,16 +125,16 @@ public class NotificacionTest {
 
 
     @Test
-    public void testLanzaEnvioDeSMSExceptionAnteFalloDeEnvio() {
+    public void testNotificacionPorSmsQuedaFallidaSiNoSeConcretaElEnvio() {
         NotificacionPorSMS estrategiaMock = mock(NotificacionPorSMS.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeSMSException("Error simulado al enviar por Twilio SMS"));
+        when(estrategiaMock.enviar(anyString(), anyString())).thenReturn(false);
 
         Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
         Notificacion notif = new Notificacion(contactoConError, "Mensaje SMS que fallará");
+        notif.enviar();
 
-        assertThrows(EnvioDeSMSException.class, notif::enviar,
-                "Debe lanzarse EnvioDeSMSException cuando el envío por SMS falla.");
+        assertEquals(EstadoNotificacion.FALLIDA, notif.getEstado(),
+                "La notificación debe quedar FALLIDA cuando el envío por SMS no se concreta.");
     }
 
     @Test
