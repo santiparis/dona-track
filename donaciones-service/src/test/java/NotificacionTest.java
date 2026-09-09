@@ -2,7 +2,6 @@ import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Contacto;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.notificacion.EnvioDeEmailException;
 import donaciones.domain.notificacion.EnvioDeSMSException;
 import donaciones.domain.notificacion.EstrategiaDeNotificacion;
 import donaciones.domain.notificacion.NotificacionPorEmail;
@@ -86,17 +85,16 @@ public class NotificacionTest {
     }
 
     @Test
-    public void testLanzaEnvioDeEmailExceptionAnteFalloDeEnvio() {
+    public void testNotificacionPorEmailQuedaFallidaSiNoSeConcretaElEnvio() {
         NotificacionPorEmail estrategiaMock = mock(NotificacionPorEmail.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeEmailException("Error simulado al enviar por SendGrid"));
+        when(estrategiaMock.enviar(anyString(), anyString())).thenReturn(false);
 
         Contacto contactoConError = new Contacto(estrategiaMock, "fallo@donatrack.org");
-
         Notificacion notif = new Notificacion(contactoConError, "Mensaje que fallará");
+        notif.enviar();
 
-        assertThrows(EnvioDeEmailException.class, notif::enviar,
-                "Debe lanzarse EnvioDeEmailException cuando el envío de correo falla.");
+        assertEquals(EstadoNotificacion.FALLIDA, notif.getEstado(),
+                "La notificación debe quedar FALLIDA cuando el envío por correo no se concreta.");
     }
 
     @Test

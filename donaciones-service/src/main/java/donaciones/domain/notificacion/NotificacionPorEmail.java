@@ -46,11 +46,13 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
             if (statusCode >= 200 && statusCode < 300) {
                 return true;
             } else {
-                throw new EnvioDeEmailException("SendGrid respondió con código HTTP " + statusCode + ": " + response.getBody());
+                logger.error("SendGrid respondió con código HTTP {}: {}", statusCode, response.getBody());
+                return false;
             }
             // Uso IOException porque las clases de SendGrid lanzan esta excepción
         } catch (IOException ex) {
-            throw new EnvioDeEmailException("Fallo de red o I/O al comunicarse con SendGrid: " + ex.getMessage());
+            logger.error("Fallo de red o I/O al comunicarse con SendGrid: {}", ex.getMessage());
+            return false;
         }
     }
 
