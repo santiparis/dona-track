@@ -1,6 +1,5 @@
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Contacto;
-import donaciones.domain.notificacion.EnvioDeWhatsAppException;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
 import donaciones.domain.notificacion.EnvioDeEmailException;
@@ -143,15 +142,15 @@ public class NotificacionTest {
     }
 
     @Test
-    public void testLanzaEnvioDeWhatsAppExceptionAnteFalloDeEnvio() {
+    public void testNotificacionPorWhatsAppQuedaFallidaSiNoSeConcretaElEnvio() {
         NotificacionPorWhatsApp estrategiaMock = mock(NotificacionPorWhatsApp.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeWhatsAppException("Error simulado al enviar por Twilio WhatsApp"));
+        when(estrategiaMock.enviar(anyString(), anyString())).thenReturn(false);
 
         Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
         Notificacion notif = new Notificacion(contactoConError, "Mensaje WhatsApp que fallará");
+        notif.enviar();
 
-        assertThrows(EnvioDeWhatsAppException.class, notif::enviar,
-                "Debe lanzarse EnvioDeWhatsAppException cuando el envío por WhatsApp falla.");
+        assertEquals(EstadoNotificacion.FALLIDA, notif.getEstado(),
+                "La notificación debe quedar FALLIDA cuando el envío por WhatsApp no se concreta.");
     }
 }
