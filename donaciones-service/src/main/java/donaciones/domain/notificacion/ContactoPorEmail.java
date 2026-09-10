@@ -11,19 +11,22 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotificacionPorEmail implements EstrategiaDeNotificacion {
+public class ContactoPorEmail extends Contacto {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificacionPorEmail.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContactoPorEmail.class);
 
-    @Override
-    public boolean enviar(String destino, String mensaje) {
+    public ContactoPorEmail(String valor) {
+        super(valor);
+    }
+
+    public boolean enviar(String mensaje) {
         String remitente = System.getenv("SENDGRID_REMITENTE");
         String apiKey = System.getenv("SENDGRID_API_KEY");
 
         // Modo simulado: sin credenciales se registra el envío y se retorna éxito, para no
         // consumir cuota externa ni exigir configuración al correr mvn test o la importación masiva.
         if (estaSinConfigurar(remitente) || estaSinConfigurar(apiKey)) {
-            logger.info("[SIMULADO] Email a {}: {}", destino, mensaje);
+            logger.info("[SIMULADO] Email a {}: {}", getValor(), mensaje);
             return true;
         }
 
@@ -31,7 +34,7 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
         // Y correr este comando en la terminal: source sendgrid.env 
         Email from = new Email(remitente);
         String subject = "Notificación del sistema DonaTrack";
-        Email to = new Email(destino);
+        Email to = new Email(getValor());
         Content content = new Content("text/plain", mensaje);
         Mail mail = new Mail(from, subject, to, content);
 

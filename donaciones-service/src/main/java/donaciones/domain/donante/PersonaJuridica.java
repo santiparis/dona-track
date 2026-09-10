@@ -1,5 +1,6 @@
 package donaciones.domain.donante;
 
+import donaciones.domain.notificacion.Contacto;
 import java.util.List;
 
 public class PersonaJuridica extends Persona {

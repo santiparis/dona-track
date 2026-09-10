@@ -2,7 +2,7 @@ package cargaCSV;
 
 import donaciones.domain.cargaCSV.ImportadorPersonas;
 import donaciones.domain.cargaCSV.MapeoCsvEnPersonaException;
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;

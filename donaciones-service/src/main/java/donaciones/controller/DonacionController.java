@@ -3,7 +3,7 @@ package donaciones.controller;
 import donaciones.domain.Bien;
 import donaciones.domain.Donacion;
 import donaciones.domain.RegistroCambioEstado;
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;

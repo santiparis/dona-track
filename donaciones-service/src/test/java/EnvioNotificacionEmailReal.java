@@ -1,7 +1,10 @@
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.notificacion.NotificacionPorEmail;
+import java.util.List;
 
 /**
  * Clase principal (Main) independiente ubicada en el apartado de tests
@@ -23,10 +26,14 @@ public class EnvioNotificacionEmailReal {
         String emailDestino = (args.length > 0 && args[0] != null) ? args[0] : "juanignaciopereyra01@gmail.com";
 
         try {
-            Contacto contactoEmail = new Contacto(new NotificacionPorEmail(), emailDestino);
-            Notificacion notifEmail = new Notificacion(contactoEmail, "¡Hola! Esta es una prueba REAL por Email desde DonaTrack.");
-            notifEmail.enviar();
-            if (notifEmail.getEstado() == EstadoNotificacion.COMPLETADA) {
+            ContactoPorEmail contactoEmail = new ContactoPorEmail(emailDestino);
+            PersonaHumana destinatario = new PersonaHumana(
+                "Juan", "Pereyra", 25, TipoDoc.DNI, "12345678", Genero.MASCULINO,
+                "Medrano 951", List.of(contactoEmail), contactoEmail, null
+            );
+
+            Notificacion notifEmail = destinatario.notificar("¡Hola! Esta es una prueba REAL por Email desde DonaTrack.");
+            if (notifEmail != null && notifEmail.getEstado() == EstadoNotificacion.COMPLETADA) {
                 System.out.println(" -> Envío Email finalizado con éxito.");
             }
         } catch (Exception ex) {

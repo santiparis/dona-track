@@ -1,7 +1,6 @@
 import donaciones.controller.DonanteController;
-import donaciones.domain.donante.Contacto;
 import donaciones.domain.donante.PersonaHumana;
-import donaciones.domain.notificacion.NotificacionPorSMS;
+import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.dto.DonanteRequestDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.service.DonanteService;
@@ -52,7 +51,7 @@ public class DonanteControllerTest {
 
     @Test
     void listarConvierteLosDonantesADTOsSeguros() {
-        Contacto contacto = new Contacto(new NotificacionPorSMS(), "111");
+        ContactoPorSMS contacto = new ContactoPorSMS("111");
         PersonaHumana donante = new PersonaHumana(
             "Ana",
             "Perez",

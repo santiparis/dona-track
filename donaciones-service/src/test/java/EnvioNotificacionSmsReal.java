@@ -1,7 +1,11 @@
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.notificacion.NotificacionPorSMS;
+
+import java.util.List;
 
 /**
  * Para ejecutar este envío real desde la terminal:
@@ -20,10 +24,14 @@ public class EnvioNotificacionSmsReal {
         String telefonoDestino = (args.length > 0 && args[0] != null) ? args[0] : "+541144926571";
 
         try {
-            Contacto contactoSms = new Contacto(new NotificacionPorSMS(), telefonoDestino);
-            Notificacion notifSms = new Notificacion(contactoSms, "¡Hola! Esta es una prueba REAL por SMS desde DonaTrack.");
-            notifSms.enviar();
-            if (notifSms.getEstado() == EstadoNotificacion.COMPLETADA) {
+            ContactoPorSMS contactoSms = new ContactoPorSMS(telefonoDestino);
+            PersonaHumana destinatario = new PersonaHumana(
+                "Juan", "Pereyra", 25, TipoDoc.DNI, "12345678", Genero.MASCULINO,
+                "Medrano 951", List.of(contactoSms), contactoSms, null
+            );
+
+            Notificacion notifSms = destinatario.notificar("¡Hola! Esta es una prueba REAL por SMS desde DonaTrack.");
+            if (notifSms != null && notifSms.getEstado() == EstadoNotificacion.COMPLETADA) {
                 System.out.println(" -> Envío SMS finalizado");
             }
         } catch (Exception ex) {
