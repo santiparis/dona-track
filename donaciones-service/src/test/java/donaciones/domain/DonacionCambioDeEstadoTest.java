@@ -37,26 +37,32 @@ public class DonacionCambioDeEstadoTest {
 
     @Test
     void iniciarTrasladoPasaAEnTraslado() {
-        donacion.iniciarTraslado("https://donatrack.org/mapa/123");
+        donacion.asignarA(entidad);
+
+        donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
 
         assertEquals(EstadoDonacion.EN_TRASLADO, donacion.getEstado());
     }
 
     @Test
-    void confirmarEntregaPasaAEntregada() {
-        donacion.confirmarEntrega("CAM-999");
+    void cambiarEstadoAEntregadaPasaAEntregada() {
+        donacion.asignarA(entidad);
+
+        donacion.cambiarEstado(EstadoDonacion.ENTREGADA, null);
 
         assertEquals(EstadoDonacion.ENTREGADA, donacion.getEstado());
     }
 
     @Test
-    void registrarEntregaFallidaDejaElMotivoComoJustificacionEnElHistorial() {
-        donacion.registrarEntregaFallida("Tocamos timbre pero nadie respondió");
+    void cambiarEstadoAEntregaFallidaDejaElMotivoComoJustificacionEnElHistorial() {
+        donacion.asignarA(entidad);
+
+        donacion.cambiarEstado(EstadoDonacion.ENTREGA_FALLIDA, "Tocamos timbre pero nadie respondió");
 
         assertEquals(EstadoDonacion.ENTREGA_FALLIDA, donacion.getEstado());
 
-        RegistroCambioEstado<EstadoDonacion> ultimo = donacion.getHistorialEstados().get(1);
-        assertEquals(EstadoDonacion.EN_DEPOSITO, ultimo.estadoAnterior());
+        RegistroCambioEstado<EstadoDonacion> ultimo = donacion.getHistorialEstados().get(2);
+        assertEquals(EstadoDonacion.ASIGNADA, ultimo.estadoAnterior());
         assertEquals(EstadoDonacion.ENTREGA_FALLIDA, ultimo.estadoNuevo());
         assertEquals("Tocamos timbre pero nadie respondió", ultimo.justificacion());
     }
@@ -64,8 +70,8 @@ public class DonacionCambioDeEstadoTest {
     @Test
     void cadaCambioDeEstadoDejaSuRegistroEnElHistorial() {
         donacion.asignarA(entidad);
-        donacion.iniciarTraslado("https://donatrack.org/mapa/1");
-        donacion.confirmarEntrega("CAM-001");
+        donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+        donacion.cambiarEstado(EstadoDonacion.ENTREGADA, null);
 
         assertEquals(4, donacion.getHistorialEstados().size());
         assertEquals(EstadoDonacion.ASIGNADA, donacion.getHistorialEstados().get(1).estadoNuevo());

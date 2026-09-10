@@ -10,7 +10,6 @@ import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.AsignacionService;
-import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
@@ -28,8 +27,7 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    DonacionService service = new DonacionService(donacionesRepository, personasRepository, administradorasRepo);
-    DonacionController controller = new DonacionController(service);
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo);
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
@@ -47,7 +45,9 @@ public class Main {
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-    app.patch("/api/donaciones/{id}/estado", controller::cambiarEstado);
+    app.patch("/api/donaciones/{id}/en-traslado", controller::marcarEnTraslado);
+    app.patch("/api/donaciones/{id}/entregada", controller::confirmarEntrega);
+    app.patch("/api/donaciones/{id}/entrega-fallida", controller::registrarEntregaFallida);
     app.delete("/api/donaciones/{id}", controller::eliminar);
 
     app.post("/donaciones/rutasIniciadas", integracionLogisticaController::rutasIniciadas);

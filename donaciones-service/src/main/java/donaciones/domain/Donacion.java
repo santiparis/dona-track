@@ -35,36 +35,12 @@ public class Donacion {
         }
     }
 
-    // TODO: las notificaciones pasan al controller. La donacion solo cambia su estado.
     public void asignarA(EntidadBeneficiaria entidad) {
         this.entidadBeneficiaria = entidad;
         this.cambiarEstado(EstadoDonacion.ASIGNADA, null);
-        // this.donante.notificar("Su donación ha sido asignada a la entidad: " + entidad.getRazonSocial());
-        // entidad.notificar("Se le ha asignado satisfactoriamente una nueva donación.");
     }
 
-    public void iniciarTraslado(String urlMapaSeguimiento) {
-        this.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
-        // String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: " + urlMapaSeguimiento;
-        // this.donante.notificar(mensaje);
-        // this.entidadBeneficiaria.notificar(mensaje);
-    }
-
-    public void confirmarEntrega(String camion) {
-        this.cambiarEstado(EstadoDonacion.ENTREGADA, null);
-        // String mensaje = "Entrega realizada. Fecha/Hora: " + new Date() + " | Camión: " + camion;
-        // this.donante.notificar(mensaje);
-        // this.entidadBeneficiaria.notificar(mensaje);
-    }
-
-    public void registrarEntregaFallida(String motivo) {
-        this.cambiarEstado(EstadoDonacion.ENTREGA_FALLIDA, motivo);
-        // String mensaje = "Alerta: Entrega no satisfactoria. Motivo: " + motivo;
-        // this.donante.notificar(mensaje);
-        // this.entidadBeneficiaria.notificar(mensaje);
-    }
-
-    private void cambiarEstado(EstadoDonacion nuevo, String justificacion) {
+    public void cambiarEstado(EstadoDonacion nuevo, String justificacion) {
         if (this.estado != nuevo) {
             this.historialEstados.add(new RegistroCambioEstado<>(this.estado, nuevo, new Date(), justificacion));
         }
@@ -77,11 +53,6 @@ public class Donacion {
 
     public EstadoDonacion getEstado() {
         return this.estado;
-    }
-
-    // TODO: se elimina cuando los services dejen de cambiar el estado por afuera del dominio.
-    public void setEstado(EstadoDonacion estado) {
-        this.cambiarEstado(estado, null);
     }
 
     public List<RegistroCambioEstado<EstadoDonacion>> getHistorialEstados() {
