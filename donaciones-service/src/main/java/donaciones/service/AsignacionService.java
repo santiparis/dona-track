@@ -1,5 +1,6 @@
 package donaciones.service;
 
+import donaciones.controller.Notificador;
 import donaciones.domain.Donacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.dto.DonacionLogisticaDTO;
@@ -19,15 +20,18 @@ public class AsignacionService {
   private final DonacionRepository donacionRepository;
   private final EntidadBeneficiariaRepository entidadRepository;
   private final LogisticaAPICalls logisticaAPICalls;
-  
+  private final Notificador notificador;
+
   public AsignacionService(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
-      LogisticaAPICalls logisticaAPICalls
+      LogisticaAPICalls logisticaAPICalls,
+      Notificador notificador
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.logisticaAPICalls = logisticaAPICalls;
+    this.notificador = notificador;
   }
 
   // ejecucion y ranking
@@ -65,11 +69,7 @@ public class AsignacionService {
       Donacion donacion = donacionOpt.get();
       EntidadBeneficiaria entidad = entidadOpt.get();
       donacion.asignarA(entidad);
-
-      // TODO: estas notificaciones pasan al controller junto con la asignacion.
-      donacion.getDonante().notificar(
-          "Su donación ha sido asignada a la entidad: " + entidad.getRazonSocial());
-      entidad.notificar("Se le ha asignado satisfactoriamente una nueva donación.");
+      notificador.donacionAsignada(donacion);
 
       try {
         DonacionLogisticaDTO dto = new DonacionLogisticaDTO(

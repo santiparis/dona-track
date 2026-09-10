@@ -1,4 +1,5 @@
 import donaciones.controller.DonacionController;
+import donaciones.controller.Notificador;
 import donaciones.domain.Bien;
 import donaciones.domain.Categoria;
 import donaciones.domain.Donacion;
@@ -43,7 +44,8 @@ public class DonacionControllerTest {
         controller = new DonacionController(
                 donacionesRepository,
                 personasRepository,
-                mock(PersonasAdministradorasRepository.class)
+                mock(PersonasAdministradorasRepository.class),
+                new Notificador()
         );
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }

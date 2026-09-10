@@ -5,6 +5,7 @@ import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
 import donaciones.controller.IntegracionLogisticaController;
+import donaciones.controller.Notificador;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
@@ -27,12 +28,14 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo);
+    Notificador notificador = new Notificador();
+
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
 
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls);
+    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, notificador);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
 

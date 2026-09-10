@@ -41,15 +41,18 @@ public class DonacionController {
   private final DonacionRepository donacionesRepository;
   private final RepositorioPersonas personasRepository;
   private final PersonasAdministradorasRepository administradorasRepository;
+  private final Notificador notificador;
 
   public DonacionController(
       DonacionRepository donacionesRepository,
       RepositorioPersonas personasRepository,
-      PersonasAdministradorasRepository administradorasRepository
+      PersonasAdministradorasRepository administradorasRepository,
+      Notificador notificador
   ) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
     this.administradorasRepository = administradorasRepository;
+    this.notificador = notificador;
   }
 
   public void listar(Context ctx) {
@@ -86,10 +89,7 @@ public class DonacionController {
           .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
       donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
 
-      String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: "
-          + ctx.queryParam("urlMapa");
-      donacion.getDonante().notificar(mensaje);
-      donacion.getEntidadBeneficiaria().notificar(mensaje);
+      notificador.inicioDeTraslado(donacion, ctx.queryParam("urlMapa"));
 
       ctx.result("Donación en traslado");
     } catch (IllegalArgumentException e) {
@@ -108,10 +108,7 @@ public class DonacionController {
           .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
       donacion.cambiarEstado(EstadoDonacion.ENTREGADA, null);
 
-      String mensaje = "Entrega realizada. Fecha/Hora: " + LocalDate.now()
-          + " | Camión: " + ctx.queryParam("nombreCamion");
-      donacion.getDonante().notificar(mensaje);
-      donacion.getEntidadBeneficiaria().notificar(mensaje);
+      notificador.entregaConfirmada(donacion, ctx.queryParam("nombreCamion"));
 
       ctx.result("Entrega confirmada");
     } catch (IllegalArgumentException e) {
@@ -131,10 +128,7 @@ public class DonacionController {
           .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
       donacion.cambiarEstado(EstadoDonacion.ENTREGA_FALLIDA, motivo);
 
-      String mensaje = "Alerta: Entrega no satisfactoria. Motivo: " + motivo;
-      donacion.getDonante().notificar(mensaje);
-      donacion.getEntidadBeneficiaria().notificar(mensaje);
-      administradorasRepository.obtenerTodos().forEach(administradora -> administradora.notificar(mensaje));
+      notificador.entregaFallida(donacion, motivo, administradorasRepository.obtenerTodos());
 
       ctx.result("Entrega fallida registrada");
     } catch (IllegalArgumentException e) {
