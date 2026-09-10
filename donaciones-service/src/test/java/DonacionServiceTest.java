@@ -6,7 +6,7 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
-import donaciones.domain.eventos.PublicadorDeEventos;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.DonacionService;
 import donaciones.service.excepcion.CategoriaInvalidaException;
 import donaciones.service.excepcion.DonanteNoEncontradoException;
@@ -30,7 +30,7 @@ public class DonacionServiceTest {
     void setUp() {
         donacionesRepository = mock(DonacionRepository.class);
         personasRepository = mock(RepositorioPersonas.class);
-        donacionService = new DonacionService(donacionesRepository, personasRepository, new PublicadorDeEventos());
+        donacionService = new DonacionService(donacionesRepository, personasRepository, mock(PersonasAdministradorasRepository.class));
     }
 
     @Test

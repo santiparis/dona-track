@@ -2,15 +2,12 @@ package donaciones.service;
 
 import donaciones.domain.*;
 import donaciones.domain.donante.Persona;
-import donaciones.domain.eventos.EntregaNoSatisfactoriaEvent;
-import donaciones.domain.eventos.EntregaRealizadaEvent;
-import donaciones.domain.eventos.InicioRutaEvent;
-import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionPatchDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.excepcion.CategoriaInvalidaException;
 import donaciones.service.excepcion.DonanteNoEncontradoException;
 import donaciones.service.excepcion.EstadoBienInvalidoException;
@@ -23,12 +20,12 @@ import java.util.Optional;
 public class DonacionService {
   private final DonacionRepository donacionesRepository;
   private final RepositorioPersonas personasRepository;
-  private final PublicadorDeEventos publicador;
+  private final PersonasAdministradorasRepository administradorasRepository;
 
-  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository, PublicadorDeEventos publicador) {
+  public DonacionService(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository, PersonasAdministradorasRepository administradorasRepository) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
-    this.publicador = publicador;
+    this.administradorasRepository = administradorasRepository;
   }
 
   public void crearDonacion(DonacionRequestDTO dto) {
@@ -131,15 +128,21 @@ public class DonacionService {
       }
       donacion.setEstado(nuevoEstado);
 
+      // TODO: estas notificaciones pasan al controller junto con el cambio de estado.
       if (nuevoEstado == EstadoDonacion.ENTREGA_FALLIDA) {
-        publicador.publicar(
-            new EntregaNoSatisfactoriaEvent(donacion));
+        String mensaje = "Alerta: Entrega no satisfactoria.";
+        donacion.getDonante().notificar(mensaje);
+        donacion.getEntidadBeneficiaria().notificar(mensaje);
+        administradorasRepository.obtenerTodos().forEach(admin -> admin.notificar(mensaje));
       } else if (nuevoEstado == EstadoDonacion.ENTREGADA) {
-        String fechaYHora = LocalDate.now().toString();
-        publicador.publicar(
-            new EntregaRealizadaEvent(donacion, fechaYHora, nombreCamion));
+        String mensaje = "Entrega realizada. Fecha/Hora: " + LocalDate.now()
+            + " | Camión: " + nombreCamion;
+        donacion.getDonante().notificar(mensaje);
+        donacion.getEntidadBeneficiaria().notificar(mensaje);
       } else if (nuevoEstado == EstadoDonacion.EN_TRASLADO) {
-        publicador.publicar(new InicioRutaEvent(donacion, null));
+        String mensaje = "Su entrega está en camino. Le avisaremos cuando sea entregada.";
+        donacion.getDonante().notificar(mensaje);
+        donacion.getEntidadBeneficiaria().notificar(mensaje);
       }
 
     } else {

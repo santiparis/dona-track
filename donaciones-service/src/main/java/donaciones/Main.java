@@ -6,11 +6,6 @@ import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
 import donaciones.controller.IntegracionLogisticaController;
 import donaciones.domain.donante.RepositorioPersonas;
-import donaciones.domain.eventos.*;
-import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
-import donaciones.domain.eventos.listeners.EntregaNoSatisfactoriaListener;
-import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
-import donaciones.domain.eventos.listeners.InicioRutaListener;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
@@ -24,14 +19,8 @@ import io.javalin.Javalin;
 
 public class Main {
   public static void main(String[] args) {
-    // Publicador de eventos y listeners
-    PersonasAdministradorasRepository adminRepo = new PersonasAdministradorasRepository();
-    PublicadorDeEventos publicador = new PublicadorDeEventos();
-    publicador.suscribir(DonacionAsignadaEvent.class, new DonacionAsignadaListener());
-    publicador.suscribir(InicioRutaEvent.class, new InicioRutaListener());
-    publicador.suscribir(EntregaRealizadaEvent.class, new EntregaRealizadaListener());
-    publicador.suscribir(EntregaNoSatisfactoriaEvent.class, new EntregaNoSatisfactoriaListener(adminRepo));
 
+    PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
     RepositorioPersonas personasRepository = new RepositorioPersonas();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
@@ -39,13 +28,13 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    DonacionService service = new DonacionService(donacionesRepository, personasRepository, publicador);
+    DonacionService service = new DonacionService(donacionesRepository, personasRepository, administradorasRepo);
     DonacionController controller = new DonacionController(service);
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
 
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, publicador);
+    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
 
