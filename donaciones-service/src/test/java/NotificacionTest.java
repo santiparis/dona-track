@@ -1,157 +1,127 @@
 import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.donante.Contacto;
-import donaciones.domain.notificacion.EnvioDeWhatsAppException;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.PersonaHumana;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.notificacion.EnvioDeEmailException;
-import donaciones.domain.notificacion.EnvioDeSMSException;
-import donaciones.domain.notificacion.EstrategiaDeNotificacion;
-import donaciones.domain.notificacion.NotificacionPorEmail;
-import donaciones.domain.notificacion.NotificacionPorSMS;
-import donaciones.domain.notificacion.NotificacionPorWhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class NotificacionTest {
 
-    private EstrategiaDeNotificacion estrategiaMock;
+    private Contacto contactoQueEnvia;
+    private Contacto contactoQueFalla;
 
     @BeforeEach
     void setUp() {
-        estrategiaMock = mock(EstrategiaDeNotificacion.class);
-        when(estrategiaMock.enviar(anyString(), anyString())).thenReturn(true);
+        contactoQueEnvia = mock(Contacto.class);
+        when(contactoQueEnvia.enviar(anyString())).thenReturn(true);
+
+        contactoQueFalla = mock(Contacto.class);
+        when(contactoQueFalla.enviar(anyString())).thenReturn(false);
+    }
+
+    private PersonaHumana personaCon(List<Contacto> contactos, Contacto medioPredeterminado) {
+        return new PersonaHumana(
+            "Ana", "Pérez", 30, TipoDoc.DNI, "12345678", Genero.FEMENINO,
+            "Medrano 951", contactos, medioPredeterminado, null
+        );
     }
 
     @Test
-    public void testEnvioDeNotificacionSmsConEstrategiaMock() {
-        Contacto contactoSms = new Contacto(estrategiaMock, "+5491122334455");
+    public void testLaNotificacionQuedaCompletadaCuandoElEnvioSeConcreta() {
+        PersonaHumana persona = personaCon(List.of(contactoQueEnvia), contactoQueEnvia);
         String mensaje = "Código de verificación DonaTrack: 4819";
-        Notificacion notificacion = new Notificacion(contactoSms, mensaje);
-        notificacion.enviar();
 
-        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(), "La notificación SMS debe marcarse como completada exitosamente");
-        verify(estrategiaMock, times(1)).enviar(eq("+5491122334455"), eq(mensaje));
-    }
-
-    @Test
-    public void testEnvioDeNotificacionWhatsAppConEstrategiaMock() {
-        Contacto contactoWa = new Contacto(estrategiaMock, "+5491199887766");
-        String mensaje = "¡Hola! Tu envío está en camino.";
-        Notificacion notificacion = new Notificacion(contactoWa, mensaje);
-        notificacion.enviar();
-
-        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(), "La notificación WhatsApp debe completarse");
-        verify(estrategiaMock, times(1)).enviar(eq("+5491199887766"), eq(mensaje));
-    }
-
-    @Test
-    public void testNotificacionAEntidadBeneficiariaMedianteServicio() {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
-        Contacto contactoWa = new Contacto(estrategiaMock, "+5491100001111");
-        entidad.registrarContacto(contactoWa, true);
-
-        String mensaje = "Aviso para entidad: Se le ha asignado satisfactoriamente una nueva donación.";
-        Notificacion notif = entidad.notificar(mensaje);
-
-        assertEquals(EstadoNotificacion.COMPLETADA, notif.getEstado());
-        verify(estrategiaMock, times(1)).enviar(eq("+5491100001111"), eq(mensaje));
-    }
-
-    @Test
-    public void testEnvioDeEmailsDeBienvenida() {
-        Contacto contactoUsuario1 = new Contacto(estrategiaMock, "juanignaciopereyra01@gmail.com");
-        Contacto contactoUsuario2 = new Contacto(estrategiaMock, "parispueblasantiago@gmail.com");
-
-        String emailDeBienvenida = "¡Bienvenido a DonaTrack! Gracias por sumarte a nuestra plataforma.";
-        Notificacion notif1 = new Notificacion(contactoUsuario1, emailDeBienvenida);
-        Notificacion notif2 = new Notificacion(contactoUsuario2, emailDeBienvenida);
-
-        notif1.enviar();
-        notif2.enviar();
-
-        assertEquals(EstadoNotificacion.COMPLETADA, notif1.getEstado(), "El correo al primer usuario debe enviarse exitosamente");
-        assertEquals(EstadoNotificacion.COMPLETADA, notif2.getEstado(), "El correo al segundo usuario debe enviarse exitosamente");
-        verify(estrategiaMock, times(1)).enviar(eq("juanignaciopereyra01@gmail.com"), eq(emailDeBienvenida));
-        verify(estrategiaMock, times(1)).enviar(eq("parispueblasantiago@gmail.com"), eq(emailDeBienvenida));
-    }
-
-    @Test
-    public void testLanzaEnvioDeEmailExceptionAnteFalloDeEnvio() {
-        NotificacionPorEmail estrategiaMock = mock(NotificacionPorEmail.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeEmailException("Error simulado al enviar por SendGrid"));
-
-        Contacto contactoConError = new Contacto(estrategiaMock, "fallo@donatrack.org");
-
-        Notificacion notif = new Notificacion(contactoConError, "Mensaje que fallará");
-
-        assertThrows(EnvioDeEmailException.class, notif::enviar,
-                "Debe lanzarse EnvioDeEmailException cuando el envío de correo falla.");
-    }
-
-    @Test
-    public void testNotificacionPorSms() {
-        NotificacionPorSMS estrategiaSms = mock(NotificacionPorSMS.class);
-        when(estrategiaSms.enviar(anyString(), anyString())).thenReturn(true);
-
-        Contacto contactoSms = new Contacto(estrategiaSms, "+54119837462");
-        Notificacion notificacion = new Notificacion(contactoSms, "Mensaje SMS de prueba mockeada");
-        notificacion.enviar();
+        Notificacion notificacion = persona.notificar(mensaje);
 
         assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(),
-                "Debe completarse exitosamente la notificación SMS cuando la estrategia mockeada retorna true.");
-        verify(estrategiaSms, times(1)).enviar(eq("+54119837462"), eq("Mensaje SMS de prueba mockeada"));
+                "La notificación debe completarse cuando el contacto concreta el envío");
+        verify(contactoQueEnvia, times(1)).enviar(eq(mensaje));
     }
 
     @Test
-    public void testNotificacionPorWhatsApp() {
-        NotificacionPorWhatsApp estrategiaWa = mock(NotificacionPorWhatsApp.class);
-        when(estrategiaWa.enviar(anyString(), anyString())).thenReturn(true);
+    public void testLaNotificacionQuedaFallidaCuandoNoSeConcretaElEnvio() {
+        PersonaHumana persona = personaCon(List.of(contactoQueFalla), contactoQueFalla);
 
-        Contacto contactoWa = new Contacto(estrategiaWa, "+54119837462");
-        Notificacion notificacion = new Notificacion(contactoWa, "Mensaje WhatsApp de prueba mockeada");
-        notificacion.enviar();
+        Notificacion notificacion = persona.notificar("Mensaje que fallará");
 
-        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado(),
-                "Debe completarse exitosamente la notificación WhatsApp cuando la estrategia mockeada retorna true.");
-        verify(estrategiaWa, times(1)).enviar(eq("+54119837462"), eq("Mensaje WhatsApp de prueba mockeada"));
-    }
-
-
-    @Test
-    public void testLanzaEnvioDeSMSExceptionAnteFalloDeEnvio() {
-        NotificacionPorSMS estrategiaMock = mock(NotificacionPorSMS.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeSMSException("Error simulado al enviar por Twilio SMS"));
-
-        Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
-        Notificacion notif = new Notificacion(contactoConError, "Mensaje SMS que fallará");
-
-        assertThrows(EnvioDeSMSException.class, notif::enviar,
-                "Debe lanzarse EnvioDeSMSException cuando el envío por SMS falla.");
+        assertEquals(EstadoNotificacion.FALLIDA, notificacion.getEstado(),
+                "La notificación debe quedar FALLIDA cuando el contacto no concreta el envío");
     }
 
     @Test
-    public void testLanzaEnvioDeWhatsAppExceptionAnteFalloDeEnvio() {
-        NotificacionPorWhatsApp estrategiaMock = mock(NotificacionPorWhatsApp.class);
-        when(estrategiaMock.enviar(anyString(), anyString()))
-                .thenThrow(new EnvioDeWhatsAppException("Error simulado al enviar por Twilio WhatsApp"));
+    public void testSeNotificaPorElMedioPredeterminadoYNoPorLosDemas() {
+        Contacto otroContacto = mock(Contacto.class);
+        PersonaHumana persona = personaCon(List.of(otroContacto, contactoQueEnvia), contactoQueEnvia);
+        String mensaje = "Su donación fue asignada";
 
-        Contacto contactoConError = new Contacto(estrategiaMock, "+54119837462");
-        Notificacion notif = new Notificacion(contactoConError, "Mensaje WhatsApp que fallará");
+        persona.notificar(mensaje);
 
-        assertThrows(EnvioDeWhatsAppException.class, notif::enviar,
-                "Debe lanzarse EnvioDeWhatsAppException cuando el envío por WhatsApp falla.");
+        verify(contactoQueEnvia, times(1)).enviar(eq(mensaje));
+        verify(otroContacto, never()).enviar(anyString());
+    }
+
+    // Persona exige al menos un contacto y un medio predeterminado válido, así que los casos sin
+    // medio predeterminado sólo se pueden dar en una EntidadBeneficiaria, que no tiene esa invariante.
+    @Test
+    public void testSeNotificaPorElPrimerContactoSiNoHayMedioPredeterminado() {
+        Contacto otroContacto = mock(Contacto.class);
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(
+            "Comedor Los Niños", "Calle 456", "112233", List.of("comedor@mail.org"),
+            List.of(contactoQueEnvia, otroContacto), null);
+        String mensaje = "Su donación fue asignada";
+
+        Notificacion notificacion = entidad.notificar(mensaje);
+
+        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado());
+        verify(contactoQueEnvia, times(1)).enviar(eq(mensaje));
+        verify(otroContacto, never()).enviar(anyString());
+    }
+
+    @Test
+    public void testNoSeGeneraNotificacionSiElReceptorNoTieneContactos() {
+        EntidadBeneficiaria entidadSinContactos = new EntidadBeneficiaria(
+            "Escuela Rural N°10", "Ruta 8 km 60", "445566", List.of("escuela@mail.org"));
+
+        assertNull(entidadSinContactos.notificar("Mensaje sin destino"),
+                "Sin ningún contacto no hay forma de notificar, no debe generarse la notificación");
+    }
+
+    @Test
+    public void testSeNotificaAUnaEntidadBeneficiaria() {
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(
+            "Fundación Esperanza", "Calle 123", "445566", List.of("contacto@esperanza.org"));
+        entidad.registrarContacto(contactoQueEnvia, true);
+        String mensaje = "Se le ha asignado satisfactoriamente una nueva donación.";
+
+        Notificacion notificacion = entidad.notificar(mensaje);
+
+        assertEquals(EstadoNotificacion.COMPLETADA, notificacion.getEstado());
+        verify(contactoQueEnvia, times(1)).enviar(eq(mensaje));
+    }
+
+    @Test
+    public void testLaNotificacionRegistraElMensajeEnviado() {
+        PersonaHumana persona = personaCon(List.of(contactoQueEnvia), contactoQueEnvia);
+        String mensaje = "¡Bienvenido a DonaTrack! Gracias por sumarte a nuestra plataforma.";
+
+        Notificacion notificacion = persona.notificar(mensaje);
+
+        assertEquals(mensaje, notificacion.getMensaje());
     }
 }

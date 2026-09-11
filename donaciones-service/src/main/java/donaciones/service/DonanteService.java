@@ -1,14 +1,13 @@
 package donaciones.service;
 
 import donaciones.domain.donante.Persona;
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;
-import donaciones.domain.notificacion.EstrategiaDeNotificacion;
-import donaciones.domain.notificacion.NotificacionPorEmail;
-import donaciones.domain.notificacion.NotificacionPorSMS;
-import donaciones.domain.notificacion.NotificacionPorWhatsApp;
+import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.domain.notificacion.ContactoPorSMS;
+import donaciones.domain.notificacion.ContactoPorWhatsApp;
 import donaciones.dto.ContactoDTO;
 import donaciones.dto.DonanteRequestDTO;
 
@@ -90,13 +89,11 @@ public class DonanteService {
   }
 
   private Contacto crearContacto(ContactoDTO dto) {
-    EstrategiaDeNotificacion estrategia = switch (dto.estrategia().toUpperCase()) {
-      case "EMAIL" -> new NotificacionPorEmail();
-      case "WHATSAPP" -> new NotificacionPorWhatsApp();
-      case "SMS" -> new NotificacionPorSMS();
+    return switch (dto.estrategia().toUpperCase()) {
+      case "EMAIL" -> new ContactoPorEmail(dto.valor());
+      case "WHATSAPP" -> new ContactoPorWhatsApp(dto.valor());
+      case "SMS" -> new ContactoPorSMS(dto.valor());
       default -> throw new IllegalArgumentException("Estrategia de notificacion invalida: " + dto.estrategia());
     };
-
-    return new Contacto(estrategia, dto.valor());
   }
 }

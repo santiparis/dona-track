@@ -1,10 +1,8 @@
 package donaciones.service;
 
+import donaciones.controller.Notificador;
 import donaciones.domain.Donacion;
-import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.eventos.DonacionAsignadaEvent;
-import donaciones.domain.eventos.PublicadorDeEventos;
 import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
@@ -21,19 +19,19 @@ public class AsignacionService {
 
   private final DonacionRepository donacionRepository;
   private final EntidadBeneficiariaRepository entidadRepository;
-  private final PublicadorDeEventos publicador;
   private final LogisticaAPICalls logisticaAPICalls;
-  
+  private final Notificador notificador;
+
   public AsignacionService(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
       LogisticaAPICalls logisticaAPICalls,
-      PublicadorDeEventos publicador
+      Notificador notificador
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.logisticaAPICalls = logisticaAPICalls;
-    this.publicador = publicador;
+    this.notificador = notificador;
   }
 
   // ejecucion y ranking
@@ -69,12 +67,9 @@ public class AsignacionService {
 
     if (donacionOpt.isPresent() && entidadOpt.isPresent()) {
       Donacion donacion = donacionOpt.get();
-      donacion.setEstado(EstadoDonacion.ASIGNADA);
       EntidadBeneficiaria entidad = entidadOpt.get();
-      donacion.setEntidadBeneficiaria(entidad);
-
-      // Enviar notificacion
-      publicador.publicar(new DonacionAsignadaEvent(donacion));
+      donacion.asignarA(entidad);
+      notificador.donacionAsignada(donacion);
 
       try {
         DonacionLogisticaDTO dto = new DonacionLogisticaDTO(

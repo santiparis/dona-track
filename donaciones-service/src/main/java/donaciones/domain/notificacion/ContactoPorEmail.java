@@ -8,24 +8,33 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class NotificacionPorEmail implements EstrategiaDeNotificacion {
+public class ContactoPorEmail extends Contacto {
 
-    @Override
-    public boolean enviar(String destino, String mensaje) {
+    private static final Logger logger = LoggerFactory.getLogger(ContactoPorEmail.class);
+
+    public ContactoPorEmail(String valor) {
+        super(valor);
+    }
+
+    public boolean enviar(String mensaje) {
         String remitente = System.getenv("SENDGRID_REMITENTE");
         String apiKey = System.getenv("SENDGRID_API_KEY");
 
-        // Si el remitente o la API Key no están definidos, lanza una excepción
-        if (remitente == null || remitente.trim().isEmpty() || apiKey == null || apiKey.trim().isEmpty()) {
-            throw new ConfiguracionSendGridException("No están configuradas las variables de entorno SENDGRID_REMITENTE y/o SENDGRID_API_KEY.");
+        // Modo simulado: sin credenciales se registra el envío y se retorna éxito, para no
+        // consumir cuota externa ni exigir configuración al correr mvn test o la importación masiva.
+        if (estaSinConfigurar(remitente) || estaSinConfigurar(apiKey)) {
+            logger.info("[SIMULADO] Email a {}: {}", getValor(), mensaje);
+            return true;
         }
 
         // Para enviar mails realmente hay que tener la apikey cargada en el sengrind.env
         // Y correr este comando en la terminal: source sendgrid.env 
         Email from = new Email(remitente);
         String subject = "Notificación del sistema DonaTrack";
-        Email to = new Email(destino);
+        Email to = new Email(getValor());
         Content content = new Content("text/plain", mensaje);
         Mail mail = new Mail(from, subject, to, content);
 
@@ -40,11 +49,17 @@ public class NotificacionPorEmail implements EstrategiaDeNotificacion {
             if (statusCode >= 200 && statusCode < 300) {
                 return true;
             } else {
-                throw new EnvioDeEmailException("SendGrid respondió con código HTTP " + statusCode + ": " + response.getBody());
+                logger.error("SendGrid respondió con código HTTP {}: {}", statusCode, response.getBody());
+                return false;
             }
             // Uso IOException porque las clases de SendGrid lanzan esta excepción
         } catch (IOException ex) {
-            throw new EnvioDeEmailException("Fallo de red o I/O al comunicarse con SendGrid: " + ex.getMessage());
+            logger.error("Fallo de red o I/O al comunicarse con SendGrid: {}", ex.getMessage());
+            return false;
         }
+    }
+
+    private boolean estaSinConfigurar(String variableDeEntorno) {
+        return variableDeEntorno == null || variableDeEntorno.trim().isEmpty();
     }
 }

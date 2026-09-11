@@ -1,9 +1,8 @@
-import donaciones.domain.donante.Contacto;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
-import donaciones.domain.notificacion.EstrategiaDeNotificacion;
+import donaciones.domain.notificacion.ContactoPorEmail;
 
 import donaciones.domain.notificacion.Notificacion;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class NotificarPersonasInactivasTest {
 
@@ -21,14 +23,13 @@ public class NotificarPersonasInactivasTest {
 
     @BeforeAll
     public static void setUp() {
-        EstrategiaDeNotificacion estrategiaMock = (destino, mensaje) -> true;
+        ContactoPorEmail contactoMock = mock(ContactoPorEmail.class);
+        when(contactoMock.enviar(anyString())).thenReturn(true);
 
-        Contacto contactoEmail1 = new Contacto(estrategiaMock, "ausente@donante.org");
-        PersonaHumana donanteAusente = new PersonaHumana("Carlos Ausente", "Perez", 40, TipoDoc.DNI, "11111111", Genero.MASCULINO, "Calle 1", List.of(contactoEmail1), contactoEmail1, null);
+        PersonaHumana donanteAusente = new PersonaHumana("Carlos Ausente", "Perez", 40, TipoDoc.DNI, "11111111", Genero.MASCULINO, "Calle 1", List.of(contactoMock), contactoMock, null);
         donanteAusente.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
 
-        Contacto contactoEmail2 = new Contacto(estrategiaMock, "activo@donante.org");
-        PersonaHumana donanteActivo = new PersonaHumana("Ana Activa", "Lopez", 35, TipoDoc.DNI, "22222222", Genero.FEMENINO, "Calle 2", List.of(contactoEmail2), contactoEmail2, null);
+        PersonaHumana donanteActivo = new PersonaHumana("Ana Activa", "Lopez", 35, TipoDoc.DNI, "22222222", Genero.FEMENINO, "Calle 2", List.of(contactoMock), contactoMock, null);
         donanteActivo.setUltimaInteraccion(LocalDateTime.now().minusDays(5));
 
         repositorioPersonas = new RepositorioPersonas();

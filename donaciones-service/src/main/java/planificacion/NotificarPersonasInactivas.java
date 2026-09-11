@@ -3,12 +3,11 @@ package planificacion;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.Notificacion;
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
-import donaciones.domain.notificacion.EstrategiaDeNotificacion;
-import donaciones.domain.notificacion.NotificacionPorEmail;
+import donaciones.domain.notificacion.ContactoPorEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +53,8 @@ public class NotificarPersonasInactivas {
   }
 
   private static void poblarDatosDePrueba(RepositorioPersonas repositorio) {
-    EstrategiaDeNotificacion email = new NotificacionPorEmail();
-
     // 1. Usuario inactivo (25 días sin actividad > umbral de 20 días): SÍ debe recibir notificación
-    Contacto contactoInactivo = new Contacto(email, "juanignaciopereyra01@gmail.com");
+    Contacto contactoInactivo = new ContactoPorEmail("juanignaciopereyra01@gmail.com");
     PersonaHumana donanteInactivo = new PersonaHumana(
         "Carlos Inactivo", "Pérez", 45, TipoDoc.DNI, "11111111", Genero.MASCULINO,
         "Av. Siempre Viva 742", List.of(contactoInactivo), contactoInactivo, null
@@ -65,7 +62,7 @@ public class NotificarPersonasInactivas {
     donanteInactivo.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
 
     // 2. Usuario activo (5 días sin actividad <= umbral de 20 días): NO debe recibir notificación
-    Contacto contactoActivo = new Contacto(email, "activo@donante.org");
+    Contacto contactoActivo = new ContactoPorEmail("activo@donante.org");
     PersonaHumana donanteActivo = new PersonaHumana(
         "Ana Activa", "López", 30, TipoDoc.DNI, "22222222", Genero.FEMENINO,
         "Calle Falsa 123", List.of(contactoActivo), contactoActivo, null

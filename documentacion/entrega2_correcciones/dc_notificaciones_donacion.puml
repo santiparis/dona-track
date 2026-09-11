@@ -1,0 +1,59 @@
+@startuml
+
+' Notificaciones ante cambios de estado de una donacion.
+' El detalle de Notificable / Contacto / Notificacion esta en dc_notificacion.puml
+
+class Donacion {
+  - donante: Persona
+  - entidadBeneficiaria: EntidadBeneficiaria
+  - estado: EstadoDonacion
+  - historialEstados: List<RegistroCambioEstado>
+  - camion: String
+  - motivoFallo: String
+  --
+  + asignarA(entidad: EntidadBeneficiaria): void
+  + iniciarTraslado(): void
+  + confirmarEntrega(camion: String): void
+  + registrarEntregaFallida(motivo: String): void
+  - cambiarEstado(nuevo: EstadoDonacion): void
+}
+
+enum EstadoDonacion {
+  EN_DEPOSITO
+  ASIGNADA
+  LISTA_PARA_ENTREGAR
+  EN_TRASLADO
+  ENTREGADA
+  ENTREGA_FALLIDA
+  VENCIDA
+}
+
+class RegistroCambioEstado <<record>> {
+  - estadoAnterior: EstadoDonacion
+  - estadoNuevo: EstadoDonacion
+  - fecha: LocalDateTime
+  - justificacion: String
+}
+
+interface Notificable {
+  + notificar(mensaje: String): Notificacion
+}
+
+abstract class Persona
+class EntidadBeneficiaria
+class PersonaAdministradora
+
+' --- Relaciones ---
+
+Donacion "1" *-- "1" EstadoDonacion : tiene
+Donacion "1" *-- "*" RegistroCambioEstado : registra
+Donacion "1" o-- "1" Persona : fue donada por
+Donacion "1" o-- "1" EntidadBeneficiaria : se asigna a
+
+Persona ..|> Notificable : implementa
+EntidadBeneficiaria ..|> Notificable : implementa
+PersonaAdministradora ..|> Notificable : implementa
+
+Donacion ..> Notificable : notifica a
+
+@enduml

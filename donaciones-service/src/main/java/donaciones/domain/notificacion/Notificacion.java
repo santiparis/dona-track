@@ -1,15 +1,13 @@
 package donaciones.domain.notificacion;
 
-import donaciones.domain.donante.Contacto;
-
 public class Notificacion {
+    private final Notificable receptor;
     private final String mensaje;
     private EstadoNotificacion estado;
-    private final Contacto contacto;
 
-    public Notificacion(Contacto contacto, String mensaje) {
-        this.contacto = contacto;
+    public Notificacion(Notificable receptor, String mensaje) {
         this.mensaje = mensaje;
+        this.receptor = receptor;
         this.estado = EstadoNotificacion.PENDIENTE;
     }
 
@@ -27,14 +25,5 @@ public class Notificacion {
 
     public void marcarComoFallida() {
         this.estado = EstadoNotificacion.FALLIDA;
-    }
-
-    public void enviar() {
-        boolean exito = contacto.enviar(mensaje);
-        if (exito) {
-            marcarComoCompletada();
-        } else {
-            marcarComoFallida();
-        }
     }
 }

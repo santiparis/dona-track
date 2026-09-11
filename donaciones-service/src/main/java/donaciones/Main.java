@@ -5,17 +5,12 @@ import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
 import donaciones.controller.IntegracionLogisticaController;
+import donaciones.controller.Notificador;
 import donaciones.domain.donante.RepositorioPersonas;
-import donaciones.domain.eventos.*;
-import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
-import donaciones.domain.eventos.listeners.EntregaNoSatisfactoriaListener;
-import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
-import donaciones.domain.eventos.listeners.InicioRutaListener;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.service.AsignacionService;
-import donaciones.service.DonacionService;
 import donaciones.service.DonanteService;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
@@ -24,14 +19,8 @@ import io.javalin.Javalin;
 
 public class Main {
   public static void main(String[] args) {
-    // Publicador de eventos y listeners
-    PersonasAdministradorasRepository adminRepo = new PersonasAdministradorasRepository();
-    PublicadorDeEventos publicador = new PublicadorDeEventos();
-    publicador.suscribir(DonacionAsignadaEvent.class, new DonacionAsignadaListener());
-    publicador.suscribir(InicioRutaEvent.class, new InicioRutaListener());
-    publicador.suscribir(EntregaRealizadaEvent.class, new EntregaRealizadaListener());
-    publicador.suscribir(EntregaNoSatisfactoriaEvent.class, new EntregaNoSatisfactoriaListener(adminRepo));
 
+    PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
     RepositorioPersonas personasRepository = new RepositorioPersonas();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
@@ -39,13 +28,14 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    DonacionService service = new DonacionService(donacionesRepository, personasRepository, publicador);
-    DonacionController controller = new DonacionController(service);
+    Notificador notificador = new Notificador();
+
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
 
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, publicador);
+    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, notificador);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
 
@@ -58,7 +48,9 @@ public class Main {
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-    app.patch("/api/donaciones/{id}/estado", controller::cambiarEstado);
+    app.patch("/api/donaciones/{id}/en-traslado", controller::marcarEnTraslado);
+    app.patch("/api/donaciones/{id}/entregada", controller::confirmarEntrega);
+    app.patch("/api/donaciones/{id}/entrega-fallida", controller::registrarEntregaFallida);
     app.delete("/api/donaciones/{id}", controller::eliminar);
 
     app.post("/donaciones/rutasIniciadas", integracionLogisticaController::rutasIniciadas);

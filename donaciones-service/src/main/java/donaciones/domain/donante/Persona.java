@@ -1,6 +1,7 @@
 package donaciones.domain.donante;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

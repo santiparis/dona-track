@@ -1,0 +1,42 @@
+@startuml
+
+interface Notificable {
+  - contactos: List<Contacto>
+  - medioPredeterminado: Contacto
+  + notificar(String): Notificacion
+}
+
+ enum EstadoNotificacion {
+     PENDIENTE
+     COMPLETADA
+     FALLIDA
+ }
+
+ abstract class Contacto {
+     - valor: String
+     + enviar(mensaje: String): boolean
+ }
+
+ class Notificacion {
+     - receptor: Notificable
+     - mensaje: String
+     - estado: EstadoNotificacion
+     --
+     + marcarComoCompletada(): void
+     + marcarComoFallida(): void
+ }
+
+ class ContactoPorEmail
+ class ContactoPorSMS
+ class ContactoPorWhatsApp
+
+ Notificable -down-  Notificacion: conoce
+ Notificacion "1" --> "1" EstadoNotificacion : tiene un
+
+ ContactoPorEmail .up.|> Contacto : implementa
+ ContactoPorSMS .up.|> Contacto : implementa
+ ContactoPorWhatsApp .up.|> Contacto : implementa
+
+ Notificable *-- Contacto: tiene
+
+ @enduml
