@@ -131,7 +131,21 @@
                             </archive>
                         </configuration>
                     </execution>
-                    <!-- Otros crons-->
+                    <execution>
+                        <id>crear-jar-procesador-asignaciones-cron</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>procesador-asignaciones-cron</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>planificacion.ProcesarAsignaciones</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

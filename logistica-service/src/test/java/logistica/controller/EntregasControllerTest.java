@@ -31,9 +31,9 @@ public class EntregasControllerTest {
 
   @Test
   void marcarNoRecibidaDevuelveConflictSiLaEntregaNoEstaEnTraslado() throws IOException {
-    when(ctx.pathParam("id")).thenReturn("ent-1");
+    when(ctx.pathParam("id")).thenReturn("1");
     doThrow(new IllegalStateException("No se puede marcar no recibida desde PENDIENTE"))
-        .when(entregasService).marcarNoRecibida("ent-1");
+        .when(entregasService).marcarNoRecibida(1L);
 
     controller.marcarNoRecibida(ctx);
 
@@ -42,9 +42,9 @@ public class EntregasControllerTest {
 
   @Test
   void confirmarDevuelveNotFoundSiLaEntregaNoExiste() throws IOException {
-    when(ctx.pathParam("id")).thenReturn("ent-1");
-    doThrow(new NoSuchElementException("Entrega no encontrada: ent-1"))
-        .when(entregasService).confirmarEntrega("ent-1");
+    when(ctx.pathParam("id")).thenReturn("1");
+    doThrow(new NoSuchElementException("Entrega no encontrada: 1"))
+        .when(entregasService).confirmarEntrega(1L);
 
     controller.confirmar(ctx);
 
