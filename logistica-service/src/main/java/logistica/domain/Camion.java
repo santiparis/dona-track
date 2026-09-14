@@ -2,13 +2,15 @@ package logistica.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.NoSuchElementException;
+import logistica.dto.CamionDTO;
 
 public class Camion {
   private Long id;
-  final String patente;
-  final double volumen;
-  final double altura;
-  final double cargaMax;
+  private String patente;
+  private double volumen;
+  private double altura;
+  private double cargaMax;
   Coordenadas localizacion = null;
   double velocidad = 0;
   Boolean disponibilidad;
@@ -76,6 +78,29 @@ public class Camion {
 
   public void setDisponibilidad(Boolean estado){
     this.disponibilidad = estado;
+  }
+
+  public void setVolumen(double nuevoVolumen) {
+    this.volumen = nuevoVolumen;
+  }
+
+  public void actualizarDatos(String nuevaPatente,
+                              double nuevoVolumen,
+                              double nuevaAltura,
+                              double nuevaCargaMax) {
+    if(!this.getPatente().equals(nuevaPatente)) {
+      this.patente = nuevaPatente;
+    }
+    this.volumen = nuevoVolumen;
+    this.altura = nuevaAltura;
+    this.cargaMax = nuevaCargaMax;
+  }
+
+  public void actualizarVelocidad(double nuevaVelocidad) {
+    if(nuevaVelocidad < 0) {
+      throw new IllegalArgumentException("La velocidad no puede ser negativa");
+    }
+    this.velocidad = nuevaVelocidad;
   }
 }
 
