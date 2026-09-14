@@ -3,6 +3,8 @@ package logistica.controller;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import logistica.domain.Entrega;
+import logistica.repository.RutasRepository;
+import logistica.retrofit_client.DonacionesAPICalls;
 import logistica.service.EntregasService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +22,14 @@ public class EntregasControllerTest {
 
   private EntregasService entregasService;
   private EntregasController controller;
+  private RutasRepository rutasRepository;
+  private DonacionesAPICalls donacionesAPICalls;
   private Context ctx;
 
   @BeforeEach
   void setUp() {
     entregasService = mock(EntregasService.class);
-    controller = new EntregasController(entregasService);
+    controller = new EntregasController(rutasRepository, donacionesAPICalls);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
   }
 

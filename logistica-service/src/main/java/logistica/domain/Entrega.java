@@ -67,5 +67,4 @@ public class Entrega {
     }
     this.estado = EstadoEntrega.PENDIENTE;
   }
-
 }

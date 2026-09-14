@@ -11,8 +11,6 @@ import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
 import logistica.repository.SeedCamiones;
-import logistica.service.DonacionesService;
-import logistica.service.EntregasService;
 import logistica.service.PlanificadorService;
 
 public class Main {
@@ -22,11 +20,10 @@ public class Main {
     var repositorioRutas = new RutasRepository();
     var retrofitConfig = new RetrofitConfig();
 
-    var entregasService = new EntregasService(repositorioRutas, retrofitConfig.donacionesAPICalls());
-    var donacionesService = new DonacionesService(repositorioDonaciones);
-    var donacionesController = new DonacionesAPIController(donacionesService);
-    var rutasController = new RutasController(entregasService);
-    var entregasController = new EntregasController(entregasService);
+    var notificadorEntregas = new NotificadorEntregas(repositorioRutas, retrofitConfig.donacionesAPICalls());
+    var donacionesController = new DonacionesAPIController(repositorioDonaciones);
+    var rutasController = new RutasController(repositorioRutas, notificadorEntregas);
+    var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);
     var camionesController = new CamionesController(repositorioCamiones);
 
     var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
