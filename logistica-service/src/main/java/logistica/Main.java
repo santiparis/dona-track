@@ -12,7 +12,7 @@ import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.SeedCamiones;
-import logistica.service.PlanificadorService;
+import logistica.planificacion.ClientePlanificador;
 
 public class Main {
   public static void main(String[] args) {
@@ -27,8 +27,8 @@ public class Main {
     var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);
     var camionesController = new CamionesController(repositorioCamiones);
 
-    var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
-    var planificadorController = new PlanificadorController(planificadorService);
+    var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
+    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
 
     repositorioCamiones.agregarTodos(SeedCamiones.camiones());
 
