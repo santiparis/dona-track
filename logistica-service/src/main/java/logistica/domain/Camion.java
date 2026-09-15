@@ -2,8 +2,6 @@ package logistica.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.NoSuchElementException;
-import logistica.dto.CamionDTO;
 
 public class Camion {
   private Long id;
@@ -36,8 +34,23 @@ public class Camion {
     this.id = id;
   }
 
-  public void actualizarLocalizacion(Coordenadas nuevaLocalizacion) {
+  // valida antes de mutar: si la velocidad es invalida el camion queda intacto
+  public void actualizarLocalizacion(Coordenadas nuevaLocalizacion, double nuevaVelocidad) {
+    if (nuevaVelocidad < 0) {
+      throw new IllegalArgumentException("La velocidad no puede ser negativa");
+    }
     this.localizacion = nuevaLocalizacion;
+    this.velocidad = nuevaVelocidad;
+  }
+
+  public void actualizarDatos(String nuevaPatente,
+                              double nuevoVolumen,
+                              double nuevaAltura,
+                              double nuevaCargaMax) {
+    this.patente = nuevaPatente;
+    this.volumen = nuevoVolumen;
+    this.altura = nuevaAltura;
+    this.cargaMax = nuevaCargaMax;
   }
 
   public Boolean estaDisponible(){
@@ -48,16 +61,8 @@ public class Camion {
     return localizacion;
   }
 
-  public void setLocalizacion(Coordenadas localizacion) {
-    this.localizacion = localizacion;
-  }
-
   public double getVelocidad() {
     return velocidad;
-  }
-
-  public void setVelocidad(double velocidad) {
-    this.velocidad = velocidad;
   }
 
   public double getCargaMax() {
@@ -79,29 +84,4 @@ public class Camion {
   public void setDisponibilidad(Boolean estado){
     this.disponibilidad = estado;
   }
-
-  public void setVolumen(double nuevoVolumen) {
-    this.volumen = nuevoVolumen;
-  }
-
-  public void actualizarDatos(String nuevaPatente,
-                              double nuevoVolumen,
-                              double nuevaAltura,
-                              double nuevaCargaMax) {
-    if(!this.getPatente().equals(nuevaPatente)) {
-      this.patente = nuevaPatente;
-    }
-    this.volumen = nuevoVolumen;
-    this.altura = nuevaAltura;
-    this.cargaMax = nuevaCargaMax;
-  }
-
-  public void actualizarVelocidad(double nuevaVelocidad) {
-    if(nuevaVelocidad < 0) {
-      throw new IllegalArgumentException("La velocidad no puede ser negativa");
-    }
-    this.velocidad = nuevaVelocidad;
-  }
 }
-
-

@@ -88,9 +88,7 @@ public class CamionesController {
 
       Camion camion = camionesRepository.buscarPorId(id)
           .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
-
-      camion.actualizarLocalizacion(new Coordenadas(dto.latitud(), dto.longitud()));
-      camion.actualizarVelocidad(dto.velocidad());
+      camion.actualizarLocalizacion(new Coordenadas(dto.latitud(), dto.longitud()), dto.velocidad());
 
       ctx.status(HttpStatus.OK);
     } catch (NumberFormatException e) {

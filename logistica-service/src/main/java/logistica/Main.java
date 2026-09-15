@@ -10,6 +10,7 @@ import logistica.retrofit_client.RetrofitConfig;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.SeedCamiones;
 import logistica.service.PlanificadorService;
 

@@ -1,4 +1,4 @@
-package logistica;
+package logistica.notificacion;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;

@@ -1,7 +1,7 @@
 package logistica.controller;
 
 import io.javalin.http.Context;
-import logistica.NotificadorEntregas;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
 
