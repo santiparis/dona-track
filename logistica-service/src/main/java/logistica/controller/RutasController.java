@@ -1,9 +1,9 @@
 package logistica.controller;
 
 import io.javalin.http.Context;
+import logistica.domain.Ruta;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
-
 
 import java.util.NoSuchElementException;
 
@@ -18,7 +18,7 @@ public class RutasController {
     this.notificadorEntregas = notificadorEntregas;
   }
 
-  public record ErrorResponse(String mensaje) {}
+  public record ErrorResponse(String mensaje) { }
 
   public void obtenerRutas(Context ctx) {
     ctx.json(rutasRepository.obtenerTodas());
@@ -39,7 +39,13 @@ public class RutasController {
   public void iniciarRuta(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      var ruta = notificadorEntregas.iniciarRuta(id);
+      Ruta ruta = rutasRepository.buscarPorId(id)
+          .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada: " + id));
+
+      // la ruta decide si puede arrancar; recien despues se avisa afuera
+      ruta.iniciar();
+      notificadorEntregas.avisarEnTraslado(ruta.getEntregas());
+
       ctx.json(ruta);
     } catch (NumberFormatException e) {
       ctx.status(400).json(new ErrorResponse("ID inválido"));

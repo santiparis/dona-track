@@ -21,7 +21,7 @@ public class Main {
     var repositorioRutas = new RutasRepository();
     var retrofitConfig = new RetrofitConfig();
 
-    var notificadorEntregas = new NotificadorEntregas(repositorioRutas, retrofitConfig.donacionesAPICalls());
+    var notificadorEntregas = new NotificadorEntregas(retrofitConfig.donacionesAPICalls());
     var donacionesController = new DonacionesAPIController(repositorioDonaciones);
     var rutasController = new RutasController(repositorioRutas, notificadorEntregas);
     var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);

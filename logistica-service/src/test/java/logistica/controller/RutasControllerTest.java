@@ -3,6 +3,7 @@ package logistica.controller;
 import io.javalin.http.Context;
 import logistica.domain.Camion;
 import logistica.domain.Entrega;
+import logistica.domain.EstadoRuta;
 import logistica.domain.Ruta;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
@@ -10,13 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class RutasControllerTest {
@@ -66,36 +67,41 @@ public class RutasControllerTest {
   }
 
   @Test
-  void iniciarRutaDevuelveLaRutaIniciada() {
+  void iniciarRutaLaPoneEnCursoYAvisaTodasSusEntregas() {
     Ruta ruta = unaRuta();
     when(ctx.pathParam("id")).thenReturn("1");
-    when(notificadorEntregas.iniciarRuta(1L)).thenReturn(ruta);
+    when(rutasRepository.buscarPorId(1L)).thenReturn(Optional.of(ruta));
 
     controller.iniciarRuta(ctx);
 
+    assertEquals(EstadoRuta.EN_CURSO, ruta.getEstado());
+    verify(notificadorEntregas).avisarEnTraslado(ruta.getEntregas());
     verify(ctx).json(ruta);
   }
 
   @Test
   void iniciarRutaDevuelveNotFoundSiLaRutaNoExiste() {
     when(ctx.pathParam("id")).thenReturn("1");
-    doThrow(new NoSuchElementException("Ruta no encontrada: 1"))
-        .when(notificadorEntregas).iniciarRuta(1L);
+    when(rutasRepository.buscarPorId(1L)).thenReturn(Optional.empty());
 
     controller.iniciarRuta(ctx);
 
     verify(ctx).status(404);
+    verifyNoInteractions(notificadorEntregas);
   }
 
   @Test
   void iniciarRutaDevuelveConflictSiLaRutaYaEstaIniciada() {
+    Ruta ruta = unaRuta();
+    ruta.iniciar();
     when(ctx.pathParam("id")).thenReturn("1");
-    doThrow(new IllegalStateException("La ruta ya fue iniciada"))
-        .when(notificadorEntregas).iniciarRuta(1L);
+    when(rutasRepository.buscarPorId(1L)).thenReturn(Optional.of(ruta));
 
     controller.iniciarRuta(ctx);
 
     verify(ctx).status(409);
+    // si el dominio rechaza el inicio, no se le avisa a donaciones
+    verifyNoInteractions(notificadorEntregas);
   }
 
   @Test

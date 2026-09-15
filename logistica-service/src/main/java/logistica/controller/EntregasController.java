@@ -2,11 +2,10 @@ package logistica.controller;
 
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import logistica.notificacion.NotificadorEntregas;
 import logistica.domain.Entrega;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
-import java.io.IOException;
 import java.util.NoSuchElementException;
 
 public class EntregasController {
@@ -34,42 +33,75 @@ public class EntregasController {
   }
 
   public void confirmar(Context ctx) {
-    cambiarEstadoEntrega(ctx, true);
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      Entrega entrega = this.buscarEntrega(id);
+
+      // la entrega decide si la transicion es valida; recien despues se avisa afuera
+      entrega.marcarEntregada();
+      notificadorEntregas.avisarEntregada(entrega, this.patenteDelCamion(id));
+
+      ctx.json(entrega);
+    } catch (RuntimeException e) {
+      this.manejarExcepcion(ctx, e);
+    }
   }
 
   public void marcarNoRecibida(Context ctx) {
-    cambiarEstadoEntrega(ctx, false);
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      Entrega entrega = this.buscarEntrega(id);
+
+      entrega.marcarNoRecibida();
+      notificadorEntregas.avisarFallida(entrega);
+
+      ctx.json(entrega);
+    } catch (RuntimeException e) {
+      this.manejarExcepcion(ctx, e);
+    }
   }
 
+  // reingresar no le interesa a donaciones: la donacion sigue en poder de logistica
   public void reingresarADeposito(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      Entrega entrega = rutasRepository.buscarEntregaPorId(id)
-          .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + id));
+      Entrega entrega = this.buscarEntrega(id);
+
       entrega.reingresarADeposito();
+
       ctx.json(entrega);
-    } catch (NumberFormatException e) {
-      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
-    } catch (NoSuchElementException e) {
-      ctx.status(HttpStatus.NOT_FOUND).json(new ErrorResponse(e.getMessage()));
-    } catch (IllegalStateException e) {
-      ctx.status(HttpStatus.CONFLICT).json(new ErrorResponse(e.getMessage()));
+    } catch (RuntimeException e) {
+      this.manejarExcepcion(ctx, e);
     }
   }
 
-  private void cambiarEstadoEntrega(Context ctx, boolean entregada) {
-    try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Entrega entrega = entregada
-          ? notificadorEntregas.confirmarEntrega(id)
-          : notificadorEntregas.marcarNoRecibida(id);
-      ctx.json(entrega);
-    } catch (NumberFormatException e) {
+  private Entrega buscarEntrega(Long id) {
+    return rutasRepository.buscarEntregaPorId(id)
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + id));
+  }
+
+  private String patenteDelCamion(Long entregaId) {
+    return rutasRepository.buscarRutaPorEntregaId(entregaId)
+        .map(ruta -> ruta.getCamion().getPatente())
+        .orElse(null);
+  }
+
+  private void manejarExcepcion(Context ctx, RuntimeException e) {
+    if (e instanceof NumberFormatException) {
       ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
-    } catch (NoSuchElementException e) {
-      ctx.status(HttpStatus.NOT_FOUND).json(new ErrorResponse(e.getMessage()));
-    } catch (IllegalStateException e) {
-      ctx.status(HttpStatus.CONFLICT).json(new ErrorResponse(e.getMessage()));
+      return;
     }
+
+    if (e instanceof NoSuchElementException) {
+      ctx.status(HttpStatus.NOT_FOUND).json(new ErrorResponse(e.getMessage()));
+      return;
+    }
+
+    if (e instanceof IllegalStateException) {
+      ctx.status(HttpStatus.CONFLICT).json(new ErrorResponse(e.getMessage()));
+      return;
+    }
+
+    ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).json(new ErrorResponse("Error inesperado"));
   }
 }
