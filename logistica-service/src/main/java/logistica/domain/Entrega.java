@@ -1,6 +1,9 @@
 package logistica.domain;
 
+import java.util.ArrayList;
 import java.util.List;
+
+
 public class Entrega {
   Long id;
   final List<Donacion> listaDonaciones;
@@ -66,5 +69,14 @@ public class Entrega {
       throw new IllegalStateException("No se puede reingresar a depósito desde " + estado);
     }
     this.estado = EstadoEntrega.PENDIENTE;
+  }
+
+  public static Entrega desdeParada(List<Donacion> donaciones) {
+    if (donaciones.isEmpty()) {
+      throw new IllegalArgumentException("Una parada no puede tener cero donaciones");
+    }
+    String destino = donaciones.get(0).getDestino();
+    String entidadNombre = donaciones.get(0).getEntidadNombre();
+    return new Entrega(new ArrayList<>(donaciones), destino, entidadNombre);
   }
 }

@@ -4,8 +4,8 @@ import io.javalin.http.Context;
 import logistica.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
-
 import java.util.NoSuchElementException;
+
 
 public class RutasController {
 

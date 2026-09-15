@@ -1,6 +1,7 @@
 package logistica.service;
 
 import io.javalin.Javalin;
+import logistica.PlanificadorRutas;
 import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
 import logistica.retrofit_client.RetrofitConfig;
 import logistica.domain.Camion;
@@ -29,7 +30,7 @@ public class PlanificadorServiceTest {
   private CamionesRepository camionesRepository;
   private RutasRepository rutasRepository;
   private DonacionesRepository donacionesRepository;
-  private PlanificadorService planificadorService;
+  private PlanificadorRutas planificadorService;
 
   @BeforeAll
   public static void levantarMockDelPlanificador() {
@@ -61,7 +62,7 @@ public class PlanificadorServiceTest {
     var retrofitConfig = new RetrofitConfig();
     retrofitConfig.setPlanificadorBaseUrl("http://localhost:" + PORT + "/");
 
-    planificadorService = new PlanificadorService(
+    planificadorService = new PlanificadorRutas(
         camionesRepository, rutasRepository, donacionesRepository, retrofitConfig.planificadorAPICalls());
   }
 

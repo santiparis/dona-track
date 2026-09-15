@@ -1,5 +1,6 @@
 package logistica.service;
 
+import logistica.PlanificadorRutas;
 import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
 import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
@@ -22,7 +23,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
 
   private RutasRepository rutasRepository;
   private DonacionesRepository donacionesRepository;
-  private PlanificadorService planificadorService;
+  private PlanificadorRutas planificadorService;
 
   @BeforeEach
   void setUp() {
@@ -33,7 +34,7 @@ public class PlanificadorServiceProcesarPlanificacionTest {
     donacionesRepository = new DonacionesRepository();
 
     // procesarPlanificacion no usa el cliente Retrofit, por eso null acá
-    planificadorService = new PlanificadorService(camionesRepository, rutasRepository, donacionesRepository, null);
+    planificadorService = new PlanificadorRutas(camionesRepository, rutasRepository, donacionesRepository, null);
   }
 
   @Test

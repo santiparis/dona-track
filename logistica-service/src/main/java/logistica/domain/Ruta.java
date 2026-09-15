@@ -1,6 +1,7 @@
 package logistica.domain;
 
 import java.util.List;
+
 public class Ruta {
 
   Long id;

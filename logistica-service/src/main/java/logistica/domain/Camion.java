@@ -2,8 +2,7 @@ package logistica.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.NoSuchElementException;
-import logistica.dto.CamionDTO;
+
 
 public class Camion {
   private Long id;
@@ -84,10 +83,8 @@ public class Camion {
     this.volumen = nuevoVolumen;
   }
 
-  public void actualizarDatos(String nuevaPatente,
-                              double nuevoVolumen,
-                              double nuevaAltura,
-                              double nuevaCargaMax) {
+  public void actualizarDatos(String nuevaPatente, double nuevoVolumen,
+                              double nuevaAltura, double nuevaCargaMax) {
     if(!this.getPatente().equals(nuevaPatente)) {
       this.patente = nuevaPatente;
     }

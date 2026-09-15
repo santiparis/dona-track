@@ -6,7 +6,6 @@ import logistica.NotificadorEntregas;
 import logistica.domain.Entrega;
 import logistica.repository.RutasRepository;
 
-import java.io.IOException;
 import java.util.NoSuchElementException;
 
 public class EntregasController {

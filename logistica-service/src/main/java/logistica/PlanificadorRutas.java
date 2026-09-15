@@ -1,8 +1,7 @@
-package logistica.service;
+package logistica;
 
 import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
-import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
 import logistica.retrofit_client.PlanificadorAPICalls;
 import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
 import logistica.domain.Camion;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PlanificadorService {
+public class PlanificadorRutas {
 
   private static final int TAMANIO_MAXIMO_BATCH = 100;
 
@@ -27,10 +26,10 @@ public class PlanificadorService {
   private final DonacionesRepository donacionesRepository;
   private final PlanificadorAPICalls planificadorAPICalls;
 
-  public PlanificadorService(CamionesRepository camionesRepository,
-                              RutasRepository rutasRepository,
-                              DonacionesRepository donacionesRepository,
-                              PlanificadorAPICalls planificadorAPICalls) {
+  public PlanificadorRutas(CamionesRepository camionesRepository,
+                           RutasRepository rutasRepository,
+                           DonacionesRepository donacionesRepository,
+                           PlanificadorAPICalls planificadorAPICalls) {
     this.camionesRepository = camionesRepository;
     this.rutasRepository = rutasRepository;
     this.donacionesRepository = donacionesRepository;
@@ -39,6 +38,7 @@ public class PlanificadorService {
 
   public void enviarPlanificacion() throws IOException {
     List<Donacion> pendientes = donacionesRepository.obtenerTodas();
+
     if (pendientes.isEmpty()) {
       return;
     }
@@ -54,20 +54,19 @@ public class PlanificadorService {
     }
   }
 
+  // PlanificadorRutas es el único lugar que conoce PlanificacionCallbackRequest y sus tipos anidados
   public List<Ruta> procesarPlanificacion(PlanificacionCallbackRequest resultado) {
     List<Ruta> rutasCreadas = new ArrayList<>();
 
     for (AsignacionCamion asignacion : resultado.asignaciones()) {
-      Camion camion = camionesRepository.buscarPorPatente(asignacion.patenteCamion())
-          .orElseThrow(() -> new NoSuchElementException("Camion no encontrado: " + asignacion.patenteCamion()));
+      Camion camion = camionesRepository
+          .buscarPorPatente(asignacion.patenteCamion())
+          .orElseThrow(() -> new NoSuchElementException(
+              "Camion no encontrado: " + asignacion.patenteCamion()));
 
-      List<Entrega> entregas = new ArrayList<>();
-      for (ParadaPlanificada parada : asignacion.paradas()) {
-        Donacion primeraDonacion = parada.donaciones().get(0);
-        String destino = primeraDonacion.getDestino();
-        String entidadNombre = primeraDonacion.getEntidadNombre();
-        entregas.add(new Entrega(new ArrayList<>(parada.donaciones()), destino, entidadNombre));
-      }
+      List<Entrega> entregas = asignacion.paradas().stream()
+          .map(parada -> Entrega.desdeParada(parada.donaciones()))
+          .toList();
 
       Ruta ruta = new Ruta(camion, entregas);
       rutasRepository.agregar(ruta);

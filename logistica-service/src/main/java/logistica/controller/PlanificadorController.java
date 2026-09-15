@@ -3,7 +3,7 @@ package logistica.controller;
 import io.javalin.http.Context;
 import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.domain.Ruta;
-import logistica.service.PlanificadorService;
+import logistica.PlanificadorRutas;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 public class PlanificadorController {
   private static final Logger logger = LoggerFactory.getLogger(PlanificadorController.class);
 
-  private final PlanificadorService planificadorService;
+  private final PlanificadorRutas planificadorService;
 
-  public PlanificadorController(PlanificadorService planificadorService) {
+  public PlanificadorController(PlanificadorRutas planificadorService) {
     this.planificadorService = planificadorService;
   }
 

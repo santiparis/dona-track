@@ -1,11 +1,10 @@
 package logistica.controller;
 
 import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import logistica.PlanificadorRutas;
 import logistica.domain.Camion;
 import logistica.domain.Ruta;
 import logistica.retrofit_client.PlanificacionCallbackRequest;
-import logistica.service.PlanificadorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,13 +19,13 @@ import static org.mockito.Mockito.when;
 
 public class PlanificadorControllerTest {
 
-  private PlanificadorService planificadorService;
+  private PlanificadorRutas planificadorService;
   private PlanificadorController controller;
   private Context ctx;
 
   @BeforeEach
   void setUp() {
-    planificadorService = mock(PlanificadorService.class);
+    planificadorService = mock(PlanificadorRutas.class);
     controller = new PlanificadorController(planificadorService);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
   }
