@@ -12,6 +12,7 @@ import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
+import donaciones.controller.*;
 
 public class Main {
   public static void main(String[] args) {
