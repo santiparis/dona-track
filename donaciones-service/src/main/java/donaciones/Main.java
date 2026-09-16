@@ -1,21 +1,18 @@
 package donaciones;
 
-import donaciones.controller.AsignacionController;
-import donaciones.controller.DonacionController;
-import donaciones.controller.DonanteController;
-import donaciones.controller.EntidadesBeneficiariasController;
-import donaciones.controller.IntegracionLogisticaController;
-import donaciones.controller.Notificador;
+import donaciones.controller.*;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
+import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.service.AsignacionService;
 import donaciones.service.DonanteService;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
+import donaciones.controller.*;
 
 public class Main {
   public static void main(String[] args) {
@@ -34,12 +31,13 @@ public class Main {
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
+    SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, notificador);
     EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
 
-    AsignacionController asignacionController = new AsignacionController(asignacionService);
+    AsignacionesController asignacionesController = new AsignacionesController(donacionesRepository, entidadRepo, sugerenciasRepository);
 
 
     Javalin app = Javalin.create().start(8081);
@@ -77,7 +75,9 @@ public class Main {
     app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
     app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
 
-    app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
-    app.post("/api/donaciones/{id}/asignaciones/{idEntidad}", asignacionController::seleccionarEntidad);
+    app.get("/api/sugerencias", asignacionesController::getSugerencias);
+    app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
+    app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
+    app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
   }
 }

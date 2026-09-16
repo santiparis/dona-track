@@ -7,8 +7,12 @@ import java.util.List;
 
 public class CompatibilidadSemantica implements EstrategiaAsignacion {
 
-  @Override
   public List<EntidadBeneficiaria> sugerirEntidades(Donacion donacion, List<EntidadBeneficiaria> entidades) {
     return entidades.stream().filter(entidad -> entidad.satisfaceNecesidad(donacion)).limit(10).toList();
+  }
+
+  @Override
+  public String toString() {
+    return "Compatibilidad Semantica";
   }
 }
