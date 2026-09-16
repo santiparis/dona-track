@@ -10,11 +10,9 @@ import logistica.retrofit_client.RetrofitConfig;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.SeedCamiones;
-import logistica.service.CamionesService;
-import logistica.service.DonacionesService;
-import logistica.service.EntregasService;
-import logistica.service.PlanificadorService;
+import logistica.planificacion.ClientePlanificador;
 
 public class Main {
   public static void main(String[] args) {
@@ -23,16 +21,14 @@ public class Main {
     var repositorioRutas = new RutasRepository();
     var retrofitConfig = new RetrofitConfig();
 
-    var entregasService = new EntregasService(repositorioRutas, retrofitConfig.donacionesAPICalls());
-    var donacionesService = new DonacionesService(repositorioDonaciones);
-    var donacionesController = new DonacionesAPIController(donacionesService);
-    var rutasController = new RutasController(entregasService);
-    var entregasController = new EntregasController(entregasService);
-    var camionesService = new CamionesService(repositorioCamiones);
-    var camionesController = new CamionesController(camionesService);
+    var notificadorEntregas = new NotificadorEntregas(retrofitConfig.donacionesAPICalls());
+    var donacionesController = new DonacionesAPIController(repositorioDonaciones);
+    var rutasController = new RutasController(repositorioRutas, notificadorEntregas);
+    var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);
+    var camionesController = new CamionesController(repositorioCamiones);
 
-    var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
-    var planificadorController = new PlanificadorController(planificadorService);
+    var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
+    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
 
     repositorioCamiones.agregarTodos(SeedCamiones.camiones());
 

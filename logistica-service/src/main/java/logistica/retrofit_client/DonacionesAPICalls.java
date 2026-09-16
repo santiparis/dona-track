@@ -10,11 +10,11 @@ import retrofit2.http.Query;
 // segun el estado publica el evento correspondiente:
 //   EN_TRASLADO -> InicioRuta, ENTREGADA -> EntregaRealizada, ENTREGA_FALLIDA -> EntregaNoSatisfactoria.
 // Logistica informa el hecho; donaciones decide y aplica el cambio sobre su donacion.
-// nombreCamion solo se usa para ENTREGADA (comprobante); si es null Retrofit omite el query param.
+// datosAdicionales
 public interface DonacionesAPICalls {
 
-  @PATCH("/api/donaciones/{id}/estado")
+  @PATCH("/api/donaciones/{id}")
   Call<Void> cambiarEstado(@Path("id") Long donacionId,
                            @Query("nuevo") String nuevoEstado,
-                           @Query("nombreCamion") String nombreCamion);
+                           @Query("datosAdicionales") String datosAdicionales);
 }

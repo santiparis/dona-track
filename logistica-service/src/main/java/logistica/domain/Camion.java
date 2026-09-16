@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Camion {
   private Long id;
-  final String patente;
-  final double volumen;
-  final double altura;
-  final double cargaMax;
+  private String patente;
+  private double volumen;
+  private double altura;
+  private double cargaMax;
   Coordenadas localizacion = null;
   double velocidad = 0;
   Boolean disponibilidad;
@@ -34,8 +34,23 @@ public class Camion {
     this.id = id;
   }
 
-  public void actualizarLocalizacion(Coordenadas nuevaLocalizacion) {
+  // valida antes de mutar: si la velocidad es invalida el camion queda intacto
+  public void actualizarLocalizacion(Coordenadas nuevaLocalizacion, double nuevaVelocidad) {
+    if (nuevaVelocidad < 0) {
+      throw new IllegalArgumentException("La velocidad no puede ser negativa");
+    }
     this.localizacion = nuevaLocalizacion;
+    this.velocidad = nuevaVelocidad;
+  }
+
+  public void actualizarDatos(String nuevaPatente,
+                              double nuevoVolumen,
+                              double nuevaAltura,
+                              double nuevaCargaMax) {
+    this.patente = nuevaPatente;
+    this.volumen = nuevoVolumen;
+    this.altura = nuevaAltura;
+    this.cargaMax = nuevaCargaMax;
   }
 
   public Boolean estaDisponible(){
@@ -46,16 +61,8 @@ public class Camion {
     return localizacion;
   }
 
-  public void setLocalizacion(Coordenadas localizacion) {
-    this.localizacion = localizacion;
-  }
-
   public double getVelocidad() {
     return velocidad;
-  }
-
-  public void setVelocidad(double velocidad) {
-    this.velocidad = velocidad;
   }
 
   public double getCargaMax() {
@@ -78,5 +85,3 @@ public class Camion {
     this.disponibilidad = estado;
   }
 }
-
-

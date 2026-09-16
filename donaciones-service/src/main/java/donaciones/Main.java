@@ -45,7 +45,10 @@ public class Main {
     app.get("/api/donaciones", controller::listar);
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
+
+    // Req. 1: Este es el que usa logistica para actualizar el estado
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
+
     app.patch("/api/donaciones/{id}/en-traslado", controller::marcarEnTraslado);
     app.patch("/api/donaciones/{id}/entregada", controller::confirmarEntrega);
     app.patch("/api/donaciones/{id}/entrega-fallida", controller::registrarEntregaFallida);
