@@ -27,6 +27,11 @@ public class EntidadBeneficiariaService {
     return this.entidadesRepository.obtenerTodas();
   }
 
+  public EntidadBeneficiaria getEntidadBeneficiaria(Long id) {
+    return entidadesRepository.buscarPorId(id)
+        .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
+  }
+
   public void postEntidadBeneficiaria(EntidadBeneficiariaDTO dto) {
     entidadesRepository.guardar(new EntidadBeneficiaria(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
   }

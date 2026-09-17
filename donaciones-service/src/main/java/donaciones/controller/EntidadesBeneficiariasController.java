@@ -25,6 +25,16 @@ public class EntidadesBeneficiariasController {
     }
   }
 
+  public void getEntidadBeneficiaria(Context ctx) {
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(entidadesService.getEntidadBeneficiaria(id));
+    } catch (RuntimeException e) {
+      logger.error("Error al obtener entidad beneficiaria", e);
+      manejarExcepcion(ctx, e);
+    }
+  }
+
   public void postEntidadBeneficiaria(Context ctx) {
     try {
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);

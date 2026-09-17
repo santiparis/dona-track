@@ -68,6 +68,21 @@ public class DonacionController {
     }
   }
 
+  public void obtener(Context ctx) {
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      Donacion donacion = donacionesRepository.buscarPorId(id)
+          .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
+      ctx.json(toResponseDTO(donacion));
+    } catch (IllegalArgumentException e) {
+      logger.warn("Error al obtener donacion: {}", e.getMessage());
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    } catch (RuntimeException e) {
+      logger.error("Error inesperado al obtener donacion", e);
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al obtener donacion: " + e.getMessage());
+    }
+  }
+
   public void crear(Context ctx) {
     try {
       DonacionRequestDTO dto = ctx.bodyAsClass(DonacionRequestDTO.class);

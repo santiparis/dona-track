@@ -56,4 +56,17 @@ public class PersonaHumana extends Persona {
             throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaHumana con datos de PersonaJuridica");
         }
     }
+
+    @Override
+    protected void actualizarDatosPropios(String apellido, Integer edad, String direccion, String rubro) {
+        if (apellido != null) {
+            this.apellido = apellido;
+        }
+        if (edad != null) {
+            this.edad = edad;
+        }
+        if (direccion != null) {
+            this.direccion = direccion;
+        }
+    }
 }

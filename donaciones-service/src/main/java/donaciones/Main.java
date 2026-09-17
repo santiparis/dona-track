@@ -41,24 +41,31 @@ public class Main {
 
     Javalin app = Javalin.create().start(8081);
 
+    // CRUD Donaciones
     app.get("/api/donaciones", controller::listar);
+    app.get("/api/donaciones/{id}", controller::obtener);
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
-    // Req. 1: Este es el que usa logistica para actualizar el estado
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
     app.delete("/api/donaciones/{id}", controller::eliminar);
 
+    // CRUD Donantes
     app.get("/api/donantes", donanteController::listar);
+    app.get("/api/donantes/{id}", donanteController::obtener);
     app.post("/api/donantes", donanteController::crear);
     app.put("/api/donantes/{id}", donanteController::actualizar);
+    app.patch("/api/donantes/{id}", donanteController::actualizarParcial);
     app.delete("/api/donantes/{id}", donanteController::eliminar);
 
+    // CRUD Entidades beneficiarias
     app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
+    app.get("/api/entidades-beneficiarias/{id}", entidadesController::getEntidadBeneficiaria);
     app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
     app.put("/api/entidades-beneficiarias/{id}", entidadesController::putEntidadBeneficiaria);
     app.patch("/api/entidades-beneficiarias/{id}", entidadesController::patchEntidadBeneficiaria);
     app.delete("/api/entidades-beneficiarias/{id}", entidadesController::deleteEntidadBeneficiaria);
 
+    // CRUD Necesidades
     app.get("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::getNecesidades);
     app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
     app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
@@ -66,6 +73,7 @@ public class Main {
     app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
 
     app.get("/api/sugerencias", asignacionesController::getSugerencias);
+    app.post("/api/sugerencias", asignacionesController::ejecutarAlgoritmos);
     app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
     app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
     app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);

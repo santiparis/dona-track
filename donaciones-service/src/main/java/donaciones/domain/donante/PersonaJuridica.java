@@ -47,4 +47,11 @@ public class PersonaJuridica extends Persona {
             throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaJuridica con datos de " + personaConNuevosDatos.getClass().getSimpleName());
         }
     }
+
+    @Override
+    protected void actualizarDatosPropios(String apellido, Integer edad, String direccion, String rubro) {
+        if (rubro != null) {
+            this.rubro = rubro;
+        }
+    }
 }
