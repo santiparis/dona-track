@@ -5,6 +5,7 @@ import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;
 import donaciones.dto.ContactoResponseDTO;
+import donaciones.dto.DonantePatchDTO;
 import donaciones.dto.DonanteRequestDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.service.DonanteService;
@@ -37,6 +38,19 @@ public class DonanteController {
     }
   }
 
+  public void obtener(Context ctx) {
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      ctx.json(toResponseDTO(donanteService.buscarDonante(id)));
+    } catch (IllegalArgumentException e) {
+      logger.warn("Error al obtener donante: {}", e.getMessage());
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    } catch (RuntimeException e) {
+      logger.error("Error inesperado al obtener donante", e);
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al obtener donante: " + e.getMessage());
+    }
+  }
+
   public void crear(Context ctx) {
     try {
       DonanteRequestDTO dto = ctx.bodyAsClass(DonanteRequestDTO.class);
@@ -62,6 +76,21 @@ public class DonanteController {
       ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
     } catch (RuntimeException e) {
       logger.error("Error inesperado al actualizar donante", e);
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al actualizar donante: " + e.getMessage());
+    }
+  }
+
+  public void actualizarParcial(Context ctx) {
+    try {
+      Long id = Long.parseLong(ctx.pathParam("id"));
+      DonantePatchDTO dto = ctx.bodyAsClass(DonantePatchDTO.class);
+      donanteService.actualizarDonanteParcial(id, dto);
+      ctx.result("Datos del donante actualizados parcialmente");
+    } catch (IllegalArgumentException e) {
+      logger.warn("Error al actualizar parcialmente donante: {}", e.getMessage());
+      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
+    } catch (RuntimeException e) {
+      logger.error("Error inesperado al actualizar parcialmente donante", e);
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al actualizar donante: " + e.getMessage());
     }
   }

@@ -98,6 +98,29 @@ public abstract class Persona implements Notificable {
         this.setMedioPredeterminado(persona.getMedioPredeterminado());
   }
 
+    public void actualizarDatosParciales(
+            String nombre,
+            String documento,
+            String apellido,
+            Integer edad,
+            String direccion,
+            String rubro,
+            List<Contacto> contactos
+    ) {
+        if (nombre != null) {
+            this.nombre = nombre;
+        }
+        if (documento != null) {
+            this.documento = documento;
+        }
+        if (contactos != null) {
+            this.agregarContactos(contactos);
+        }
+        this.actualizarDatosPropios(apellido, edad, direccion, rubro);
+    }
+
+    protected abstract void actualizarDatosPropios(String apellido, Integer edad, String direccion, String rubro);
+
     public LocalDateTime getUltimaInteraccion() {
         return ultimaInteraccion;
     }

@@ -9,6 +9,7 @@ import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
 import donaciones.dto.ContactoDTO;
+import donaciones.dto.DonantePatchDTO;
 import donaciones.dto.DonanteRequestDTO;
 
 import java.util.ArrayList;
@@ -48,6 +49,11 @@ public class DonanteService {
     return repository.obtenerTodas();
   }
 
+  public Persona buscarDonante(Long id) {
+    return repository.buscarPorId(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró el donante"));
+  }
+
   public void actualizarDonante(Long id, DonanteRequestDTO dto) {
     Optional<Persona> donanteOpt = repository.buscarPorId(id);
 
@@ -72,6 +78,21 @@ public class DonanteService {
     } else {
       throw new IllegalArgumentException("No se encontró un donante ");
     }
+  }
+
+  public void actualizarDonanteParcial(Long id, DonantePatchDTO dto) {
+    Persona donante = this.buscarDonante(id);
+    List<Contacto> contactos = dto.contactos() == null ? null : this.crearContactos(dto.contactos());
+
+    donante.actualizarDatosParciales(
+        dto.nombre(),
+        dto.documento(),
+        dto.apellido(),
+        dto.edad(),
+        dto.direccion(),
+        dto.rubro(),
+        contactos
+    );
   }
 
   public void eliminarDonante(Long id) {

@@ -63,6 +63,12 @@ public class AsignacionesController {
     return sugerenciaRepository.obtenerTodas();
   }
 
+  // Ejecucion a demanda de los algoritmos; hace lo mismo que el cron ProcesarAsignaciones
+  public void ejecutarAlgoritmos(Context ctx) {
+    this.limpiarSugerencias();
+    ctx.status(HttpStatus.CREATED).json(this.procesarDonacionesEnDeposito());
+  }
+
   public void getSugerencias(Context ctx) {
     ctx.json(sugerenciaRepository.obtenerTodas());
   }
