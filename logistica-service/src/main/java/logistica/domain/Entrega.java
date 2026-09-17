@@ -3,13 +3,13 @@ package logistica.domain;
 import java.util.List;
 public class Entrega {
   Long id;
-  final List<Donacion> listaDonaciones;
+  final List<DonacionEncolada> listaDonaciones;
   String destino;
   String entidadNombre;
   EstadoEntrega estado;
 
 
-  public Entrega(List<Donacion> listaDonaciones, String destino, String entidadNombre) {
+  public Entrega(List<DonacionEncolada> listaDonaciones, String destino, String entidadNombre) {
     this.listaDonaciones = listaDonaciones;
     this.destino = destino;
     this.entidadNombre = entidadNombre;
@@ -36,7 +36,7 @@ public class Entrega {
     return entidadNombre;
   }
 
-  public List<Donacion> getListaDonaciones() {
+  public List<DonacionEncolada> getListaDonaciones() {
     return listaDonaciones;
   }
 

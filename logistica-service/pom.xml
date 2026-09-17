@@ -28,6 +28,25 @@
             <version>24.1.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.flbulgarelli</groupId>
+            <artifactId>jpa-extras</artifactId>
+            <version>1.0.0-rc1</version>
+        </dependency>
+        <!-- Base de despliegue local -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+        </dependency>
+
+        <!-- Base en memoria, para los tests -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
         <!-- Red e Integraciones HTTP (Javalin + Retrofit) -->
         <dependency>
             <groupId>io.javalin</groupId>

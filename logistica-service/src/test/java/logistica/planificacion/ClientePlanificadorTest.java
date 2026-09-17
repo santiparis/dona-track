@@ -2,7 +2,7 @@ package logistica.planificacion;
 
 import io.javalin.Javalin;
 import logistica.domain.Camion;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 import logistica.retrofit_client.PlanificadorAPICalls;
 import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
 import logistica.retrofit_client.RetrofitConfig;
@@ -95,7 +95,7 @@ public class ClientePlanificadorTest {
     return retrofitConfig.planificadorAPICalls();
   }
 
-  private Donacion unaDonacion(Long id) {
-    return new Donacion(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
+  private DonacionEncolada unaDonacion(Long id) {
+    return new DonacionEncolada(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
   }
 }

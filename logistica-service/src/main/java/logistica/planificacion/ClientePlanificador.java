@@ -3,7 +3,7 @@ package logistica.planificacion;
 import java.io.IOException;
 import java.util.List;
 import logistica.domain.Camion;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 import logistica.retrofit_client.PlanificadorAPICalls;
 import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
 
@@ -18,7 +18,7 @@ public class ClientePlanificador {
     this.planificadorApi = planificadorApi;
   }
 
-  public boolean enviarAPlanificar(List<Donacion> donaciones, List<Camion> camiones) {
+  public boolean enviarAPlanificar(List<DonacionEncolada> donaciones, List<Camion> camiones) {
     try {
       var request = new PlanificacionRequest(donaciones, camiones);
       return planificadorApi.enviarDonacionesAsignadas(request).execute().isSuccessful();

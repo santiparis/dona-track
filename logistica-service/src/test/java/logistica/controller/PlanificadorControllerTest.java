@@ -2,7 +2,7 @@ package logistica.controller;
 
 import io.javalin.http.Context;
 import logistica.domain.Camion;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 import logistica.domain.Ruta;
 import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;
@@ -169,12 +169,12 @@ public class PlanificadorControllerTest {
     verify(ctx).status(404);
   }
 
-  private Donacion unaDonacion(Long id) {
-    return new Donacion(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
+  private DonacionEncolada unaDonacion(Long id) {
+    return new DonacionEncolada(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
   }
 
-  private PlanificacionCallbackRequest callbackCon(String patente, Donacion donacion) {
-    var parada = new ParadaPlanificada(List.of(donacion));
+  private PlanificacionCallbackRequest callbackCon(String patente, DonacionEncolada donacionEncolada) {
+    var parada = new ParadaPlanificada(List.of(donacionEncolada));
     return new PlanificacionCallbackRequest(List.of(new AsignacionCamion(patente, List.of(parada))), List.of());
   }
 }

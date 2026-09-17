@@ -3,7 +3,7 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Donacion {
+public class DonacionEncolada {
   final Long donacionID;
   final int cantidadBienes;
   final String unidad;
@@ -11,11 +11,11 @@ public class Donacion {
   final String entidadNombre;
 
   @JsonCreator
-  public Donacion(@JsonProperty("donacionID") Long donacionID,
-                   @JsonProperty("cantidadBienes") int cantidad,
-                   @JsonProperty("unidad") String unidad,
-                   @JsonProperty("destino") String coordenadas,
-                   @JsonProperty("entidadNombre") String entidadNombre) {
+  public DonacionEncolada(@JsonProperty("donacionID") Long donacionID,
+                          @JsonProperty("cantidadBienes") int cantidad,
+                          @JsonProperty("unidad") String unidad,
+                          @JsonProperty("destino") String coordenadas,
+                          @JsonProperty("entidadNombre") String entidadNombre) {
     this.donacionID = donacionID;
     this.cantidadBienes = cantidad;
     this.unidad = unidad;

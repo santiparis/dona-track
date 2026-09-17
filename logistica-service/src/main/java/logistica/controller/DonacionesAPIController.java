@@ -2,7 +2,7 @@ package logistica.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.javalin.http.Context;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 
 import logistica.repository.DonacionesRepository;
 
@@ -20,8 +20,8 @@ public class DonacionesAPIController {
 
   public void obtenerDonaciones(Context ctx) {
     //se usa TypeReference para ayudar a Jackson a deserealizar la lista
-    List<Donacion> donaciones =
-        ctx.bodyAsClass(new TypeReference<List<Donacion>>() {}.getType());
+    List<DonacionEncolada> donaciones =
+        ctx.bodyAsClass(new TypeReference<List<DonacionEncolada>>() {}.getType());
     donacionesRepository.agregarTodos(donaciones);
     ctx.status(201).json(donaciones);
   }

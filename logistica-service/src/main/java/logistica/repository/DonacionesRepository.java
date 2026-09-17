@@ -1,27 +1,27 @@
 package logistica.repository;
 
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DonacionesRepository {
 
-  private final List<Donacion> donaciones = new ArrayList<>();
+  private final List<DonacionEncolada> donaciones = new ArrayList<>();
 
-  public void agregar(Donacion donacion) {
-    donaciones.add(donacion);
+  public void agregar(DonacionEncolada donacionEncolada) {
+    donaciones.add(donacionEncolada);
   }
 
-  public void agregarTodos(List<Donacion> nuevas) {
+  public void agregarTodos(List<DonacionEncolada> nuevas) {
     donaciones.addAll(nuevas);
   }
 
-  public List<Donacion> obtenerTodas() {
+  public List<DonacionEncolada> obtenerTodas() {
     return new ArrayList<>(donaciones);
   }
 
-  public void remover(List<Donacion> aRemover) {
+  public void remover(List<DonacionEncolada> aRemover) {
     donaciones.removeAll(aRemover);
   }
 }

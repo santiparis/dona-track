@@ -2,7 +2,7 @@ package logistica.controller;
 
 import io.javalin.http.Context;
 import logistica.domain.Camion;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.planificacion.ClientePlanificador;
@@ -44,13 +44,13 @@ public class PlanificadorController {
   // lo dispara el cron (o a demanda): manda un batch de pendientes a planificar
   public void planificar(Context ctx) {
     try {
-      List<Donacion> pendientes = donacionesRepository.obtenerTodas();
+      List<DonacionEncolada> pendientes = donacionesRepository.obtenerTodas();
       if (pendientes.isEmpty()) {
         ctx.status(200).json(new MensajeResponse("No hay donaciones pendientes de planificar"));
         return;
       }
 
-      List<Donacion> batch = pendientes.stream().limit(TAMANIO_MAXIMO_BATCH).toList();
+      List<DonacionEncolada> batch = pendientes.stream().limit(TAMANIO_MAXIMO_BATCH).toList();
       List<Camion> disponibles = camionesRepository.obtenerDisponibles();
 
       // solo se sacan del pool si el planificador confirmo que las recibio;
@@ -103,7 +103,7 @@ public class PlanificadorController {
 
   // todas las donaciones de una parada van al mismo destino, por eso alcanza con la primera
   private static Entrega armarEntrega(ParadaPlanificada parada) {
-    Donacion primera = parada.donaciones().get(0);
+    DonacionEncolada primera = parada.donaciones().get(0);
     return new Entrega(new ArrayList<>(parada.donaciones()), primera.getDestino(), primera.getEntidadNombre());
   }
 }
