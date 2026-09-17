@@ -2,12 +2,17 @@ package donaciones.domain.donante;
 
 import donaciones.domain.notificacion.Contacto;
 import java.util.List;
+import javax.persistence.*;
 
+@Entity
+@DiscriminatorValue("HUMANA")
 public class PersonaHumana extends Persona {
-    private String apellido;
-    private Integer edad;
-    private Genero genero;
-    private String direccion;
+    @Column(name = "apellido") private String apellido;
+    @Column(name = "edad") private Integer edad;
+    @Enumerated(EnumType.STRING) @Column(name = "genero") private Genero genero;
+    @Column(name = "direccion") private String direccion;
+
+    protected PersonaHumana() { }
 
     public PersonaHumana(
         String nombre,

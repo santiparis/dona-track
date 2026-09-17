@@ -3,10 +3,15 @@ package donaciones.domain.notificacion;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Entity
+@DiscriminatorValue("SMS")
 public class ContactoPorSMS extends Contacto {
+    protected ContactoPorSMS() { }
 
     private static final Logger logger = LoggerFactory.getLogger(ContactoPorSMS.class);
 

@@ -33,9 +33,9 @@ interface Notificable {
  Notificable -down-  Notificacion: conoce
  Notificacion "1" --> "1" EstadoNotificacion : tiene un
 
- ContactoPorEmail .up.|> Contacto : implementa
- ContactoPorSMS .up.|> Contacto : implementa
- ContactoPorWhatsApp .up.|> Contacto : implementa
+ ContactoPorEmail -up-|> Contacto : hereda
+ ContactoPorSMS -up-|> Contacto : hereda
+ ContactoPorWhatsApp -up-|> Contacto : hereda
 
  Notificable *-- Contacto: tiene
 

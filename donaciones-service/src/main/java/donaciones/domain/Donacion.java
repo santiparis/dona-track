@@ -6,15 +6,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.time.LocalDate;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "donacion")
 public class Donacion {
-    private Long id;
-    private Persona donante;
-    private EntidadBeneficiaria entidadBeneficiaria;
-    private Bien bien;
-    private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
-    private final List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();
-    private final LocalDate fecha;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "donacion_id") private Long id;
+    @ManyToOne(optional = false) @JoinColumn(name = "donante_id") private Persona donante;
+    @ManyToOne @JoinColumn(name = "entidad_id") private EntidadBeneficiaria entidadBeneficiaria;
+    @OneToOne(optional = false, cascade = CascadeType.ALL) @JoinColumn(name = "bien_id") private Bien bien;
+    @Enumerated(EnumType.STRING) @Column(name = "donacion_estado", nullable = false) private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "donacion_id") private List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();
+    private LocalDate fecha;
+
+    protected Donacion() { }
 
     public Donacion(
         Persona donante,

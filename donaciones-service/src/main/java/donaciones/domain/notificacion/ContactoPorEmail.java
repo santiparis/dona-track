@@ -8,10 +8,15 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import java.io.IOException;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Entity
+@DiscriminatorValue("EMAIL")
 public class ContactoPorEmail extends Contacto {
+    protected ContactoPorEmail() { }
 
     private static final Logger logger = LoggerFactory.getLogger(ContactoPorEmail.class);
 

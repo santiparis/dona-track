@@ -6,16 +6,21 @@ import donaciones.domain.notificacion.Notificable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "persona")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
 public abstract class Persona implements Notificable {
-    private Long id;
-    private final TipoDoc tipoDoc;
-    private String documento;
-    private String nombre;
-    private final List<Contacto> contactos;
-    private Contacto medioPredeterminado;
-    private final Usuario usuario;
-    private LocalDateTime ultimaInteraccion = LocalDateTime.now();
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_id") private Long id;
+    @Enumerated(EnumType.STRING) @Column(name = "tipo_doc") private TipoDoc tipoDoc;
+    @Column(name = "documento") private String documento;
+    @Column(name = "nombre") private String nombre;
+    @Transient private List<Contacto> contactos = new ArrayList<>();
+    @Transient private Contacto medioPredeterminado;
+    @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "usuario_id") private Usuario usuario;
+    @Column(name = "ultima_interaccion") private LocalDateTime ultimaInteraccion = LocalDateTime.now();
 
     public Long getId() {
         return id;
@@ -24,6 +29,8 @@ public abstract class Persona implements Notificable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    protected Persona() { }
 
     Persona(
             TipoDoc tipoDoc,
