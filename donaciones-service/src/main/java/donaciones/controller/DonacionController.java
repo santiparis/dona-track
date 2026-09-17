@@ -82,64 +82,6 @@ public class DonacionController {
     }
   }
 
-  public void marcarEnTraslado(Context ctx) {
-    try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Donacion donacion = donacionesRepository.buscarPorId(id)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
-      donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
-
-      notificador.inicioDeTraslado(donacion, ctx.queryParam("urlMapa"));
-
-      ctx.result("Donación en traslado");
-    } catch (IllegalArgumentException e) {
-      logger.warn("Error al marcar la donacion en traslado: {}", e.getMessage());
-      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
-    } catch (RuntimeException e) {
-      logger.error("Error inesperado al marcar la donacion en traslado", e);
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al cambiar estado: " + e.getMessage());
-    }
-  }
-
-  public void confirmarEntrega(Context ctx) {
-    try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Donacion donacion = donacionesRepository.buscarPorId(id)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
-      donacion.cambiarEstado(EstadoDonacion.ENTREGADA, null);
-
-      notificador.entregaConfirmada(donacion, ctx.queryParam("nombreCamion"));
-
-      ctx.result("Entrega confirmada");
-    } catch (IllegalArgumentException e) {
-      logger.warn("Error al confirmar la entrega: {}", e.getMessage());
-      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
-    } catch (RuntimeException e) {
-      logger.error("Error inesperado al confirmar la entrega", e);
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al cambiar estado: " + e.getMessage());
-    }
-  }
-
-  public void registrarEntregaFallida(Context ctx) {
-    try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      String motivo = ctx.queryParam("motivo");
-      Donacion donacion = donacionesRepository.buscarPorId(id)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
-      donacion.cambiarEstado(EstadoDonacion.ENTREGA_FALLIDA, motivo);
-
-      notificador.entregaFallida(donacion, motivo, administradorasRepository.obtenerTodos());
-
-      ctx.result("Entrega fallida registrada");
-    } catch (IllegalArgumentException e) {
-      logger.warn("Error al registrar la entrega fallida: {}", e.getMessage());
-      ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
-    } catch (RuntimeException e) {
-      logger.error("Error inesperado al registrar la entrega fallida", e);
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al cambiar estado: " + e.getMessage());
-    }
-  }
-
   public void actualizar(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
@@ -159,8 +101,16 @@ public class DonacionController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonacionPatchDTO dto = ctx.bodyAsClass(DonacionPatchDTO.class);
-      this.actualizarDonacionParcial(id, dto);
-      ctx.result("Donación actualizada parcialmente");
+
+      if (dto.estado() != null) {
+        Donacion donacion = donacionesRepository.buscarPorId(id)
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
+        this.cambiarEstado(donacion, dto);
+        ctx.result("Estado de la donación actualizado");
+      } else {
+        this.actualizarDonacionParcial(id, dto);
+        ctx.result("Donación actualizada parcialmente");
+      }
     } catch (IllegalArgumentException e) {
       logger.warn("Error al actualizar parcialmente donacion: {}", e.getMessage());
       ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
@@ -168,6 +118,31 @@ public class DonacionController {
       logger.error("Error inesperado al actualizar parcialmente donacion", e);
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al actualizar donacion: " + e.getMessage());
     }
+  }
+
+  // Logistica informa el nuevo estado; datosAdicionales depende del estado (url del mapa, patente o motivo)
+  private void cambiarEstado(Donacion donacion, DonacionPatchDTO dto) {
+    switch (EstadoDonacion.valueOf(dto.estado())) {
+      case EN_TRASLADO -> this.marcarEnTraslado(donacion, dto.datosAdicionales());
+      case ENTREGADA -> this.confirmarEntrega(donacion, dto.datosAdicionales());
+      case ENTREGA_FALLIDA -> this.registrarEntregaFallida(donacion, dto.datosAdicionales());
+      default -> throw new IllegalArgumentException("Estado no soportado: " + dto.estado());
+    }
+  }
+
+  private void marcarEnTraslado(Donacion donacion, String urlMapa) {
+    donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    notificador.inicioDeTraslado(donacion, urlMapa);
+  }
+
+  private void confirmarEntrega(Donacion donacion, String patenteCamion) {
+    donacion.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    notificador.entregaConfirmada(donacion, patenteCamion);
+  }
+
+  private void registrarEntregaFallida(Donacion donacion, String motivo) {
+    donacion.cambiarEstado(EstadoDonacion.ENTREGA_FALLIDA, motivo);
+    notificador.entregaFallida(donacion, motivo, administradorasRepository.obtenerTodos());
   }
 
   public void eliminar(Context ctx) {

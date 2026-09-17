@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import logistica.domain.Donacion;
 import logistica.domain.Entrega;
+import logistica.dto.CambioEstadoDTO;
 import logistica.retrofit_client.DonacionesAPICalls;
 
 // Unico punto del servicio que le habla a donaciones-service.
@@ -36,7 +37,7 @@ public class NotificadorEntregas {
   private void notificarEstado(Entrega entrega, String nuevoEstado, String patenteCamion) {
     try {
       for (Donacion donacion : entrega.getListaDonaciones()) {
-        donacionesApi.cambiarEstado(donacion.getDonacionID(), nuevoEstado, patenteCamion).execute();
+        donacionesApi.cambiarEstado(donacion.getDonacionID(), new CambioEstadoDTO(nuevoEstado, patenteCamion)).execute();
       }
     } catch (IOException e) {
       throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
