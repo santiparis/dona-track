@@ -11,6 +11,7 @@ import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.dto.BienDTO;
+import donaciones.dto.DonacionPatchDTO;
 import donaciones.dto.DonacionResponseDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
@@ -83,9 +84,11 @@ public class DonacionControllerTest {
     @Test
     void confirmarEntregaDevuelveNotFoundCuandoNoExisteLaDonacion() {
         when(ctx.pathParam("id")).thenReturn("1");
+        when(ctx.bodyAsClass(DonacionPatchDTO.class))
+                .thenReturn(new DonacionPatchDTO(null, null, "ENTREGADA", "AB123CD"));
         when(donacionesRepository.buscarPorId(1L)).thenReturn(Optional.empty());
 
-        controller.confirmarEntrega(ctx);
+        controller.actualizarParcial(ctx);
 
         verify(ctx, atLeastOnce()).status(HttpStatus.NOT_FOUND);
     }
@@ -97,10 +100,11 @@ public class DonacionControllerTest {
         when(donacion.getDonante()).thenReturn(donante);
         when(donacion.getEntidadBeneficiaria()).thenReturn(entidad);
         when(ctx.pathParam("id")).thenReturn("1");
-        when(ctx.queryParam("urlMapa")).thenReturn("https://donatrack.org/mapa/1");
+        when(ctx.bodyAsClass(DonacionPatchDTO.class))
+                .thenReturn(new DonacionPatchDTO(null, null, "EN_TRASLADO", "https://donatrack.org/mapa/1"));
         when(donacionesRepository.buscarPorId(1L)).thenReturn(Optional.of(donacion));
 
-        controller.marcarEnTraslado(ctx);
+        controller.actualizarParcial(ctx);
 
         verify(donacion).cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
         verify(donante).notificar(contains("https://donatrack.org/mapa/1"));

@@ -30,7 +30,6 @@ public class Main {
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteService donanteService = new DonanteService(personasRepository);
     DonanteController donanteController = new DonanteController(donanteService);
-    IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, notificador);
@@ -45,18 +44,9 @@ public class Main {
     app.get("/api/donaciones", controller::listar);
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
-
     // Req. 1: Este es el que usa logistica para actualizar el estado
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-
-    app.patch("/api/donaciones/{id}/en-traslado", controller::marcarEnTraslado);
-    app.patch("/api/donaciones/{id}/entregada", controller::confirmarEntrega);
-    app.patch("/api/donaciones/{id}/entrega-fallida", controller::registrarEntregaFallida);
     app.delete("/api/donaciones/{id}", controller::eliminar);
-
-    app.post("/donaciones/rutasIniciadas", integracionLogisticaController::rutasIniciadas);
-    app.post("/donaciones/entregaCompletada", integracionLogisticaController::entregaCompletada);
-    app.post("/donaciones/entregaFallida", integracionLogisticaController::entregaFallida);
 
     app.get("/api/donantes", donanteController::listar);
     app.post("/api/donantes", donanteController::crear);
