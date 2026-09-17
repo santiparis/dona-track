@@ -1,18 +1,45 @@
 package logistica.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.List;
+
+@Entity
+@Table(name = "rutas")
 public class Ruta {
 
-  Long id;
-  Camion camion;
-  List<Entrega> entregas;
-  EstadoRuta estado;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @ManyToOne
+  @JoinColumn(name = "camion_id")
+  private Camion camion;
+
+  @OneToMany
+  @JoinColumn(name = "ruta_id")
+  private List<Entrega> entregas;
+
+  @Enumerated(EnumType.STRING)
+  private EstadoRuta estado;
+
 
   public Ruta(Camion camion, List<Entrega> entregas) {
     this.camion = camion;
     this.entregas = entregas;
     this.estado = EstadoRuta.PLANIFICADA;
   }
+
+  protected Ruta(){}
 
   public Long getId() {
     return id;

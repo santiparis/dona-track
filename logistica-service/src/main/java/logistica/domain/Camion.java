@@ -3,15 +3,38 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "camiones")
 public class Camion {
+  // el id lo genera la base (columna autoincremental), no mas secuencias en el repositorio
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  // la patente identifica al camion en el mundo real: no puede repetirse ni faltar
+  @Column(unique = true, nullable = false)
   private String patente;
+
   private double volumen;
   private double altura;
   private double cargaMax;
-  Coordenadas localizacion = null;
-  double velocidad = 0;
-  Boolean disponibilidad;
+
+  // @Embedded: latitud y longitud son dos columnas mas de la tabla camiones.
+  // Si las dos quedan en null, Hibernate devuelve la localizacion entera en null,
+  // que es justo lo que significa "el camion todavia no reporto posicion".
+  @Embedded
+  private Coordenadas localizacion = null;
+
+  private double velocidad = 0;
+  private Boolean disponibilidad;
 
   // los jsonProperty los usara jackson para crear los objetos de json a dominio
   @JsonCreator
@@ -24,6 +47,10 @@ public class Camion {
     this.altura = altura;
     this.cargaMax = cargaMax;
     this.disponibilidad = true;
+  }
+
+  // constructor sin argumentos que exige JPA para instanciar al leer de la base
+  protected Camion() {
   }
 
   public Long getId() {
@@ -53,8 +80,8 @@ public class Camion {
     this.cargaMax = nuevaCargaMax;
   }
 
-  public Boolean estaDisponible(){
-    return this.disponibilidad == true;
+  public boolean estaDisponible(){
+    return Boolean.TRUE.equals(this.disponibilidad);
   }
 
   public Coordenadas getLocalizacion() {

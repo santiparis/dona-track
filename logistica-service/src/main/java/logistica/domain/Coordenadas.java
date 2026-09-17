@@ -3,9 +3,14 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Embeddable;
+
+
+@Embeddable
 public class Coordenadas {
-  private final double latitud;
-  private final double longitud;
+
+  private double latitud;
+  private double longitud;
 
 // los jsonProperty los usara jackson para crear los objetos de json a dominio
   @JsonCreator
@@ -20,6 +25,10 @@ public class Coordenadas {
 
     this.latitud = latitud;
     this.longitud = longitud;
+  }
+
+
+  protected Coordenadas() {
   }
 
   public double getLatitud() {

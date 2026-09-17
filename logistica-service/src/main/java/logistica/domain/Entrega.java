@@ -1,12 +1,36 @@
 package logistica.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.List;
+@Entity
+@Table(name = "entregas")
 public class Entrega {
-  Long id;
-  final List<DonacionEncolada> listaDonaciones;
-  String destino;
-  String entidadNombre;
-  EstadoEntrega estado;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @OneToMany
+  @JoinColumn(name = "entrega_id")
+  private List<DonacionEncolada> listaDonaciones;
+
+
+  private String destino;
+  private String entidadNombre;
+
+  @Enumerated(EnumType.STRING)
+  private EstadoEntrega estado;
+
+  @Column(unique = true)
+  private String comprobante;
 
 
   public Entrega(List<DonacionEncolada> listaDonaciones, String destino, String entidadNombre) {
@@ -15,6 +39,8 @@ public class Entrega {
     this.entidadNombre = entidadNombre;
     this.estado = EstadoEntrega.PENDIENTE;
   }
+
+  protected Entrega(){}
 
   public Long getId() {
     return id;
@@ -32,9 +58,14 @@ public class Entrega {
     return destino;
   }
 
+  public String getComprobante() {
+    return comprobante;
+  }
+
   public String getEntidadNombre() {
     return entidadNombre;
   }
+
 
   public List<DonacionEncolada> getListaDonaciones() {
     return listaDonaciones;
@@ -52,6 +83,7 @@ public class Entrega {
       throw new IllegalStateException("No se puede marcar entregada desde " + estado);
     }
     this.estado = EstadoEntrega.ENTREGADA;
+    this.comprobante = "ENT-" + this.id;
   }
 
   public void marcarNoRecibida() {

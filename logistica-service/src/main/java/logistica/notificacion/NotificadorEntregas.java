@@ -31,7 +31,7 @@ public class NotificadorEntregas {
   }
 
   public void avisarFallida(Entrega entrega) {
-    this.notificarEstado(entrega, ENTREGA_FALLIDA, "placeholder");
+    this.notificarEstado(entrega, ENTREGA_FALLIDA, "porque si");
   }
 
   // donaciones cambia el estado por donacion; una entrega puede agrupar varias
