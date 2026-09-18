@@ -42,7 +42,6 @@ public class RutasRepositoryTest implements SimplePersistenceTest {
     entityManager().clear();
   }
 
-  // el test que justifica el cascade: un solo persist tiene que guardar las tres tablas
   @Test
   void guardarLaRutaGuardaSusEntregasYSusDonaciones() {
     repositorio.agregar(ruta);
@@ -56,7 +55,6 @@ public class RutasRepositoryTest implements SimplePersistenceTest {
     assertEquals(7L, entrega.getListaDonaciones().get(0).getDonacionID());
   }
 
-  // los enums se guardan como texto (@Enumerated(STRING)), no como numero
   @Test
   void losEstadosVuelvenDeLaBase() {
     ruta.iniciar();
@@ -79,7 +77,6 @@ public class RutasRepositoryTest implements SimplePersistenceTest {
     assertEquals("AB123CD", recuperada.getCamion().getPatente());
   }
 
-  // la entrega no tiene referencia a su ruta: se llega por consulta, no navegando el objeto
   @Test
   void seEncuentraLaRutaAPartirDeUnaDeSusEntregas() {
     repositorio.agregar(ruta);
@@ -102,8 +99,6 @@ public class RutasRepositoryTest implements SimplePersistenceTest {
     assertEquals("Comedor Sol", entrega.getEntidadNombre());
   }
 
-  // el cambio se hace sobre un objeto traido de la base: nadie llama a guardar,
-  // Hibernate detecta la diferencia y manda el UPDATE al cerrar la transaccion
   @Test
   void elCambioDeEstadoDeUnaEntregaSePersisteSinGuardarla() {
     repositorio.agregar(ruta);

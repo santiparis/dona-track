@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// SimplePersistenceTest abre una transaccion antes de cada test y hace rollback al final
 public class CamionesRepositoryTest implements SimplePersistenceTest {
 
   private CamionesRepository repositorio;
@@ -22,8 +21,6 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
     repositorio = new CamionesRepository();
   }
 
-  // el clear() vacia la cache del EntityManager: lo que se lee despues viene de la base,
-  // no del objeto que quedo en memoria. Sin esto el test pasaria sin haber guardado nada.
   private void recargar() {
     entityManager().flush();
     entityManager().clear();
@@ -52,7 +49,6 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
     assertTrue(recuperado.estaDisponible());
   }
 
-  // el caso que rompia el mapeo: un camion recien dado de alta todavia no reporto posicion
   @Test
   void seGuardaUnCamionSinLocalizacion() {
     repositorio.agregar(new Camion("AB123CD", 45.0, 3.2, 12000));
@@ -61,7 +57,6 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
     assertNull(repositorio.buscarPorPatente("AB123CD").orElseThrow().getLocalizacion());
   }
 
-  // Coordenadas es @Embeddable: no es una tabla, son dos columnas mas de camiones
   @Test
   void laLocalizacionVuelveDeLaBase() {
     Camion camion = new Camion("AB123CD", 45.0, 3.2, 12000);

@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public class RutasRepository implements WithSimplePersistenceUnit {
 
-  // la ruta arrastra sus entregas, y cada entrega sus donaciones: van en cascada
   public void agregar(Ruta ruta) {
     persist(ruta);
   }
@@ -26,7 +25,6 @@ public class RutasRepository implements WithSimplePersistenceUnit {
     return createQuery("from Ruta", Ruta.class).getResultList();
   }
 
-  // la entrega no conoce a su ruta, asi que la pregunta se hace desde el lado que si la conoce
   public Optional<Ruta> buscarRutaPorEntregaId(Long entregaId) {
     return createQuery("select r from Ruta r join r.entregas e where e.id = :entregaId", Ruta.class)
         .setParameter("entregaId", entregaId)
