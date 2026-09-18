@@ -3,12 +3,18 @@ package logistica.controller;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import logistica.domain.Entrega;
+import logistica.domain.Ruta;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 
 public class EntregasController {
+
+
+  private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
   private final RutasRepository rutasRepository;
   private final NotificadorEntregas notificadorEntregas;
@@ -34,12 +40,16 @@ public class EntregasController {
 
   public void confirmar(Context ctx) {
     try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Entrega entrega = this.buscarEntrega(id);
+      Long entregaID = Long.parseLong(ctx.pathParam("id"));
+      Entrega entrega = this.buscarEntrega(entregaID);
+
+      Ruta ruta = this.buscarRuta(entregaID);
 
       // la entrega decide si la transicion es valida; recien despues se avisa afuera
       entrega.marcarEntregada();
-      notificadorEntregas.avisarEntregada(entrega, this.patenteDelCamion(id));
+      notificadorEntregas.avisarEntregada(entrega,
+          entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + ruta.getCamion().getPatente());
+      ruta.completarSiTermino();
 
       ctx.json(entrega);
     } catch (RuntimeException e) {
@@ -49,11 +59,14 @@ public class EntregasController {
 
   public void marcarNoRecibida(Context ctx) {
     try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Entrega entrega = this.buscarEntrega(id);
+      Long entregaID = Long.parseLong(ctx.pathParam("id"));
+      Entrega entrega = this.buscarEntrega(entregaID);
+
+      Ruta ruta = this.buscarRuta(entregaID);
 
       entrega.marcarNoRecibida();
       notificadorEntregas.avisarFallida(entrega);
+      ruta.completarSiTermino();
 
       ctx.json(entrega);
     } catch (RuntimeException e) {
@@ -64,8 +77,8 @@ public class EntregasController {
   // reingresar no le interesa a donaciones: la donacion sigue en poder de logistica
   public void reingresarADeposito(Context ctx) {
     try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
-      Entrega entrega = this.buscarEntrega(id);
+      Long entregaID = Long.parseLong(ctx.pathParam("id"));
+      Entrega entrega = this.buscarEntrega(entregaID);
 
       entrega.reingresarADeposito();
 
@@ -75,15 +88,15 @@ public class EntregasController {
     }
   }
 
-  private Entrega buscarEntrega(Long id) {
-    return rutasRepository.buscarEntregaPorId(id)
-        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + id));
+  private Entrega buscarEntrega(Long entregaID) {
+    return rutasRepository.buscarEntregaPorId(entregaID)
+        .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaID));
   }
 
-  private String patenteDelCamion(Long entregaId) {
+  // si la entrega existe esta si o si dentro de una ruta: que no aparezca es el modelo roto
+  private Ruta buscarRuta(Long entregaId) {
     return rutasRepository.buscarRutaPorEntregaId(entregaId)
-        .map(ruta -> ruta.getCamion().getPatente())
-        .orElse(null);
+        .orElseThrow(() -> new IllegalStateException("Entrega sin ruta: " + entregaId));
   }
 
   private void manejarExcepcion(Context ctx, RuntimeException e) {

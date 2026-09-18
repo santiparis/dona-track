@@ -43,3 +43,6 @@ sendgrid.env
 twilio.env
 *.env
 
+### Persistance
+schema.sql
+

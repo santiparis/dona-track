@@ -1,27 +1,25 @@
 package logistica.repository;
 
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import logistica.domain.DonacionEncolada;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class DonacionesRepository {
-
-  private final List<DonacionEncolada> donaciones = new ArrayList<>();
+public class DonacionesRepository implements WithSimplePersistenceUnit {
 
   public void agregar(DonacionEncolada donacionEncolada) {
-    donaciones.add(donacionEncolada);
+    persist(donacionEncolada);
   }
 
   public void agregarTodos(List<DonacionEncolada> nuevas) {
-    donaciones.addAll(nuevas);
+    nuevas.forEach(this::agregar);
   }
 
   public List<DonacionEncolada> obtenerTodas() {
-    return new ArrayList<>(donaciones);
+    return createQuery("from DonacionEncolada", DonacionEncolada.class).getResultList();
   }
 
   public void remover(List<DonacionEncolada> aRemover) {
-    donaciones.removeAll(aRemover);
+    aRemover.forEach(this::remove);
   }
 }

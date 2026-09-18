@@ -1,5 +1,6 @@
 package logistica.controller;
 
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import io.javalin.http.Context;
 import logistica.domain.Camion;
 import logistica.domain.DonacionEncolada;
@@ -26,7 +27,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PlanificadorControllerTest {
+// usa un CamionesRepository real, asi que necesita una transaccion: la abre el mixin
+public class PlanificadorControllerTest implements SimplePersistenceTest {
 
   private CamionesRepository camionesRepository;
   private RutasRepository rutasRepository;

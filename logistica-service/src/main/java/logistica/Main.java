@@ -2,6 +2,7 @@ package logistica;
 
 import io.javalin.Javalin;
 import logistica.controller.CamionesController;
+import logistica.db.TransaccionPorRequest;
 import logistica.controller.DonacionesAPIController;
 import logistica.controller.EntregasController;
 import logistica.controller.PlanificadorController;
@@ -20,6 +21,7 @@ public class Main {
     var repositorioDonaciones = new DonacionesRepository();
     var repositorioRutas = new RutasRepository();
     var retrofitConfig = new RetrofitConfig();
+    var transaccion = new TransaccionPorRequest();
 
     var notificadorEntregas = new NotificadorEntregas(retrofitConfig.donacionesAPICalls());
     var donacionesController = new DonacionesAPIController(repositorioDonaciones);
@@ -30,9 +32,19 @@ public class Main {
     var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
     var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
 
-    repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+    // la flota ya no vive en memoria: si la base la tiene, cargarla de nuevo duplicaria
+    // camiones y romperia el unique de la patente
+    transaccion.withTransaction(() -> {
+      if (repositorioCamiones.obtenerTodos().isEmpty()) {
+        repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+      }
+    });
 
     var app = Javalin.create(config -> {
+      // una transaccion por pedido: se abre antes del handler y se cierra despues
+      config.routes.before(ctx -> transaccion.abrir());
+      config.routes.after(ctx -> transaccion.cerrar(ctx.statusCode()));
+
       //health
       config.routes.get("/", ctx -> ctx.result("logistica-service OK"));
 
