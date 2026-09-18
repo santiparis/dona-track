@@ -3,6 +3,8 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -28,9 +30,13 @@ public class Camion {
   private double cargaMax;
 
   // @Embedded: latitud y longitud son dos columnas mas de la tabla camiones.
-  // Si las dos quedan en null, Hibernate devuelve la localizacion entera en null,
-  // que es justo lo que significa "el camion todavia no reporto posicion".
+  // El override las marca nullables: como en Coordenadas son double primitivos,
+  // Hibernate las haria NOT NULL y no dejaria guardar un camion sin posicion.
   @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "latitud", column = @Column(name = "latitud", nullable = true)),
+      @AttributeOverride(name = "longitud", column = @Column(name = "longitud", nullable = true))
+  })
   private Coordenadas localizacion = null;
 
   private double velocidad = 0;
@@ -55,10 +61,6 @@ public class Camion {
 
   public Long getId() {
     return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
   }
 
   // valida antes de mutar: si la velocidad es invalida el camion queda intacto
@@ -108,7 +110,13 @@ public class Camion {
     return this.patente;
   }
 
-  public void setDisponibilidad(Boolean estado){
-    this.disponibilidad = estado;
+  // ocupar/liberar en vez de un setter: el camion se ocupa al asignarsele una ruta
+  // y se libera cuando esa ruta termina
+  public void ocupar() {
+    this.disponibilidad = false;
+  }
+
+  public void liberar() {
+    this.disponibilidad = true;
   }
 }

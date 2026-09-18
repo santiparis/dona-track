@@ -1,5 +1,6 @@
 package logistica.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -25,7 +26,8 @@ public class Ruta {
   @JoinColumn(name = "camion_id")
   private Camion camion;
 
-  @OneToMany
+  // cascade ALL: las entregas nacen y mueren con la ruta, no se guardan por su cuenta
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "ruta_id")
   private List<Entrega> entregas;
 
@@ -35,6 +37,8 @@ public class Ruta {
 
   public Ruta(Camion camion, List<Entrega> entregas) {
     this.camion = camion;
+    // asignarle una ruta ocupa al camion: el planificador no se lo ofrece a otra
+    camion.ocupar();
     this.entregas = entregas;
     this.estado = EstadoRuta.PLANIFICADA;
   }
@@ -43,10 +47,6 @@ public class Ruta {
 
   public Long getId() {
     return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
   }
 
   public Camion getCamion() {
@@ -59,6 +59,14 @@ public class Ruta {
 
   public EstadoRuta getEstado() {
     return estado;
+  }
+
+  // la ruta termino cuando ninguna entrega quedo en traslado: ahi se libera el camion
+  public void completarSiTermino() {
+    if (estado == EstadoRuta.EN_CURSO && this.entregasPendientes() == 0) {
+      this.estado = EstadoRuta.COMPLETADA;
+      this.camion.liberar();
+    }
   }
 
   public long entregasPendientes() {

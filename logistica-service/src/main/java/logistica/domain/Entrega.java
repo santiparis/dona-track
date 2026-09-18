@@ -1,5 +1,6 @@
 package logistica.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -18,7 +19,8 @@ public class Entrega {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @OneToMany
+  // cascade ALL: al guardar la entrega se guardan sus donaciones, que llegan en el mismo callback
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "entrega_id")
   private List<DonacionEncolada> listaDonaciones;
 
@@ -44,10 +46,6 @@ public class Entrega {
 
   public Long getId() {
     return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
   }
 
   public EstadoEntrega getEstado() {

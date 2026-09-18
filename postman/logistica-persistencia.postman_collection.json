@@ -1,0 +1,303 @@
+{
+  "info": {
+    "_postman_id": "c4f1a7e2-9b3d-4a6e-8c21-5f0d7a1b3e44",
+    "name": "Logistica - Persistencia",
+    "description": "Prueba que logistica-service guarda en la base y no en memoria.\n\nRequisitos: logistica-service levantado en el 7070 con el bloque de PostgreSQL activo en persistence.xml. donaciones-service NO hace falta salvo para los pasos 09 y 10.\n\nCorrer los pedidos EN ORDEN: cada uno guarda en variables lo que necesita el siguiente. El paso 11 es el que realmente prueba la persistencia: se corre despues de reiniciar el servicio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "logisticaBaseUrl", "value": "http://localhost:7070" },
+    { "key": "camionId", "value": "" },
+    { "key": "rutaId", "value": "" },
+    { "key": "entregaId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/", "host": ["{{logisticaBaseUrl}}"], "path": [""] },
+        "description": "Solo confirma que el servicio esta arriba."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('responde 200', () => pm.response.to.have.status(200));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Flota inicial (seed)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/api/camiones", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "camiones"] },
+        "description": "Los 2 camiones del seed. Main solo los carga si la tabla esta vacia, asi que en el segundo arranque tienen que seguir teniendo el MISMO id: eso ya prueba que salieron de la base."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('hay al menos 2 camiones', () => pm.expect(pm.response.json().length).to.be.at.least(2));",
+              "pm.test('el seed no se duplico', () => {",
+              "  const patentes = pm.response.json().map(c => c.patente);",
+              "  pm.expect(new Set(patentes).size).to.eql(patentes.length);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Alta de camion",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patente\": \"PM100AA\",\n  \"volumen\": 50.0,\n  \"altura\": 3.5,\n  \"cargaMax\": 15000\n}"
+        },
+        "url": { "raw": "{{logisticaBaseUrl}}/api/camiones", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "camiones"] },
+        "description": "INSERT. El id lo genera la base, no el repositorio.\n\nSi lo corres dos veces sin haber corrido el paso 12, tiene que fallar: la patente es UNIQUE."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('responde 201', () => pm.response.to.have.status(201));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Buscar el camion nuevo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/api/camiones", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "camiones"] },
+        "description": "Guarda el id del camion recien creado para los pasos siguientes."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const nuevo = pm.response.json().find(c => c.patente === 'PM100AA');",
+              "pm.test('el camion del paso 03 esta en la base', () => pm.expect(nuevo).to.not.be.undefined);",
+              "pm.collectionVariables.set('camionId', nuevo.id);",
+              "pm.test('arranca sin localizacion', () => pm.expect(nuevo.localizacion).to.eql(null));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Editar el camion (UPDATE sin guardar)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patente\": \"PM100AA\",\n  \"volumen\": 55.0,\n  \"altura\": 3.5,\n  \"cargaMax\": 16000\n}"
+        },
+        "url": { "raw": "{{logisticaBaseUrl}}/api/camiones/{{camionId}}", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "camiones", "{{camionId}}"] },
+        "description": "El controller busca el camion y le manda actualizarDatos. Nadie llama a guardar: Hibernate compara contra como vino de la base y manda el UPDATE al cerrar la transaccion. Eso es dirty checking."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responde 200', () => pm.response.to.have.status(200));",
+              "pm.test('el volumen cambio', () => pm.expect(pm.response.json().volumen).to.eql(55.0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Reportar localizacion (@Embeddable)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitud\": -34.6037,\n  \"longitud\": -58.3816,\n  \"velocidad\": 45.5\n}"
+        },
+        "url": {
+          "raw": "{{logisticaBaseUrl}}/api/camiones/{{camionId}}/localizacion",
+          "host": ["{{logisticaBaseUrl}}"],
+          "path": ["api", "camiones", "{{camionId}}", "localizacion"]
+        },
+        "description": "Coordenadas no es una tabla: latitud y longitud son dos columnas mas de camiones. Verificalo con:\n\nSELECT patente, latitud, longitud FROM camiones;"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('responde 200', () => pm.response.to.have.status(200));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Callback del planificador (cascade)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"asignaciones\": [\n    {\n      \"patenteCamion\": \"PM100AA\",\n      \"paradas\": [\n        {\n          \"donaciones\": [\n            { \"donacionID\": 101, \"cantidadBienes\": 20, \"unidad\": \"kg\", \"destino\": \"Av. Mitre 300\", \"entidadNombre\": \"Comedor Sol\" },\n            { \"donacionID\": 102, \"cantidadBienes\": 5, \"unidad\": \"kg\", \"destino\": \"Av. Mitre 300\", \"entidadNombre\": \"Comedor Sol\" }\n          ]\n        },\n        {\n          \"donaciones\": [\n            { \"donacionID\": 103, \"cantidadBienes\": 8, \"unidad\": \"litros\", \"destino\": \"Calle 55\", \"entidadNombre\": \"Hogar Norte\" }\n          ]\n        }\n      ]\n    }\n  ],\n  \"donacionesNoAsignadas\": [\n    { \"donacionID\": 104, \"cantidadBienes\": 3, \"unidad\": \"kg\", \"destino\": \"Calle 90\", \"entidadNombre\": \"Merendero Luz\" }\n  ]\n}"
+        },
+        "url": { "raw": "{{logisticaBaseUrl}}/api/rutas", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "rutas"] },
+        "description": "EL pedido importante. Un solo persist(ruta) tiene que escribir en 3 tablas: rutas, entregas y donaciones_encoladas. Eso es el cascade.\n\nDespues de correrlo:\nSELECT * FROM rutas;\nSELECT * FROM entregas;\nSELECT * FROM donaciones_encoladas;\n\nFijate que entregas.ruta_id y donaciones_encoladas.entrega_id quedaron completos: esas son las FK que arma el @JoinColumn.\n\nEl camion PM100AA ademas queda ocupado (disponibilidad = false)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responde 201', () => pm.response.to.have.status(201));",
+              "const ruta = pm.response.json()[0];",
+              "pm.collectionVariables.set('rutaId', ruta.id);",
+              "pm.collectionVariables.set('entregaId', ruta.entregas[0].id);",
+              "pm.test('guardo las 2 entregas', () => pm.expect(ruta.entregas.length).to.eql(2));",
+              "pm.test('guardo las donaciones de la primera entrega', () => pm.expect(ruta.entregas[0].listaDonaciones.length).to.eql(2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Leer la ruta completa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/api/rutas/{{rutaId}}", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "rutas", "{{rutaId}}"] },
+        "description": "Pedido nuevo, transaccion nueva: todo esto se rearma leyendo de la base. Si fuera a tirar LazyInitializationException, seria aca."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const ruta = pm.response.json();",
+              "pm.test('vuelve con su camion', () => pm.expect(ruta.camion.patente).to.eql('PM100AA'));",
+              "pm.test('vuelve con sus entregas y donaciones', () => {",
+              "  pm.expect(ruta.entregas.length).to.eql(2);",
+              "  pm.expect(ruta.entregas[0].listaDonaciones.length).to.be.above(0);",
+              "});",
+              "pm.test('el estado se guardo como texto', () => pm.expect(ruta.estado).to.eql('PLANIFICADA'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Iniciar la ruta (necesita donaciones-service)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{logisticaBaseUrl}}/api/rutas/{{rutaId}}/inicio",
+          "host": ["{{logisticaBaseUrl}}"],
+          "path": ["api", "rutas", "{{rutaId}}", "inicio"]
+        },
+        "description": "Pasa la ruta a EN_CURSO y sus entregas a EN_TRASLADO, y le avisa a donaciones por HTTP.\n\nSi donaciones NO esta levantado devuelve 409, y ahi vale la pena mirar la base: la ruta tiene que haber quedado en PLANIFICADA. Eso es el rollback de la transaccion del pedido."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 409) {",
+              "  pm.test('sin donaciones-service devuelve 409 y la ruta no cambia', () => pm.expect(true).to.be.true);",
+              "} else {",
+              "  pm.test('responde 200', () => pm.response.to.have.status(200));",
+              "  pm.test('la ruta quedo en curso', () => pm.expect(pm.response.json().estado).to.eql('EN_CURSO'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Confirmar una entrega (necesita donaciones-service)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{logisticaBaseUrl}}/api/entregas/{{entregaId}}/confirmacion",
+          "host": ["{{logisticaBaseUrl}}"],
+          "path": ["api", "entregas", "{{entregaId}}", "confirmacion"]
+        },
+        "description": "Genera el comprobante (ENT-<id>) y le manda a donaciones el comprobante, la fecha y la patente.\n\nComo queda otra entrega sin resolver, la ruta sigue EN_CURSO y el camion sigue ocupado. Resolviendo la segunda entrega, la ruta pasa a COMPLETADA y el camion se libera."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 409) {",
+              "  pm.test('sin donaciones-service devuelve 409', () => pm.expect(true).to.be.true);",
+              "} else {",
+              "  pm.test('la entrega quedo entregada', () => pm.expect(pm.response.json().estado).to.eql('ENTREGADA'));",
+              "  pm.test('tiene comprobante', () => pm.expect(pm.response.json().comprobante).to.not.be.null);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - DESPUES DE REINICIAR: sigue todo ahi",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/api/rutas", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "rutas"] },
+        "description": "LA prueba de que persiste. Baja el servicio, volvelo a levantar y corre SOLO este pedido.\n\nLa ruta del paso 07 tiene que seguir existiendo con el mismo id, sus entregas y sus donaciones. Antes de persistir, un reinicio borraba todo porque vivia en un ArrayList.\n\nOjo: si persistence.xml sigue apuntando a HSQLDB en memoria, este paso va a dar vacio, y esta bien: esa base se borra con el proceso."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('las rutas sobrevivieron al reinicio', () => pm.expect(pm.response.json().length).to.be.above(0));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Baja de camion (limpieza)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{logisticaBaseUrl}}/api/camiones/{{camionId}}", "host": ["{{logisticaBaseUrl}}"], "path": ["api", "camiones", "{{camionId}}"] },
+        "description": "DELETE de la fila. Correlo al final para poder repetir la coleccion sin chocar con la patente UNIQUE.\n\nOjo: si el camion quedo asignado a una ruta, la FK rutas.camion_id lo va a impedir. En ese caso borra primero la ruta por SQL."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('responde 204, o error si esta atado a una ruta', () => pm.expect([204, 500]).to.include(pm.response.code));"]
+          }
+        }
+      ]
+    }
+  ]
+}

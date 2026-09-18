@@ -67,6 +67,7 @@ public class EntregasControllerTest {
     Entrega entrega = entregaEnTraslado();
     when(ctx.pathParam("id")).thenReturn("1");
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
+    when(rutasRepository.buscarRutaPorEntregaId(1L)).thenReturn(Optional.of(rutaCon(entrega)));
 
     controller.marcarNoRecibida(ctx);
 
@@ -80,6 +81,7 @@ public class EntregasControllerTest {
     Entrega entrega = entregaPendiente();
     when(ctx.pathParam("id")).thenReturn("1");
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
+    when(rutasRepository.buscarRutaPorEntregaId(1L)).thenReturn(Optional.of(rutaCon(entrega)));
 
     controller.marcarNoRecibida(ctx);
 

@@ -3,6 +3,7 @@ package logistica.controller;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import logistica.domain.Entrega;
+import logistica.domain.Ruta;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
@@ -42,10 +43,13 @@ public class EntregasController {
       Long entregaID = Long.parseLong(ctx.pathParam("id"));
       Entrega entrega = this.buscarEntrega(entregaID);
 
+      Ruta ruta = this.buscarRuta(entregaID);
+
       // la entrega decide si la transicion es valida; recien despues se avisa afuera
       entrega.marcarEntregada();
       notificadorEntregas.avisarEntregada(entrega,
-          entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + this.patenteDelCamion(entregaID));
+          entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + ruta.getCamion().getPatente());
+      ruta.completarSiTermino();
 
       ctx.json(entrega);
     } catch (RuntimeException e) {
@@ -58,8 +62,11 @@ public class EntregasController {
       Long entregaID = Long.parseLong(ctx.pathParam("id"));
       Entrega entrega = this.buscarEntrega(entregaID);
 
+      Ruta ruta = this.buscarRuta(entregaID);
+
       entrega.marcarNoRecibida();
       notificadorEntregas.avisarFallida(entrega);
+      ruta.completarSiTermino();
 
       ctx.json(entrega);
     } catch (RuntimeException e) {
@@ -86,10 +93,10 @@ public class EntregasController {
         .orElseThrow(() -> new NoSuchElementException("Entrega no encontrada: " + entregaID));
   }
 
-  private String patenteDelCamion(Long entregaId) {
+  // si la entrega existe esta si o si dentro de una ruta: que no aparezca es el modelo roto
+  private Ruta buscarRuta(Long entregaId) {
     return rutasRepository.buscarRutaPorEntregaId(entregaId)
-        .map(ruta -> ruta.getCamion().getPatente())
-        .orElse(null);
+        .orElseThrow(() -> new IllegalStateException("Entrega sin ruta: " + entregaId));
   }
 
   private void manejarExcepcion(Context ctx, RuntimeException e) {
