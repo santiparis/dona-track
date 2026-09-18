@@ -28,6 +28,10 @@ public class RenovacionPeriodica implements PoliticaDeRenovacion {
     this.fechaFin = calcularVencimiento();
   }
 
+  public LocalDate getFechaInicio() { return fechaInicio; }
+  public LocalDate getFechaFin() { return fechaFin; }
+  public Periodo getPeriodo() { return periodo; }
+
   private LocalDate calcularVencimiento() {
     if (this.periodo == Periodo.SEMANAL) {
       return this.fechaInicio.plusDays(7);

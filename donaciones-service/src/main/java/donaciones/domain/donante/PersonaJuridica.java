@@ -2,11 +2,16 @@ package donaciones.domain.donante;
 
 import donaciones.domain.notificacion.Contacto;
 import java.util.List;
+import javax.persistence.*;
 
+@Entity
+@DiscriminatorValue("JURIDICA")
 public class PersonaJuridica extends Persona {
-    private final RazonSocial razonSocial;
-    private String rubro;
-    private List<PersonaHumana> representantesHabilitados;
+    @Enumerated(EnumType.STRING) @Column(name = "razon_social") private RazonSocial razonSocial;
+    @Column(name = "rubro") private String rubro;
+    @ManyToMany private List<PersonaHumana> representantesHabilitados;
+
+    protected PersonaJuridica() { }
 
     public PersonaJuridica(
             TipoDoc tipoDoc,
