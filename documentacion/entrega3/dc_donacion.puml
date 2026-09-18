@@ -1,0 +1,90 @@
+@startuml
+skinparam linetype ortho
+
+' Modulo de donaciones y bienes.
+' El detalle de Persona y EntidadBeneficiaria esta en dc_donante.puml y dc_entidad_necesidad.puml
+
+class Donacion {
+    id: Long
+    donante: Persona
+    entidadBeneficiaria: EntidadBeneficiaria
+    bien: Bien
+    estado: EstadoDonacion
+    historialEstados: List<RegistroCambioEstado>
+    fecha: LocalDate
+    ---
+    asignarA(entidadBeneficiaria)
+    cambiarEstado(nuevoEstado, justificacion)
+    actualizarDatos(donante, bien)
+}
+
+enum EstadoDonacion {
+    EN_DEPOSITO
+    ASIGNADA
+    LISTA_PARA_ENTREGAR
+    EN_TRASLADO
+    ENTREGADA
+    ENTREGA_FALLIDA
+    VENCIDA
+}
+
+class RegistroCambioEstado<T> {
+    id: Long
+    estadoAnterior: EstadoDonacion
+    estadoNuevo: EstadoDonacion
+    fecha: Date
+    justificacion: String
+    ---
+}
+
+class Bien {
+    id: Long
+    subcategoria: Subcategoria
+    cantidad: Integer
+    unidad: String
+    estado: EstadoBien
+    vencimiento: LocalDate
+    descripcion: String
+    foto: String
+    ---
+    conCantidad(nuevaCantidad)
+    comparteSegmentoCon(bien)
+}
+
+enum EstadoBien {
+    NUEVO
+    USADO
+}
+
+enum Subcategoria {
+    categoria: Categoria
+    requiereEstado: boolean
+    requiereVencimiento: boolean
+    nombre: String
+    ---
+    requiereEstado()
+    requiereVencimiento()
+}
+
+enum Categoria {
+    ALIMENTOS
+    MUEBLES
+    ROPA
+    ELECTRODOMESTICOS
+}
+
+abstract Persona
+class EntidadBeneficiaria
+
+Donacion --> Persona : fue donada por
+Donacion --> EntidadBeneficiaria : se asigna a
+Donacion --> Bien : contiene
+Donacion --> EstadoDonacion : tiene
+Donacion --> "*" RegistroCambioEstado : registra
+RegistroCambioEstado --> "2" EstadoDonacion : compara
+
+Bien --> Subcategoria : pertenece a
+Bien --> EstadoBien : tiene
+Subcategoria --> Categoria : agrupa en
+
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+skinparam linetype ortho
+
+' Modulo de personas donantes.
+' El detalle de Contacto esta en dc_notificacion.puml
+
+abstract Persona {
+    id: Long
+    tipoDoc: TipoDoc
+    documento: String
+    nombre: String
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    usuario: Usuario
+    ultimaInteraccion: LocalDateTime
+    ---
+    registrarInteraccion()
+    actualizarseDesde(persona)
+    actualizarDatosComunes(persona)
+}
+
+enum TipoDoc {
+    DNI
+    CUIT
+}
+
+class Usuario {
+    id: Long
+    nombreUsuario: String
+    password: String
+    ---
+}
+
+class PersonaHumana {
+    apellido: String
+    edad: Integer
+    genero: Genero
+    direccion: String
+    ---
+    actualizarseDesde(persona)
+}
+
+enum Genero {
+    MASCULINO
+    FEMENINO
+    NO_BINARIO
+}
+
+class PersonaJuridica {
+    razonSocial: RazonSocial
+    rubro: String
+    representantesHabilitados: List<PersonaHumana>
+    ---
+    actualizarseDesde(persona)
+}
+
+enum RazonSocial {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+}
+
+interface Notificable
+abstract Contacto
+
+PersonaHumana -up-|> Persona : hereda
+PersonaJuridica -up-|> Persona : hereda
+PersonaHumana --> Genero : tiene
+PersonaJuridica --> RazonSocial : es
+PersonaJuridica --> "*" PersonaHumana : habilita como representante
+
+Persona --> TipoDoc : se identifica con
+Persona --> Usuario : accede con
+Persona --> "*" Contacto : se contacta por
+Persona --> Contacto : predetermina
+Persona .up.|> Notificable : implementa
+
+@enduml

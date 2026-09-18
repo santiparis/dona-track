@@ -1,8 +1,5 @@
 @startuml
 
-' Notificaciones ante cambios de estado de una donacion.
-' El detalle de Notificable / Contacto / Notificacion esta en dc_notificacion.puml
-
 class Donacion {
   - donante: Persona
   - entidadBeneficiaria: EntidadBeneficiaria

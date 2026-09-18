@@ -1,0 +1,69 @@
+@startuml
+skinparam linetype ortho
+
+' Modulo de notificaciones.
+' El detalle de Persona y EntidadBeneficiaria esta en dc_donante.puml y dc_entidad_necesidad.puml
+
+interface Notificable {
+    notificar(mensaje)
+}
+
+abstract Contacto {
+    notificableId: Long
+    tipoNotificable: String
+    valor: String
+    ---
+    identificarNotificable(notificableId, tipoNotificable)
+    enviar(mensaje)
+}
+
+class ContactoPorEmail {
+    enviar(mensaje)
+}
+
+class ContactoPorSMS {
+    enviar(mensaje)
+}
+
+class ContactoPorWhatsApp {
+    enviar(mensaje)
+}
+
+class Notificacion {
+    receptor: Notificable
+    mensaje: String
+    estado: EstadoNotificacion
+    ---
+    marcarComoCompletada()
+    marcarComoFallida()
+}
+
+enum EstadoNotificacion {
+    PENDIENTE
+    COMPLETADA
+    FALLIDA
+}
+
+class PersonaAdministradora {
+    nombre: String
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    ---
+}
+
+abstract Persona
+class EntidadBeneficiaria
+
+ContactoPorEmail -up-|> Contacto : hereda
+ContactoPorSMS -up-|> Contacto : hereda
+ContactoPorWhatsApp -up-|> Contacto : hereda
+
+Persona .up.|> Notificable : implementa
+EntidadBeneficiaria .up.|> Notificable : implementa
+PersonaAdministradora .up.|> Notificable : implementa
+
+Notificable --> "*" Contacto : se contacta por
+Notificable ..> Notificacion : genera
+Notificacion --> EstadoNotificacion : tiene
+
+@enduml
