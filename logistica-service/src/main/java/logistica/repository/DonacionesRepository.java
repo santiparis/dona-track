@@ -15,8 +15,13 @@ public class DonacionesRepository implements WithSimplePersistenceUnit {
     nuevas.forEach(this::agregar);
   }
 
+  // la tabla tambien guarda las donaciones que ya van en una entrega (cascade desde Ruta)
+  // pendientes son solo las que todavia no entraron en ninguna
   public List<DonacionEncolada> obtenerTodas() {
-    return createQuery("from DonacionEncolada", DonacionEncolada.class).getResultList();
+    return createQuery(
+        "from DonacionEncolada d where d not in "
+            + "(select dd from Entrega e join e.listaDonaciones dd)", DonacionEncolada.class)
+        .getResultList();
   }
 
   public void remover(List<DonacionEncolada> aRemover) {

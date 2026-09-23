@@ -171,6 +171,19 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     verify(ctx).status(404);
   }
 
+  @Test
+  void lasDonacionesQueQuedaronEnUnaRutaNoVuelvenAPlanificarse() {
+    when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
+        .thenReturn(callbackCon("AB123CD", unaDonacion(1L)));
+    controller.obtenerRutas(ctx);
+
+    controller.planificar(ctx);
+
+    // la donacion ya tiene ruta: no esta pendiente, y mandarla de nuevo la sacaria de su entrega
+    assertTrue(donacionesRepository.obtenerTodas().isEmpty());
+    verify(clientePlanificador, never()).enviarAPlanificar(anyList(), anyList());
+  }
+
   private DonacionEncolada unaDonacion(Long id) {
     return new DonacionEncolada(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
   }
