@@ -1,9 +1,16 @@
 package planificacion;
 
 import donaciones.controller.AsignacionesController;
+import donaciones.controller.Notificador;
+import donaciones.domain.algoritmos.CompatibilidadSemantica;
+import donaciones.domain.algoritmos.OrganizadorAsignaciones;
+import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import donaciones.retrofit_client.RetrofitConfig;
+
+import java.util.List;
 
 public class ProcesarAsignaciones {
 
@@ -11,11 +18,17 @@ public class ProcesarAsignaciones {
     DonacionRepository donacionRepository = new DonacionRepository();
     EntidadBeneficiariaRepository entidadRepository = new EntidadBeneficiariaRepository();
     SugerenciaAsignacionRepository sugerenciaRepository = new SugerenciaAsignacionRepository();
+    OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(
+        List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
+    );
 
     AsignacionesController controller = new AsignacionesController(
         donacionRepository,
         entidadRepository,
-        sugerenciaRepository
+        sugerenciaRepository,
+        new RetrofitConfig().logisticaAPICalls(),
+        new Notificador(),
+        organizadorAsignaciones
     );
 
     controller.limpiarSugerencias(); // TODO: Cuando tengamos persistencia esto no conviene, tenemos que revisar y actualizar las sugerencias que ya existan para no saturar la DB.

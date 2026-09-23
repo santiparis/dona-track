@@ -36,6 +36,19 @@ public class OrganizadorAsignaciones {
     return new SugerenciaAsignacion(donacion.getId(), donacion, coincidentes, entidadesPorAlgoritmo);
   }
 
+  public List<EntidadBeneficiaria> sugerirEntidadesPorCriterio(
+      Donacion donacion,
+      List<EntidadBeneficiaria> entidades,
+      String criterio
+  ) {
+    EstrategiaAsignacion estrategia = estrategias.stream()
+        .filter(candidata -> candidata.toString().toLowerCase().contains(criterio.toLowerCase()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No existe el criterio de asignación: " + criterio));
+
+    return estrategia.sugerirEntidades(donacion, entidades);
+  }
+
   private boolean apareceEnTodosAlgoritmos(EntidadBeneficiaria entidad, Map<String, List<EntidadBeneficiaria>> entidadesPorAlgortimo) {
     return entidadesPorAlgortimo
         .keySet()

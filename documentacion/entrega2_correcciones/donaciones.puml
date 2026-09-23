@@ -1,0 +1,237 @@
+@startuml
+skinparam linetype ortho
+abstract Persona {
+    id: Long
+    tipoDoc: TipoDoc
+    documento: String
+    nombre: String
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    usuario: Usuario
+    ultimaInteraccion: LocalDateTime
+    ---
+    registrarInteraccion()
+}
+
+enum TipoDoc {
+    DNI
+    CUIT
+}
+
+class Usuario {
+    nombreUsuario: String
+    password: String
+    ---
+}
+
+class PersonaHumana {
+    apellido: String
+    edad: Integer
+    genero: Genero
+    direccion: String
+    ---
+    registrarInteraccion()
+}
+
+enum Genero {
+    MASCULINO
+    FEMENINO
+    NO_BINARIO
+}
+
+class PersonaJuridica {
+    razonSocial: RazonSocial
+    rubro: String
+    representantesHabilitados: List<PersonaHumana>
+    ---
+    registrarInteraccion()
+}
+
+enum RazonSocial {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+}
+
+abstract Contacto {
+    valor: String
+    ---
+    enviar()
+}
+
+class ContactoPorEmail {
+    valor: String
+    ---
+    enviar(mensaje)
+}
+
+class ContactoPorSMS {
+    valor: String
+    ---
+    enviar(mensaje)
+}
+
+class ContactoPorWhatsApp {
+    valor: String
+    ---
+    enviar(mensaje)
+}
+
+class Donacion {
+    id: Long
+    donante: Persona
+    entidadBeneficiaria: EntidadBeneficiaria
+    bien: Bien
+    estado: EstadoDonacion
+    historialEstados: List<RegistroCambioEstado>
+    fecha: LocalDate
+    ---
+    asignarA(entidadBeneficiaria)
+    cambiarEstado(nuevoEstado, justificacion)
+}
+
+enum EstadoDonacion {
+    EN_DEPOSITO
+    ASIGNADA
+    LISTA_PARA_ENTREGAR
+    EN_TRASLADO
+    ENTREGADA
+    ENTREGA_FALLIDA
+    VENCIDA
+}
+
+class RegistroCambioEstado {
+    estadoAnterior: EstadoDonacion
+    estadoNuevo: EstadoDonacion
+    fecha: LocalDate
+    justificacion: String
+    ---
+}
+
+class EntidadBeneficiaria {
+    id: Long
+    razonSocial: String
+    direccion: String
+    telefono: String
+    correosRepresentantes: List<String>
+    necesidades: List<Necesidad>
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    donacionesRecibidas: List<Donacion>
+    ---
+    registrarNecesidad(necesidad)
+    satisfaceNecesidad(donacion)
+    getDonacionesUltimoTrimestre()
+}
+
+class Necesidad {
+    id: Long
+    descripcion: String
+    cantidadesRequeridas: Map<Subcategoria, Integer>
+    cantidadesSuplidas: Map<Subcategoria, Integer>
+    renovacion: PoliticaDeRenovacion
+    ---
+    registrarSuplido(bien)
+    estaSatisfecha()
+    seSatisfaceCon(bien)
+}
+
+interface PoliticaDeRenovacion {
+    seRenueva()
+    estaVencida()
+}
+
+class SinRenovacion 
+
+class RenovacionPeriodica {
+    fechaInicio: LocalDate
+    fechaFin: LocalDate
+    periodo: Periodo
+    ---
+    calcularVencimiento()
+}
+
+enum Periodo {
+    SEMANAL
+    MENSUAL
+}
+
+class Bien {
+    subcategoria: Subcategoria
+    cantidad: Integer
+    unidad: String
+    estado: EstadoBien
+    vencimiento: LocalDate
+    descripcion: String
+    foto: String
+    ---
+    comparteSegmentoCon(bien)
+    conCantidad(nuevaCantidad)
+}
+
+enum EstadoBien {
+    NUEVO
+    USADO
+}
+
+enum Subcategoria {
+    categoria: Categoria
+    requiereEstado: boolean
+    requiereVencimiento: boolean
+    nombre: String
+    ---
+    requiereEstado()
+    requiereVencimiento()
+}
+
+enum Categoria {
+    ALIMENTOS
+    MUEBLES
+    ROPA
+    ELECTRODOMESTICOS
+}
+
+Donacion --> EntidadBeneficiaria
+Donacion ..> EntidadBeneficiaria
+Donacion --> Bien
+Donacion --> EstadoDonacion
+Donacion ..> EstadoDonacion
+Donacion --> "*" RegistroCambioEstado
+Donacion --> Persona
+
+RegistroCambioEstado --> "2" EstadoDonacion 
+
+Bien --> Subcategoria
+Bien --> EstadoBien
+
+Subcategoria --> Categoria
+
+Necesidad --> "*" Subcategoria
+Necesidad --> PoliticaDeRenovacion
+Necesidad ..> Bien
+
+SinRenovacion .up.|> PoliticaDeRenovacion
+RenovacionPeriodica .up.|> PoliticaDeRenovacion
+
+RenovacionPeriodica --> Periodo
+
+EntidadBeneficiaria --> "*" Necesidad
+EntidadBeneficiaria --> "*" Donacion
+EntidadBeneficiaria --> "*" Contacto
+
+ContactoPorEmail -up-|> Contacto
+ContactoPorSMS -up-|> Contacto
+ContactoPorWhatsApp -up-|> Contacto
+
+Persona --> TipoDoc
+Persona --> "*" Contacto
+Persona --> Usuario
+
+PersonaHumana -up-|> Persona
+PersonaHumana --> Genero
+
+PersonaJuridica -up-|> Persona
+PersonaJuridica --> RazonSocial
+PersonaJuridica --> "*" PersonaHumana
+@enduml

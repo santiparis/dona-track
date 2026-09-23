@@ -1,19 +1,15 @@
 package donaciones.repository;
 
 import donaciones.domain.PersonaAdministradora;
-
-import java.util.ArrayList;
+import donaciones.persistence.JpaContext;
+import javax.persistence.EntityManager;
 import java.util.List;
 
+/** Repositorio JPA de administradoras. */
 public class PersonasAdministradorasRepository {
-
-    private static final List<PersonaAdministradora> administradoras = new ArrayList<>();
-
-    public List<PersonaAdministradora> obtenerTodos() {
-        return administradoras;
-    }
-
-    public void guardar(PersonaAdministradora admin) {
-        administradoras.add(admin);
-    }
+    private final EntityManager entityManager;
+    public PersonasAdministradorasRepository() { this(JpaContext.entityManager()); }
+    public PersonasAdministradorasRepository(EntityManager entityManager) { this.entityManager = entityManager; }
+    public List<PersonaAdministradora> obtenerTodos() { return entityManager.createQuery("from PersonaAdministradora", PersonaAdministradora.class).getResultList(); }
+    public void guardar(PersonaAdministradora admin) { JpaContext.inTransaction(em -> { if (admin.getId() == null) em.persist(admin); else em.merge(admin); }); }
 }

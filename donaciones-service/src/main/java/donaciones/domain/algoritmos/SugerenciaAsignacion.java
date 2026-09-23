@@ -1,17 +1,23 @@
 package donaciones.domain.algoritmos;
 
 import donaciones.domain.Donacion;
+import javax.persistence.*;
 import donaciones.domain.EntidadBeneficiaria;
 
 import java.util.List;
 import java.util.Map;
 
+
+@Entity
+@Table(name = "sugerencia_asignacion")
 public class SugerenciaAsignacion {
 
-  private final Long id;
-  private final Donacion donacion;
-  private final List<EntidadBeneficiaria> coincidentes;
-  private final Map<String, List<EntidadBeneficiaria>> entidadesPorAlgoritmo;
+  @Id @Column(name = "donacion_id") private Long id;
+  @OneToOne(optional = false) @JoinColumn(name = "donacion_id", insertable = false, updatable = false) private Donacion donacion;
+  @ManyToMany private List<EntidadBeneficiaria> coincidentes;
+  @Transient private Map<String, List<EntidadBeneficiaria>> entidadesPorAlgoritmo;
+
+  protected SugerenciaAsignacion() { }
 
   public SugerenciaAsignacion(
       Long id,
@@ -59,5 +65,12 @@ public class SugerenciaAsignacion {
 
   public boolean tieneCoincidencias() {
     return !coincidentes.isEmpty();
+  }
+
+  /** Regla de negocio: solo puede confirmarse una entidad propuesta por algún algoritmo. */
+  public boolean incluyeEntidad(Long entidadId) {
+    return entidadesPorAlgoritmo.values().stream()
+        .flatMap(List::stream)
+        .anyMatch(entidad -> entidad.getId() != null && entidad.getId().equals(entidadId));
   }
 }

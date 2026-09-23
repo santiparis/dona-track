@@ -1,7 +1,11 @@
 package asignaciones;
 
 import donaciones.controller.AsignacionesController;
+import donaciones.controller.Notificador;
 import donaciones.domain.*;
+import donaciones.domain.algoritmos.CompatibilidadSemantica;
+import donaciones.domain.algoritmos.OrganizadorAsignaciones;
+import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Contacto;
@@ -10,6 +14,11 @@ import donaciones.dto.AsignacionRequestDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import donaciones.retrofit_client.LogisticaAPICalls;
+import retrofit2.Call;
+import retrofit2.Response;
+
+import java.io.IOException;
 import io.javalin.http.Context;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,24 +30,53 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 public class AsignacionesControllerTest {
 
   private DonacionRepository donacionRepository;
   private EntidadBeneficiariaRepository entidadRepository;
   private SugerenciaAsignacionRepository sugerenciaRepository;
+  private OrganizadorAsignaciones organizadorAsignaciones;
+  private LogisticaAPICalls logisticaAPICalls;
+  private Notificador notificador;
   private AsignacionesController controller;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     donacionRepository = new DonacionRepository();
     entidadRepository = new EntidadBeneficiariaRepository();
     sugerenciaRepository = new SugerenciaAsignacionRepository();
     sugerenciaRepository.limpiar();
-    controller = new AsignacionesController(donacionRepository, entidadRepository, sugerenciaRepository);
+    donacionRepository.obtenerTodas().stream()
+      .map(Donacion::getId)
+      .toList()
+      .forEach(donacionRepository::borrarPorId);
+    entidadRepository.obtenerTodas().stream()
+      .filter(entidad -> entidad.getId() != null && entidad.getId() >= 3)
+      .map(EntidadBeneficiaria::getId)
+      .toList()
+      .forEach(entidadRepository::eliminarPorId);
+    organizadorAsignaciones = new OrganizadorAsignaciones(
+        List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
+    );
+    logisticaAPICalls = mock(LogisticaAPICalls.class);
+    notificador = mock(Notificador.class);
+    Call<String> llamadaLogistica = mock(Call.class);
+    when(logisticaAPICalls.enviarDonaciones(anyList())).thenReturn(llamadaLogistica);
+    when(llamadaLogistica.execute()).thenReturn(Response.success("ok"));
+    controller = new AsignacionesController(
+        donacionRepository,
+        entidadRepository,
+        sugerenciaRepository,
+        logisticaAPICalls,
+        notificador,
+        organizadorAsignaciones
+    );
   }
 
   @Test
@@ -172,6 +210,8 @@ public class AsignacionesControllerTest {
     assertEquals(EstadoDonacion.ASIGNADA, donacionEnDeposito.getEstado());
     assertEquals(entidadCoincidente.getId(), donacionEnDeposito.getEntidadBeneficiaria().getId());
     assertTrue(controller.obtenerSugerenciasGuardadas().isEmpty());
+    verify(notificador).donacionAsignada(donacionEnDeposito);
+    verify(logisticaAPICalls).enviarDonaciones(anyList());
   }
 
   @Test
@@ -226,6 +266,21 @@ public class AsignacionesControllerTest {
     when(ctx.bodyAsClass(AsignacionRequestDTO.class)).thenReturn(new AsignacionRequestDTO(1L, "Entidad sin sugerencia"));
 
     assertThrows(NoSuchElementException.class, () -> controller.asignarDonacion(ctx));
+  }
+
+  @Test
+  void ejecutarAlgoritmoYObtenerRanking_usaElAlgoritmoInyectado() {
+    PersonaHumana donante = crearDonanteHumanoSimple("Sofia", "Perez");
+    Donacion donacion = crearDonacionConBien(donante, Subcategoria.FIDEOS);
+    EntidadBeneficiaria entidad = crearEntidadConNecesidad(
+        "Comedor", "Mitre 500", "44444444", Subcategoria.FIDEOS, 8);
+
+    donacionRepository.guardar(donacion);
+    entidadRepository.guardar(entidad);
+
+    var ranking = controller.ejecutarAlgoritmoYObtenerRanking(donacion.getId(), "compatibilidad");
+
+    assertEquals(List.of("Comedor"), ranking.stream().map(r -> r.nombreEntidad()).toList());
   }
 
   private PersonaHumana crearDonanteHumanoSimple(String nombre, String apellido) {

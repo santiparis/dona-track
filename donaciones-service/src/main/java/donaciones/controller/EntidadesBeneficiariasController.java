@@ -1,24 +1,35 @@
 package donaciones.controller;
 
+import donaciones.domain.*;
 import donaciones.dto.EntidadBeneficiariaDTO;
+import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
-import donaciones.service.EntidadBeneficiariaService;
+import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.service.excepcion.EntidadBeneficiariaNoEncontradaException;
+import donaciones.service.excepcion.NecesidadNoEncontradaException;
+import donaciones.service.excepcion.PeriodoInvalidoException;
+import donaciones.service.excepcion.SubcategoriaInvalidaException;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class EntidadesBeneficiariasController {
   private static final Logger logger = LoggerFactory.getLogger(EntidadesBeneficiariasController.class);
-  private final EntidadBeneficiariaService entidadesService;
+  private final EntidadBeneficiariaRepository entidadesRepository;
 
-  public EntidadesBeneficiariasController(EntidadBeneficiariaService entidadesService) {
-    this.entidadesService = entidadesService;
+  public EntidadesBeneficiariasController(EntidadBeneficiariaRepository entidadesRepository) {
+    this.entidadesRepository = entidadesRepository;
   }
 
   public void getEntidadesBeneficiarias(Context ctx) {
     try {
-      ctx.json(entidadesService.getEntidadesBeneficiarias());
+      ctx.json(entidadesRepository.obtenerTodas());
     } catch (RuntimeException e) {
       logger.error("Error al listar entidades beneficiarias", e);
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error al listar entidades beneficiarias: " + e.getMessage());
@@ -38,7 +49,7 @@ public class EntidadesBeneficiariasController {
   public void postEntidadBeneficiaria(Context ctx) {
     try {
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
-      entidadesService.postEntidadBeneficiaria(dto);
+      entidadesRepository.guardar(new EntidadBeneficiaria(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes()));
       ctx.status(HttpStatus.CREATED).result("Entidad Beneficiaria recibida y guardada");
     } catch (IllegalArgumentException e) {
       logger.warn("Error de validacion al crear entidad beneficiaria: {}", e.getMessage());
@@ -53,7 +64,9 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
-      entidadesService.putEntidadBeneficiaria(id, dto);
+      EntidadBeneficiaria entidad = buscarEntidad(id);
+      entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
+      entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al actualizar entidad beneficiaria: {}", e.getMessage());
@@ -67,8 +80,10 @@ public class EntidadesBeneficiariasController {
   public void patchEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      donaciones.dto.EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(donaciones.dto.EntidadBeneficiariaPatchDTO.class);
-      entidadesService.patchEntidadBeneficiaria(id, dto);
+      EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(EntidadBeneficiariaPatchDTO.class);
+      EntidadBeneficiaria entidad = buscarEntidad(id);
+      entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
+      entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada parcialmente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al actualizar parcialmente entidad beneficiaria: {}", e.getMessage());
@@ -82,7 +97,8 @@ public class EntidadesBeneficiariasController {
   public void deleteEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      entidadesService.deleteEntidadBeneficiaria(id);
+      buscarEntidad(id);
+      entidadesRepository.eliminarPorId(id);
       ctx.result("Entidad beneficiaria eliminada correctamente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al eliminar entidad beneficiaria: {}", e.getMessage());
@@ -96,7 +112,7 @@ public class EntidadesBeneficiariasController {
   public void getNecesidades(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      ctx.json(entidadesService.getNecesidades(id));
+      ctx.json(buscarEntidad(id).getNecesidades());
     } catch (RuntimeException e) {
       logger.error("Error al listar necesidades", e);
       manejarExcepcion(ctx, e);
@@ -108,7 +124,9 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      entidadesService.postNecesidad(id, dto);
+      EntidadBeneficiaria entidad = buscarEntidad(id);
+      entidad.registrarNecesidad(crearNecesidad(dto));
+      entidadesRepository.guardar(entidad);
       ctx.status(HttpStatus.CREATED).result("Necesidad guardada correctamente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);
@@ -121,7 +139,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      entidadesService.putNecesidad(id, idNecesidad, dto);
+      EntidadBeneficiaria entidad = buscarEntidad(id);
+      buscarNecesidad(entidad, idNecesidad);
+      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada correctamente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);
@@ -134,7 +155,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      entidadesService.patchNecesidad(idEntidad, idNecesidad, dto);
+      EntidadBeneficiaria entidad = buscarEntidad(idEntidad);
+      buscarNecesidad(entidad, idNecesidad);
+      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada parcialmente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);
@@ -146,7 +170,10 @@ public class EntidadesBeneficiariasController {
     Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
-      entidadesService.deleteNecesidad(id, idNecesidad);
+      EntidadBeneficiaria entidad = buscarEntidad(id);
+      buscarNecesidad(entidad, idNecesidad);
+      entidad.eliminarNecesidadPorId(idNecesidad);
+      entidadesRepository.guardar(entidad);
       ctx.result("Necesidad eliminada correctamente");
     } catch (RuntimeException e) {
       manejarExcepcion(ctx, e);
@@ -160,5 +187,42 @@ public class EntidadesBeneficiariasController {
     }
 
     ctx.status(HttpStatus.NOT_FOUND).result("Error: " + e.getMessage());
+  }
+
+  private EntidadBeneficiaria buscarEntidad(Long id) {
+    return entidadesRepository.buscarPorId(id)
+        .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
+  }
+
+  private Necesidad buscarNecesidad(EntidadBeneficiaria entidad, Long idNecesidad) {
+    return entidad.getNecesidades().stream()
+        .filter(n -> n.getId() != null && n.getId().equals(idNecesidad))
+        .findFirst()
+        .orElseThrow(() -> new NecesidadNoEncontradaException("No se encontró la necesidad"));
+  }
+
+  /** Adaptación del DTO HTTP al dominio. */
+  private Necesidad crearNecesidad(NecesidadDTO dto) {
+    Map<Subcategoria, Integer> cantidades = new HashMap<>();
+    dto.cantidadesRequeridas().forEach((subcategoria, cantidad) -> cantidades.put(parsearSubcategoria(subcategoria), cantidad));
+    return new Necesidad(dto.descripcion(), parsearRenovacion(dto), cantidades);
+  }
+
+  private PoliticaDeRenovacion parsearRenovacion(NecesidadDTO dto) {
+    if (!dto.renovacion()) return new SinRenovacion();
+    if (dto.fechaInicio() == null || dto.periodo() == null) {
+      throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+    }
+    return new RenovacionPeriodica(LocalDate.parse(dto.fechaInicio()), parsearPeriodo(dto.periodo()));
+  }
+
+  private Subcategoria parsearSubcategoria(String subcategoria) {
+    try { return Subcategoria.valueOf(subcategoria.toUpperCase()); }
+    catch (IllegalArgumentException e) { throw new SubcategoriaInvalidaException("Subcategoria inexistente"); }
+  }
+
+  private Periodo parsearPeriodo(String periodo) {
+    try { return Periodo.valueOf(periodo.toUpperCase()); }
+    catch (IllegalArgumentException e) { throw new PeriodoInvalidoException("Periodo incorrecto"); }
   }
 }

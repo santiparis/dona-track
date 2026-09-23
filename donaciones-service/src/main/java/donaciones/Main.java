@@ -1,18 +1,20 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.domain.algoritmos.CompatibilidadSemantica;
+import donaciones.domain.algoritmos.OrganizadorAsignaciones;
+import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.service.AsignacionService;
-import donaciones.service.DonanteService;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
-import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
 import donaciones.controller.*;
+
+import java.util.List;
 
 public class Main {
   public static void main(String[] args) {
@@ -28,15 +30,16 @@ public class Main {
     Notificador notificador = new Notificador();
 
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
-    DonanteService donanteService = new DonanteService(personasRepository);
-    DonanteController donanteController = new DonanteController(donanteService);
+    DonanteController donanteController = new DonanteController(personasRepository);
+    IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, notificador);
-    EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
-    EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
+    EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
 
-    AsignacionesController asignacionesController = new AsignacionesController(donacionesRepository, entidadRepo, sugerenciasRepository);
+    OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
+
+    AsignacionesController asignacionesController = new AsignacionesController(
+        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
 
     Javalin app = Javalin.create().start(8081);
