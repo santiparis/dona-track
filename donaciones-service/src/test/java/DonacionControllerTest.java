@@ -16,9 +16,6 @@ import donaciones.dto.DonacionResponseDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
-import donaciones.service.excepcion.CategoriaInvalidaException;
-import donaciones.service.excepcion.DonanteNoEncontradoException;
-import donaciones.service.excepcion.EstadoBienInvalidoException;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +75,7 @@ public class DonacionControllerTest {
 
         controller.crear(ctx);
 
-        verify(ctx, atLeastOnce()).status(HttpStatus.INTERNAL_SERVER_ERROR);
+        verify(ctx, atLeastOnce()).status(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -137,17 +134,17 @@ public class DonacionControllerTest {
                 List.of(new BienDTO(false, false, "Fideos", 1, "kg", "desc", null, null, null))
         );
 
-        assertThrows(DonanteNoEncontradoException.class, () -> controller.crearDonacion(dto));
+        assertThrows(IllegalArgumentException.class, () -> controller.crearDonacion(dto));
     }
 
     @Test
     void parsearCategoriaLanzaExcepcionParaValorInvalido() {
-        assertThrows(CategoriaInvalidaException.class, () -> controller.parsearSubcategoria("NO_EXISTE"));
+        assertThrows(IllegalArgumentException.class, () -> controller.parsearSubcategoria("NO_EXISTE"));
     }
 
     @Test
     void parsearEstadoLanzaExcepcionParaValorInvalido() {
-        assertThrows(EstadoBienInvalidoException.class, () -> controller.parsearEstado("MALO"));
+        assertThrows(IllegalArgumentException.class, () -> controller.parsearEstado("MALO"));
     }
 
     @Test

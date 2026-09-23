@@ -22,9 +22,6 @@ import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.RegistroCambioEstadoDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
-import donaciones.service.excepcion.CategoriaInvalidaException;
-import donaciones.service.excepcion.DonanteNoEncontradoException;
-import donaciones.service.excepcion.EstadoBienInvalidoException;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -273,7 +270,7 @@ public class DonacionController {
       if (persona.isPresent()) {
         this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
+        throw new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante());
       }
     }
   }
@@ -314,7 +311,7 @@ public class DonacionController {
     String valor = subcategoria == null ? "" : subcategoria.trim().toUpperCase();
 
     if (valor.isEmpty()) {
-      throw new CategoriaInvalidaException("Categoría inválida: " + subcategoria);
+      throw new IllegalArgumentException("Categoría inválida: " + subcategoria);
     }
 
     try {
@@ -325,9 +322,9 @@ public class DonacionController {
         return Arrays.stream(Subcategoria.values())
             .filter(sub -> sub.getCategoria() == categoria)
             .findFirst()
-            .orElseThrow(() -> new CategoriaInvalidaException("Categoría inválida: " + subcategoria));
+            .orElseThrow(() -> new IllegalArgumentException("Categoría inválida: " + subcategoria));
       } catch (IllegalArgumentException ignored) {
-        throw new CategoriaInvalidaException("Categoría inválida: " + subcategoria, e);
+        throw new IllegalArgumentException("Categoría inválida: " + subcategoria, e);
       }
     }
   }
@@ -336,7 +333,7 @@ public class DonacionController {
     try {
       return EstadoBien.valueOf(nombreEstado.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new EstadoBienInvalidoException("Estado de bien inválido: " + nombreEstado, e);
+      throw new IllegalArgumentException("Estado de bien inválido: " + nombreEstado, e);
     }
   }
 
@@ -363,7 +360,7 @@ public class DonacionController {
       if (persona.isPresent()) {
         donacionExistente.actualizarDatos(persona.get(), bienActualizado);
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
+        throw new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante());
       }
     } else {
       donacionExistente.actualizarDatos(null, bienActualizado);
@@ -385,7 +382,7 @@ public class DonacionController {
       if (persona.isPresent()) {
         personaActualizada = persona.get();
       } else {
-        throw new DonanteNoEncontradoException("No se encontró el donante con id: " + dto.idDonante());
+        throw new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante());
       }
     }
 

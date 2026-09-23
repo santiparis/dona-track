@@ -46,7 +46,9 @@ public class DonanteController {
   public void obtener(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      ctx.json(toResponseDTO(donanteService.buscarDonante(id)));
+        Persona donante = personasRepository.buscarPorId(id)
+          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
+        ctx.json(toResponseDTO(donante));
     } catch (IllegalArgumentException e) {
       logger.warn("Error al obtener donante: {}", e.getMessage());
       ctx.status(HttpStatus.NOT_FOUND).result(e.getMessage());
@@ -92,7 +94,12 @@ public class DonanteController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonantePatchDTO dto = ctx.bodyAsClass(DonantePatchDTO.class);
-      donanteService.actualizarDonanteParcial(id, dto);
+      Persona existente = personasRepository.buscarPorId(id)
+          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
+      List<Contacto> contactos = dto.contactos() == null ? null : crearContactos(dto.contactos());
+      existente.actualizarDatosParciales(
+          dto.nombre(), dto.documento(), dto.apellido(), dto.edad(), dto.direccion(), dto.rubro(), contactos);
+      personasRepository.agregar(existente);
       ctx.result("Datos del donante actualizados parcialmente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al actualizar parcialmente donante: {}", e.getMessage());

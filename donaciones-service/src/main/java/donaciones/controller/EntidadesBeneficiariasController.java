@@ -5,10 +5,6 @@ import donaciones.dto.EntidadBeneficiariaDTO;
 import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.service.excepcion.EntidadBeneficiariaNoEncontradaException;
-import donaciones.service.excepcion.NecesidadNoEncontradaException;
-import donaciones.service.excepcion.PeriodoInvalidoException;
-import donaciones.service.excepcion.SubcategoriaInvalidaException;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -39,7 +35,7 @@ public class EntidadesBeneficiariasController {
   public void getEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      ctx.json(entidadesService.getEntidadBeneficiaria(id));
+      ctx.json(buscarEntidad(id));
     } catch (RuntimeException e) {
       logger.error("Error al obtener entidad beneficiaria", e);
       manejarExcepcion(ctx, e);
@@ -191,14 +187,14 @@ public class EntidadesBeneficiariasController {
 
   private EntidadBeneficiaria buscarEntidad(Long id) {
     return entidadesRepository.buscarPorId(id)
-        .orElseThrow(() -> new EntidadBeneficiariaNoEncontradaException("No se encontró la entidad beneficiaria"));
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
   }
 
   private Necesidad buscarNecesidad(EntidadBeneficiaria entidad, Long idNecesidad) {
     return entidad.getNecesidades().stream()
         .filter(n -> n.getId() != null && n.getId().equals(idNecesidad))
         .findFirst()
-        .orElseThrow(() -> new NecesidadNoEncontradaException("No se encontró la necesidad"));
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró la necesidad"));
   }
 
   /** Adaptación del DTO HTTP al dominio. */
@@ -218,11 +214,11 @@ public class EntidadesBeneficiariasController {
 
   private Subcategoria parsearSubcategoria(String subcategoria) {
     try { return Subcategoria.valueOf(subcategoria.toUpperCase()); }
-    catch (IllegalArgumentException e) { throw new SubcategoriaInvalidaException("Subcategoria inexistente"); }
+    catch (IllegalArgumentException e) { throw new IllegalArgumentException("Subcategoria inexistente", e); }
   }
 
   private Periodo parsearPeriodo(String periodo) {
     try { return Periodo.valueOf(periodo.toUpperCase()); }
-    catch (IllegalArgumentException e) { throw new PeriodoInvalidoException("Periodo incorrecto"); }
+    catch (IllegalArgumentException e) { throw new IllegalArgumentException("Periodo incorrecto", e); }
   }
 }
