@@ -8,7 +8,9 @@ import java.util.function.Function;
 
 /** Punto único de acceso a la unidad JPA del microservicio. */
 public final class JpaContext {
-    private static final EntityManagerFactory FACTORY = Persistence.createEntityManagerFactory("simple-persistence-unit");
+    private static final String PERSISTENCE_UNIT =
+            System.getProperty("donaciones.persistence.unit", "donaciones-production");
+    private static final EntityManagerFactory FACTORY = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
     private static final ThreadLocal<EntityManager> ENTITY_MANAGER = ThreadLocal.withInitial(FACTORY::createEntityManager);
 
     private JpaContext() { }
