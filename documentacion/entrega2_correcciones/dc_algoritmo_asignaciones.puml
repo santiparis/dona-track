@@ -1,0 +1,46 @@
+@startuml
+
+interface EstrategiaAsignacion {
+    sugerirEntidades(donacion, entidades)
+}
+
+class CompatibilidadSemantica {
+    sugerirEntidades(donacion, entidades)
+}
+
+class PrioridadSubAtendidos {
+    sugerirEntidades(donacion, entidades)
+}
+
+class OrganizadorAsignaciones {
+    estrategias: List<EstrategiaAsignacion>
+    ---
+    procesarMatchmaking(donacion, todasLasEntidades)
+    apareceEnTodosAlgoritmos(entidad, entidadesPorAlgoritmo)
+}
+
+class SugerenciaAsignacion {
+    id: Long
+    donacion: Donacion
+    coincidentes: List<EntidadBeneficiaria>
+    entidadesPorAlgoritmo: Map<String, List<EntidadBeneficiaria>>
+    ---
+    tieneCoincidencias()
+}
+
+class Donacion
+class EntidadBeneficiaria
+
+CompatibilidadSemantica .up.|> EstrategiaAsignacion : implementa
+PrioridadSubAtendidos .up.|> EstrategiaAsignacion : implementa
+
+OrganizadorAsignaciones --> "*" EstrategiaAsignacion : ejecuta
+OrganizadorAsignaciones ..> SugerenciaAsignacion : genera
+
+EstrategiaAsignacion ..> Donacion : evalua
+EstrategiaAsignacion ..> EntidadBeneficiaria : sugiere
+
+SugerenciaAsignacion --> Donacion : corresponde a
+SugerenciaAsignacion --> "*" EntidadBeneficiaria : propone
+
+@enduml
