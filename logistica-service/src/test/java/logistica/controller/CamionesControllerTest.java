@@ -5,6 +5,7 @@ import io.javalin.http.HttpStatus;
 import logistica.domain.Camion;
 import logistica.dto.CamionDTO;
 import logistica.dto.LocalizacionDTO;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import logistica.repository.CamionesRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CamionesControllerTest {
+// SimplePersistenceTest corre cada test dentro de una transaccion y hace rollback al final,
+// asi la base queda limpia entre tests
+public class CamionesControllerTest implements SimplePersistenceTest {
 
   private CamionesRepository camionesRepository;
   private CamionesController controller;
@@ -34,7 +37,7 @@ public class CamionesControllerTest {
 
     camion = new Camion("AB123CD", 10, 2, 1000);
     camionesRepository.agregar(camion);
-    // el id lo asigna el repositorio con una secuencia estatica, no se puede asumir que es 1
+    // el id lo genera la base al insertar, no se puede asumir que es 1
     camionId = camion.getId();
   }
 

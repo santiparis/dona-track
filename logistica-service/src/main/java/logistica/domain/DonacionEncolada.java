@@ -3,12 +3,22 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "donaciones_encoladas")
 public class DonacionEncolada {
-  final Long donacionID;
-  final int cantidadBienes;
-  final String unidad;
-  final String destino;
-  final String entidadNombre;
+
+  @Id
+  private Long donacionID;
+  private int cantidadBienes;
+  private String unidad;
+  private String destino;
+  private String entidadNombre;
 
   @JsonCreator
   public DonacionEncolada(@JsonProperty("donacionID") Long donacionID,
@@ -23,6 +33,9 @@ public class DonacionEncolada {
     this.entidadNombre = entidadNombre;
   }
 
+  protected DonacionEncolada(){
+
+  }
   public Long getDonacionID() {
     return donacionID;
   }

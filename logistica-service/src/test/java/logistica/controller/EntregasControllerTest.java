@@ -10,11 +10,15 @@ import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -39,7 +43,7 @@ public class EntregasControllerTest {
   }
 
   @Test
-  void confirmarMarcaLaEntregaYAvisaConLaPatenteDelCamion() {
+  void confirmarMarcaLaEntregaYAvisaConElComprobante() {
     Entrega entrega = entregaEnTraslado();
     when(ctx.pathParam("id")).thenReturn("1");
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
@@ -48,7 +52,13 @@ public class EntregasControllerTest {
     controller.confirmar(ctx);
 
     assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstado());
-    verify(notificadorEntregas).avisarEntregada(entrega, "AB123CD");
+
+    // la fecha se genera al vuelo, asi que se verifica lo que si es estable: comprobante y patente
+    ArgumentCaptor<String> comprobante = ArgumentCaptor.forClass(String.class);
+    verify(notificadorEntregas).avisarEntregada(eq(entrega), comprobante.capture());
+    assertTrue(comprobante.getValue().startsWith(entrega.getComprobante() + ", "));
+    assertTrue(comprobante.getValue().endsWith(", AB123CD"));
+
     verify(ctx).json(entrega);
   }
 
@@ -57,6 +67,7 @@ public class EntregasControllerTest {
     Entrega entrega = entregaEnTraslado();
     when(ctx.pathParam("id")).thenReturn("1");
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
+    when(rutasRepository.buscarRutaPorEntregaId(1L)).thenReturn(Optional.of(rutaCon(entrega)));
 
     controller.marcarNoRecibida(ctx);
 
@@ -70,6 +81,7 @@ public class EntregasControllerTest {
     Entrega entrega = entregaPendiente();
     when(ctx.pathParam("id")).thenReturn("1");
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
+    when(rutasRepository.buscarRutaPorEntregaId(1L)).thenReturn(Optional.of(rutaCon(entrega)));
 
     controller.marcarNoRecibida(ctx);
 
@@ -149,7 +161,7 @@ public class EntregasControllerTest {
     when(rutasRepository.buscarEntregaPorId(1L)).thenReturn(Optional.of(entrega));
     when(rutasRepository.buscarRutaPorEntregaId(1L)).thenReturn(Optional.of(rutaCon(entrega)));
     doThrow(new IllegalStateException("No se pudo notificar a donaciones-service"))
-        .when(notificadorEntregas).avisarEntregada(entrega, "AB123CD");
+        .when(notificadorEntregas).avisarEntregada(eq(entrega), anyString());
 
     controller.confirmar(ctx);
 
