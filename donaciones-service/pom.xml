@@ -124,6 +124,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <donaciones.persistence.unit>simple-persistence-unit</donaciones.persistence.unit>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- Este plugin permite empaquetar nuestras aplicaciones utilizando distintos formatos -->
