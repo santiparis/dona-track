@@ -3,14 +3,15 @@ package donaciones.controller;
 import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
-import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
-import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.dto.AsignacionRequestDTO;
+import donaciones.dto.DonacionLogisticaDTO;
+import donaciones.dto.EntidadRankingDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import donaciones.retrofit_client.LogisticaAPICalls;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
@@ -23,16 +24,23 @@ public class AsignacionesController {
   private final EntidadBeneficiariaRepository entidadRepository;
   private final SugerenciaAsignacionRepository sugerenciaRepository;
   private final OrganizadorAsignaciones organizadorAsignaciones;
+  private final LogisticaAPICalls logisticaAPICalls;
+  private final Notificador notificador;
 
   public AsignacionesController(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
-      SugerenciaAsignacionRepository sugerenciaRepository
+      SugerenciaAsignacionRepository sugerenciaRepository,
+      LogisticaAPICalls logisticaAPICalls,
+      Notificador notificador,
+      OrganizadorAsignaciones organizadorAsignaciones
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.sugerenciaRepository = sugerenciaRepository;
-    this.organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
+    this.logisticaAPICalls = logisticaAPICalls;
+    this.notificador = notificador;
+    this.organizadorAsignaciones = organizadorAsignaciones;
   }
 
   public List<SugerenciaAsignacion> procesarDonacionesEnDeposito() {
@@ -91,24 +99,46 @@ public class AsignacionesController {
 
     SugerenciaAsignacion sugerencia = this.sugerenciaRepository.buscarPorID(idSugerencia).orElseThrow();
 
-    boolean entidadEnSugerencias = sugerencia.getEntidadesPorAlgoritmo()
-        .values()
-        .stream()
-        .flatMap(List::stream)
-        .anyMatch(entidad -> entidad.getId() != null && entidad.getId().equals(dto.idEntidad()));
-
-    if (!entidadEnSugerencias) {
+    if (!sugerencia.incluyeEntidad(dto.idEntidad())) {
       throw new IllegalArgumentException("La entidad seleccionada no aparece en ninguna de las listas generadas por los algoritmos");
     }
 
     EntidadBeneficiaria entidad = this.entidadRepository.buscarPorId(dto.idEntidad())
         .orElseThrow(() -> new IllegalArgumentException("No existe la entidad especificada"));
 
-    sugerencia.getDonacion().asignarA(entidad);
+    confirmarAsignacion(sugerencia.getDonacion(), entidad, dto.nombreEntidadSeleccionada());
 
     this.sugerenciaRepository.eliminar(sugerencia);
 
     // TODO: Pegarle al endpoint de logistica para que guarde la donacion para futura entrega
+  }
+
+  /** Orquestación de caso de uso: repositorios, integración externa y respuesta HTTP pertenecen al controller MVC. */
+  public List<EntidadRankingDTO> ejecutarAlgoritmoYObtenerRanking(Long donacionId, String criterio) {
+    Donacion donacion = donacionRepository.buscarPorId(donacionId)
+        .orElseThrow(() -> new IllegalArgumentException("No existe la donación"));
+    return organizadorAsignaciones.sugerirEntidadesPorCriterio(
+      donacion,
+      entidadRepository.obtenerTodas(),
+      criterio
+    ).stream()
+        .map(entidad -> new EntidadRankingDTO(entidad.getRazonSocial()))
+        .toList();
+  }
+
+  private void confirmarAsignacion(Donacion donacion, EntidadBeneficiaria entidad, String nombreEntidad) {
+    donacion.asignarA(entidad);
+    if (notificador != null) notificador.donacionAsignada(donacion);
+    if (logisticaAPICalls == null) return;
+
+    try {
+      DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
+          donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
+          entidad.getDireccion(), nombreEntidad == null ? entidad.getRazonSocial() : nombreEntidad);
+      logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
+    } catch (Exception e) {
+      throw new IllegalStateException("No se pudo informar la asignación a logística", e);
+    }
   }
 
   public void limpiarSugerencias() {

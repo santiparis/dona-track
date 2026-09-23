@@ -130,6 +130,33 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
+    void unaNecesidadSinRenovacionPersisteNulosEnLasColumnasDeRenovacion() {
+        EntityManager em = entityManager();
+        Necesidad necesidad = new Necesidad("Donación única", new SinRenovacion(), Map.of(Subcategoria.ROPA_INFANTIL, 5));
+
+        em.persist(necesidad);
+        em.flush();
+        Long necesidadId = necesidad.getId();
+        em.clear();
+
+        Object[] columnasRenovacion = (Object[]) em.createNativeQuery(
+                        "select fecha_inicio, fecha_fin, periodo from necesidad where necesidad_id = ?")
+                .setParameter(1, necesidadId)
+                .getSingleResult();
+        Necesidad recuperada = em.find(Necesidad.class, necesidadId);
+
+        assertAll(
+                () -> assertNull(columnasRenovacion[0]),
+                () -> assertNull(columnasRenovacion[1]),
+                () -> assertNull(columnasRenovacion[2]),
+                () -> assertNull(recuperada.getFechaInicio()),
+                () -> assertNull(recuperada.getFechaFin()),
+                () -> assertNull(recuperada.getPeriodo()),
+                () -> assertFalse(recuperada.getRenovacion().seRenueva())
+        );
+    }
+
+    @Test
     void persisteContactoConLaClaveCompuestaDelDerYRecuperaSuSubtipo() {
         EntityManager em = entityManager();
         ContactoPorEmail contacto = new ContactoPorEmail("notificaciones@example.org");

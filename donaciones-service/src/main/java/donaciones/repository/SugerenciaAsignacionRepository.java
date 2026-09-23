@@ -1,34 +1,18 @@
 package donaciones.repository;
 
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
-
-import java.util.ArrayList;
+import donaciones.persistence.JpaContext;
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
 public class SugerenciaAsignacionRepository {
-
-  private static final List<SugerenciaAsignacion> sugerencias = new ArrayList<>();
-
-  public void guardar(SugerenciaAsignacion sugerencia) {
-    sugerencias.add(sugerencia);
-  }
-
-  public List<SugerenciaAsignacion> obtenerTodas() {
-    return new ArrayList<>(sugerencias);
-  }
-
-  public void limpiar() {
-    sugerencias.clear();
-  }
-
-  public void eliminar(SugerenciaAsignacion sugerencia) {
-    sugerencias.remove(sugerencia);
-  }
-
-  public Optional<SugerenciaAsignacion> buscarPorID(Long id) {
-    return sugerencias.stream()
-        .filter(sugerencia -> sugerencia.getID() != null && sugerencia.getID().equals(id))
-        .findFirst();
-  }
+  private final EntityManager entityManager;
+  public SugerenciaAsignacionRepository() { this(JpaContext.entityManager()); }
+  public SugerenciaAsignacionRepository(EntityManager entityManager) { this.entityManager = entityManager; }
+  public void guardar(SugerenciaAsignacion sugerencia) { JpaContext.inTransaction(em -> { if (em.find(SugerenciaAsignacion.class, sugerencia.getId()) == null) em.persist(sugerencia); else em.merge(sugerencia); }); }
+  public List<SugerenciaAsignacion> obtenerTodas() { return entityManager.createQuery("from SugerenciaAsignacion", SugerenciaAsignacion.class).getResultList(); }
+  public void limpiar() { JpaContext.inTransaction(em -> { em.createQuery("delete from SugerenciaAsignacion").executeUpdate(); }); }
+  public void eliminar(SugerenciaAsignacion sugerencia) { JpaContext.inTransaction(em -> { SugerenciaAsignacion managed = em.find(SugerenciaAsignacion.class, sugerencia.getId()); if (managed != null) em.remove(managed); }); }
+  public Optional<SugerenciaAsignacion> buscarPorID(Long id) { return Optional.ofNullable(entityManager.find(SugerenciaAsignacion.class, id)); }
 }

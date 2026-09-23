@@ -12,8 +12,8 @@ import javax.persistence.*;
 @Table(name = "donacion")
 public class Donacion {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "donacion_id") private Long id;
-    @ManyToOne(optional = false) @JoinColumn(name = "donante_id") private Persona donante;
-    @ManyToOne @JoinColumn(name = "entidad_id") private EntidadBeneficiaria entidadBeneficiaria;
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST) @JoinColumn(name = "donante_id") private Persona donante;
+    @ManyToOne(cascade = CascadeType.PERSIST) @JoinColumn(name = "entidad_id") private EntidadBeneficiaria entidadBeneficiaria;
     @OneToOne(optional = false, cascade = CascadeType.ALL) @JoinColumn(name = "bien_id") private Bien bien;
     @Enumerated(EnumType.STRING) @Column(name = "donacion_estado", nullable = false) private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "donacion_id") private List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();

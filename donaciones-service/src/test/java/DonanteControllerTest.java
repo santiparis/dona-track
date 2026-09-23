@@ -3,7 +3,7 @@ import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.dto.DonanteRequestDTO;
 import donaciones.dto.DonanteResponseDTO;
-import donaciones.service.DonanteService;
+import donaciones.domain.donante.RepositorioPersonas;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,19 +17,20 @@ import static org.mockito.Mockito.*;
 
 public class DonanteControllerTest {
 
-    private DonanteService donanteService;
+    private RepositorioPersonas personasRepository;
     private DonanteController controller;
     private Context ctx;
 
     @BeforeEach
     void setUp() {
-        donanteService = mock(DonanteService.class);
-        controller = new DonanteController(donanteService);
+        personasRepository = new RepositorioPersonas();
+        personasRepository.obtenerTodas().stream().map(donaciones.domain.donante.Persona::getId).toList().forEach(personasRepository::eliminarPorId);
+        controller = new DonanteController(personasRepository);
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
 
     @Test
-    void crearDevuelveCreatedCuandoElServicioTerminaBien() {
+    void crearRegistraElDonanteYDevuelveCreated() {
         DonanteRequestDTO dto = new DonanteRequestDTO(
             "HUMANA",
             "30123456",
@@ -45,7 +46,7 @@ public class DonanteControllerTest {
 
         controller.crear(ctx);
 
-        verify(donanteService).crearDonante(dto);
+        assertEquals(1, personasRepository.obtenerTodas().size());
         verify(ctx, atLeastOnce()).status(HttpStatus.CREATED);
     }
 
@@ -64,7 +65,7 @@ public class DonanteControllerTest {
             contacto,
             null
         );
-        when(donanteService.listarDonantes()).thenReturn(List.of(donante));
+        personasRepository.agregar(donante);
 
         controller.listar(ctx);
 

@@ -29,12 +29,10 @@ public class Necesidad {
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
         this.descripcion = descripcion;
-        this.renovacion = renovacion;
-        if (renovacion instanceof RenovacionPeriodica renovacionPeriodica) {
-            this.fechaInicio = renovacionPeriodica.getFechaInicio();
-            this.fechaFin = renovacionPeriodica.getFechaFin();
-            this.periodo = renovacionPeriodica.getPeriodo();
-        }
+        this.renovacion = renovacion == null ? new SinRenovacion() : renovacion;
+        this.fechaInicio = this.renovacion.getFechaInicio();
+        this.fechaFin = this.renovacion.getFechaFin();
+        this.periodo = this.renovacion.getPeriodo();
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
@@ -50,10 +48,16 @@ public class Necesidad {
 
     public PoliticaDeRenovacion getRenovacion() {
         if (renovacion == null) {
-            renovacion = periodo == null ? new SinRenovacion() : new RenovacionPeriodica(fechaInicio, periodo);
+            renovacion = periodo == null
+                    ? new SinRenovacion()
+                    : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
         }
         return this.renovacion;
     }
+
+    public java.time.LocalDate getFechaInicio() { return fechaInicio; }
+    public java.time.LocalDate getFechaFin() { return fechaFin; }
+    public Periodo getPeriodo() { return periodo; }
 
     public void registrarSuplido(Bien bien) {
         if (bien.getCantidad() <= 0) {

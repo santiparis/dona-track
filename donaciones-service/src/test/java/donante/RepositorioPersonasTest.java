@@ -30,6 +30,7 @@ public class RepositorioPersonasTest {
     @BeforeEach
     void setUp() {
         repositorioPersonas = new RepositorioPersonas();
+        repositorioPersonas.obtenerTodas().stream().map(Persona::getId).toList().forEach(repositorioPersonas::eliminarPorId);
         donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
         donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
     }

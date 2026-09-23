@@ -13,6 +13,12 @@ public class RenovacionPeriodica implements PoliticaDeRenovacion {
     this.fechaFin = this.calcularVencimiento();
   }
 
+  public RenovacionPeriodica(LocalDate fechaInicio, LocalDate fechaFin, Periodo periodo) {
+    this.fechaInicio = fechaInicio;
+    this.fechaFin = fechaFin;
+    this.periodo = periodo;
+  }
+
   @Override
   public boolean seRenueva() {
     return true;
@@ -28,9 +34,9 @@ public class RenovacionPeriodica implements PoliticaDeRenovacion {
     this.fechaFin = calcularVencimiento();
   }
 
-  public LocalDate getFechaInicio() { return fechaInicio; }
-  public LocalDate getFechaFin() { return fechaFin; }
-  public Periodo getPeriodo() { return periodo; }
+  @Override public LocalDate getFechaInicio() { return fechaInicio; }
+  @Override public LocalDate getFechaFin() { return fechaFin; }
+  @Override public Periodo getPeriodo() { return periodo; }
 
   private LocalDate calcularVencimiento() {
     if (this.periodo == Periodo.SEMANAL) {
