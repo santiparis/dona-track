@@ -125,6 +125,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
+                    <!-- Una JVM por clase de test: la unidad de test es HSQLDB en memoria y el
+                         EntityManager de JpaContext vive en un ThreadLocal estático, así que sin
+                         esto las clases comparten base y caché de primer nivel entre sí. -->
+                    <reuseForks>false</reuseForks>
                     <systemPropertyVariables>
                         <donaciones.persistence.unit>simple-persistence-unit</donaciones.persistence.unit>
                     </systemPropertyVariables>
