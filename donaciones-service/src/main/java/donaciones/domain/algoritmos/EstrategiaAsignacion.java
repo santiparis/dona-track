@@ -10,4 +10,6 @@ public interface EstrategiaAsignacion {
       Donacion donacion,
       List<EntidadBeneficiaria> entidades
   );
+
+  String toString();
 }

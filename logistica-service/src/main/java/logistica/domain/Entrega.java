@@ -1,27 +1,51 @@
 package logistica.domain;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.List;
+@Entity
+@Table(name = "entregas")
 public class Entrega {
-  Long id;
-  final List<Donacion> listaDonaciones;
-  String destino;
-  String entidadNombre;
-  EstadoEntrega estado;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  // cascade ALL: al guardar la entrega se guardan sus donaciones, que llegan en el mismo callback
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "entrega_id")
+  private List<DonacionEncolada> listaDonaciones;
 
 
-  public Entrega(List<Donacion> listaDonaciones, String destino, String entidadNombre) {
+  private String destino;
+  private String entidadNombre;
+
+  @Enumerated(EnumType.STRING)
+  private EstadoEntrega estado;
+
+  @Column(unique = true)
+  private String comprobante;
+
+
+  public Entrega(List<DonacionEncolada> listaDonaciones, String destino, String entidadNombre) {
     this.listaDonaciones = listaDonaciones;
     this.destino = destino;
     this.entidadNombre = entidadNombre;
     this.estado = EstadoEntrega.PENDIENTE;
   }
 
+  protected Entrega(){}
+
   public Long getId() {
     return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
   }
 
   public EstadoEntrega getEstado() {
@@ -32,11 +56,16 @@ public class Entrega {
     return destino;
   }
 
+  public String getComprobante() {
+    return comprobante;
+  }
+
   public String getEntidadNombre() {
     return entidadNombre;
   }
 
-  public List<Donacion> getListaDonaciones() {
+
+  public List<DonacionEncolada> getListaDonaciones() {
     return listaDonaciones;
   }
 
@@ -52,6 +81,7 @@ public class Entrega {
       throw new IllegalStateException("No se puede marcar entregada desde " + estado);
     }
     this.estado = EstadoEntrega.ENTREGADA;
+    this.comprobante = "ENT-" + this.id;
   }
 
   public void marcarNoRecibida() {
@@ -67,5 +97,4 @@ public class Entrega {
     }
     this.estado = EstadoEntrega.PENDIENTE;
   }
-
 }

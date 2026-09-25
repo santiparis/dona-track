@@ -5,88 +5,96 @@ import io.javalin.http.HttpStatus;
 import logistica.domain.Camion;
 import logistica.dto.CamionDTO;
 import logistica.dto.LocalizacionDTO;
-import logistica.service.CamionesService;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
+import logistica.repository.CamionesRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CamionesControllerTest {
+// SimplePersistenceTest corre cada test dentro de una transaccion y hace rollback al final,
+// asi la base queda limpia entre tests
+public class CamionesControllerTest implements SimplePersistenceTest {
 
-  private CamionesService camionesService;
+  private CamionesRepository camionesRepository;
   private CamionesController controller;
   private Context ctx;
+  private Camion camion;
+  private Long camionId;
 
   @BeforeEach
   void setUp() {
-    camionesService = mock(CamionesService.class);
-    controller = new CamionesController(camionesService);
+    camionesRepository = new CamionesRepository();
+    controller = new CamionesController(camionesRepository);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
+
+    camion = new Camion("AB123CD", 10, 2, 1000);
+    camionesRepository.agregar(camion);
+    // el id lo genera la base al insertar, no se puede asumir que es 1
+    camionId = camion.getId();
   }
 
   @Test
-  void getCamionesDevuelveLaListaDelServicio() {
-    var camiones = List.of(new Camion("AB123CD", 10, 2, 1000));
-    when(camionesService.getCamiones()).thenReturn(camiones);
-
+  void getCamionesDevuelveLosDelRepositorio() {
     controller.getCamiones(ctx);
 
-    verify(ctx).json(camiones);
+    verify(ctx).json(camionesRepository.obtenerTodos());
   }
 
   @Test
-  void postCamionesDevuelveCreatedCuandoElServicioTerminaBien() {
-    var dto = new CamionDTO("AB123CD", 10, 2, 1000);
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
+  void postCamionesGuardaElCamionYDevuelveCreated() {
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
 
     controller.postCamiones(ctx);
 
-    verify(camionesService).postCamion(dto);
     verify(ctx, atLeastOnce()).status(HttpStatus.CREATED);
+    assertTrue(camionesRepository.buscarPorPatente("XY987ZW").isPresent());
   }
 
   @Test
-  void putCamionDevuelveOkConElCamionActualizado() {
-    var dto = new CamionDTO("AB123CD", 12, 2.5, 1500);
-    var camionActualizado = new Camion("AB123CD", 12, 2.5, 1500);
-    when(ctx.pathParam("id")).thenReturn("1");
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
-    when(camionesService.actualizarCamion(1L, dto)).thenReturn(camionActualizado);
+  void getCamionDevuelveNotFoundCuandoNoExiste() {
+    when(ctx.pathParam("id")).thenReturn("999999");
 
-    controller.putCamion(ctx);
+    controller.getCamion(ctx);
 
-    verify(camionesService).actualizarCamion(1L, dto);
-    verify(ctx, atLeastOnce()).status(HttpStatus.OK);
+    verify(ctx, atLeastOnce()).status(HttpStatus.NOT_FOUND);
   }
 
   @Test
-  void putCamionDevuelveBadRequestCuandoLaPatenteNoCoincide() {
-    var dto = new CamionDTO("XY987ZW", 12, 2.5, 1500);
-    when(ctx.pathParam("id")).thenReturn("1");
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
-    doThrow(new IllegalArgumentException("La patente del camión debe coincidir con la de la ruta"))
-        .when(camionesService).actualizarCamion(1L, dto);
+  void getCamionDevuelveBadRequestSiElIdNoEsNumerico() {
+    when(ctx.pathParam("id")).thenReturn("cam-1");
 
-    controller.putCamion(ctx);
+    controller.getCamion(ctx);
 
     verify(ctx, atLeastOnce()).status(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  void putCamionActualizaLosDatosDelCamion() {
+    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+
+    controller.putCamion(ctx);
+
+    verify(ctx, atLeastOnce()).status(HttpStatus.OK);
+    Camion actualizado = camionesRepository.buscarPorId(camionId).orElseThrow();
+    assertEquals("XY987ZW", actualizado.getPatente());
+    assertEquals(12, actualizado.getVolumen());
+    assertEquals(2.5, actualizado.getAltura());
+    assertEquals(1500, actualizado.getCargaMax());
   }
 
   @Test
   void putCamionDevuelveNotFoundCuandoNoExiste() {
-    var dto = new CamionDTO("AB123CD", 12, 2.5, 1500);
-    when(ctx.pathParam("id")).thenReturn("1");
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(dto);
-    doThrow(new NoSuchElementException("Camión inexistente"))
-        .when(camionesService).actualizarCamion(1L, dto);
+    when(ctx.pathParam("id")).thenReturn("999999");
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
 
     controller.putCamion(ctx);
 
@@ -94,20 +102,18 @@ public class CamionesControllerTest {
   }
 
   @Test
-  void deleteCamionDevuelveNoContentCuandoSeEliminaBien() {
-    when(ctx.pathParam("id")).thenReturn("1");
+  void deleteCamionEliminaElCamionYDevuelveNoContent() {
+    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
 
     controller.deleteCamion(ctx);
 
-    verify(camionesService).deleteCamion(1L);
     verify(ctx, atLeastOnce()).status(HttpStatus.NO_CONTENT);
+    assertTrue(camionesRepository.buscarPorId(camionId).isEmpty());
   }
 
   @Test
   void deleteCamionDevuelveNotFoundCuandoNoExiste() {
-    when(ctx.pathParam("id")).thenReturn("1");
-    doThrow(new NoSuchElementException("Camión inexistente"))
-        .when(camionesService).deleteCamion(1L);
+    when(ctx.pathParam("id")).thenReturn("999999");
 
     controller.deleteCamion(ctx);
 
@@ -115,15 +121,48 @@ public class CamionesControllerTest {
   }
 
   @Test
+  void actualizarLocalizacionGuardaCoordenadasYVelocidad() {
+    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 47.5));
+
+    controller.actualizarLocalizacion(ctx);
+
+    verify(ctx, atLeastOnce()).status(HttpStatus.OK);
+    assertEquals(-34.60, camion.getLocalizacion().getLatitud());
+    assertEquals(-58.42, camion.getLocalizacion().getLongitud());
+    assertEquals(47.5, camion.getVelocidad());
+  }
+
+  @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaCoordenadaEsInvalida() {
-    var dto = new LocalizacionDTO(120, -58, 20);
-    when(ctx.pathParam("id")).thenReturn("1");
-    when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(dto);
-    doThrow(new IllegalArgumentException("Latitud inválida"))
-        .when(camionesService).actualizarLocalizacion(1L, dto);
+    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(120, -58.42, 20));
 
     controller.actualizarLocalizacion(ctx);
 
     verify(ctx, atLeastOnce()).status(HttpStatus.BAD_REQUEST);
+    assertNull(camion.getLocalizacion());
+  }
+
+  @Test
+  void actualizarLocalizacionDevuelveBadRequestSiLaVelocidadEsNegativa() {
+    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, -5));
+
+    controller.actualizarLocalizacion(ctx);
+
+    verify(ctx, atLeastOnce()).status(HttpStatus.BAD_REQUEST);
+    // el camion no debe quedar con la localizacion nueva si la velocidad era invalida
+    assertNull(camion.getLocalizacion());
+  }
+
+  @Test
+  void actualizarLocalizacionDevuelveNotFoundSiElCamionNoExiste() {
+    when(ctx.pathParam("id")).thenReturn("999999");
+    when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 20));
+
+    controller.actualizarLocalizacion(ctx);
+
+    verify(ctx, atLeastOnce()).status(HttpStatus.NOT_FOUND);
   }
 }

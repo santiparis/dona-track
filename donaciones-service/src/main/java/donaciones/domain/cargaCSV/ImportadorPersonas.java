@@ -1,6 +1,6 @@
 package donaciones.domain.cargaCSV;
 
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;
@@ -10,8 +10,8 @@ import donaciones.domain.donante.Usuario;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import donaciones.domain.notificacion.NotificacionPorEmail;
-import donaciones.domain.notificacion.NotificacionPorWhatsApp;
+import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.domain.notificacion.ContactoPorWhatsApp;
 import org.apache.commons.csv.CSVRecord;
 
 public class ImportadorPersonas {
@@ -77,8 +77,8 @@ public class ImportadorPersonas {
 
     private List<Contacto> crearContactos(String emailStr, String telefonoStr) {
         List<Contacto> contactos = new ArrayList<>();
-        contactos.add(new Contacto(new NotificacionPorEmail(), emailStr));
-        contactos.add(new Contacto(new NotificacionPorWhatsApp(), telefonoStr));
+        contactos.add(new ContactoPorEmail(emailStr));
+        contactos.add(new ContactoPorWhatsApp(telefonoStr));
         return contactos;
     }
 

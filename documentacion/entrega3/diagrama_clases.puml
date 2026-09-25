@@ -1,0 +1,285 @@
+@startuml
+skinparam linetype ortho
+
+' Modelo de dominio del microservicio de Donaciones, actualizado para la persistencia.
+' Los cambios que introdujo el mapeo estan explicados en justificaciones.md
+
+abstract Persona {
+    id: Long
+    tipoDoc: TipoDoc
+    documento: String
+    nombre: String
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    usuario: Usuario
+    ultimaInteraccion: LocalDateTime
+    ---
+    registrarInteraccion()
+    actualizarseDesde(persona)
+    actualizarDatosComunes(persona)
+}
+
+enum TipoDoc {
+    DNI
+    CUIT
+}
+
+class Usuario {
+    id: Long
+    nombreUsuario: String
+    password: String
+    ---
+}
+
+class PersonaHumana {
+    apellido: String
+    edad: Integer
+    genero: Genero
+    direccion: String
+    ---
+    actualizarseDesde(persona)
+}
+
+enum Genero {
+    MASCULINO
+    FEMENINO
+    NO_BINARIO
+}
+
+class PersonaJuridica {
+    razonSocial: RazonSocial
+    rubro: String
+    representantesHabilitados: List<PersonaHumana>
+    ---
+    actualizarseDesde(persona)
+}
+
+enum RazonSocial {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+}
+
+class PersonaAdministradora {
+    nombre: String
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    ---
+}
+
+interface Notificable {
+    notificar(mensaje)
+}
+
+abstract Contacto {
+    notificableId: Long
+    tipoNotificable: String
+    valor: String
+    ---
+    identificarNotificable(notificableId, tipoNotificable)
+    enviar(mensaje)
+}
+
+class ContactoPorEmail {
+    enviar(mensaje)
+}
+
+class ContactoPorSMS {
+    enviar(mensaje)
+}
+
+class ContactoPorWhatsApp {
+    enviar(mensaje)
+}
+
+class Notificacion {
+    receptor: Notificable
+    mensaje: String
+    estado: EstadoNotificacion
+    ---
+    marcarComoCompletada()
+    marcarComoFallida()
+}
+
+enum EstadoNotificacion {
+    PENDIENTE
+    COMPLETADA
+    FALLIDA
+}
+
+class Donacion {
+    id: Long
+    donante: Persona
+    entidadBeneficiaria: EntidadBeneficiaria
+    bien: Bien
+    estado: EstadoDonacion
+    historialEstados: List<RegistroCambioEstado>
+    fecha: LocalDate
+    ---
+    asignarA(entidadBeneficiaria)
+    cambiarEstado(nuevoEstado, justificacion)
+    actualizarDatos(donante, bien)
+}
+
+enum EstadoDonacion {
+    EN_DEPOSITO
+    ASIGNADA
+    LISTA_PARA_ENTREGAR
+    EN_TRASLADO
+    ENTREGADA
+    ENTREGA_FALLIDA
+    VENCIDA
+}
+
+class RegistroCambioEstado<T> {
+    id: Long
+    estadoAnterior: EstadoDonacion
+    estadoNuevo: EstadoDonacion
+    fecha: Date
+    justificacion: String
+    ---
+}
+
+class Bien {
+    id: Long
+    subcategoria: Subcategoria
+    cantidad: Integer
+    unidad: String
+    estado: EstadoBien
+    vencimiento: LocalDate
+    descripcion: String
+    foto: String
+    ---
+    conCantidad(nuevaCantidad)
+    comparteSegmentoCon(bien)
+}
+
+enum EstadoBien {
+    NUEVO
+    USADO
+}
+
+enum Subcategoria {
+    categoria: Categoria
+    requiereEstado: boolean
+    requiereVencimiento: boolean
+    nombre: String
+    ---
+    requiereEstado()
+    requiereVencimiento()
+}
+
+enum Categoria {
+    ALIMENTOS
+    MUEBLES
+    ROPA
+    ELECTRODOMESTICOS
+}
+
+class EntidadBeneficiaria {
+    id: Long
+    razonSocial: String
+    direccion: String
+    telefono: String
+    correosRepresentantes: List<String>
+    necesidades: List<Necesidad>
+    contactos: List<Contacto>
+    medioPredeterminado: Contacto
+    donacionesRecibidas: List<Donacion>
+    ---
+    registrarNecesidad(necesidad)
+    registrarContacto(contacto, predeterminado)
+    satisfaceNecesidad(donacion)
+    getDonacionesUltimoTrimestre()
+}
+
+class Necesidad {
+    id: Long
+    descripcion: String
+    cantidadesRequeridas: Map<Subcategoria, Integer>
+    cantidadesSuplidas: Map<Subcategoria, Integer>
+    fechaInicio: LocalDate
+    fechaFin: LocalDate
+    periodo: Periodo
+    renovacion: PoliticaDeRenovacion
+    ---
+    registrarSuplido(bien)
+    estaSatisfecha()
+    seSatisfaceCon(bien)
+    getRenovacion()
+}
+
+interface PoliticaDeRenovacion {
+    seRenueva()
+    estaVencida()
+}
+
+class SinRenovacion {
+    seRenueva()
+    estaVencida()
+}
+
+class RenovacionPeriodica {
+    fechaInicio: LocalDate
+    fechaFin: LocalDate
+    periodo: Periodo
+    ---
+    seRenueva()
+    estaVencida()
+    calcularVencimiento()
+}
+
+enum Periodo {
+    SEMANAL
+    MENSUAL
+}
+
+PersonaHumana -up-|> Persona : hereda
+PersonaJuridica -up-|> Persona : hereda
+PersonaHumana --> Genero : tiene
+PersonaJuridica --> RazonSocial : es
+PersonaJuridica --> "*" PersonaHumana : habilita como representante
+
+Persona --> TipoDoc : se identifica con
+Persona --> Usuario : accede con
+Persona --> "*" Contacto : se contacta por
+Persona --> Contacto : predetermina
+
+Persona .up.|> Notificable : implementa
+EntidadBeneficiaria .up.|> Notificable : implementa
+PersonaAdministradora .up.|> Notificable : implementa
+PersonaAdministradora --> "*" Contacto : se contacta por
+
+ContactoPorEmail -up-|> Contacto : hereda
+ContactoPorSMS -up-|> Contacto : hereda
+ContactoPorWhatsApp -up-|> Contacto : hereda
+
+Notificable ..> Notificacion : genera
+Notificacion --> EstadoNotificacion : tiene
+
+Donacion --> Persona : fue donada por
+Donacion --> EntidadBeneficiaria : se asigna a
+Donacion --> Bien : contiene
+Donacion --> EstadoDonacion : tiene
+Donacion --> "*" RegistroCambioEstado : registra
+RegistroCambioEstado --> "2" EstadoDonacion : compara
+
+Bien --> Subcategoria : pertenece a
+Bien --> EstadoBien : tiene
+Subcategoria --> Categoria : agrupa en
+
+EntidadBeneficiaria --> "*" Necesidad : declara
+EntidadBeneficiaria --> "*" Donacion : recibe
+EntidadBeneficiaria --> "*" Contacto : se contacta por
+EntidadBeneficiaria --> Contacto : predetermina
+
+Necesidad --> "*" Subcategoria : requiere
+Necesidad --> PoliticaDeRenovacion : se renueva segun
+Necesidad ..> Bien : se satisface con
+
+SinRenovacion .up.|> PoliticaDeRenovacion : implementa
+RenovacionPeriodica .up.|> PoliticaDeRenovacion : implementa
+RenovacionPeriodica --> Periodo : tiene
+
+@enduml

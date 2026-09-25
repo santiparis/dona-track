@@ -1,0 +1,70 @@
+@startuml
+!theme plain
+
+  enum EstadoEntrega {
+    PENDIENTE
+    EN_TRASLADO
+    ENTREGADA
+    NO_RECIBIDA
+  }
+
+  enum EstadoRuta {
+    PLANIFICADA
+    EN_CURSO
+    COMPLETADA
+  }
+
+  class Coordenadas {
+    latitud: double
+    longitud: double
+    --
+  }
+
+  class EnvioEncolado {
+    cantidadBienes: int
+    unidad: String
+    destino: String
+    entidadNombre: String
+    --
+  }
+
+  class Camion {
+    patente: String
+    volumen: double
+    altura: double
+    cargaMax: double
+    velocidad: double
+    localizacion: Coordenadas
+    disponibilidad: Boolean
+    --
+    actualizarLocalizacion(Coordenadas, double): void
+  }
+
+  class Entrega {
+    listaEnviosEncolados: List<EnvioEncolado>
+    destino: String
+    entidadNombre: String
+    estado: EstadoEntrega
+    --
+    iniciarTraslado(): void
+    marcarEntregada(): void
+    marcarNoRecibida(): void
+    reingresarADeposito(): void
+  }
+
+  class Ruta {
+    camion: Camion
+    entregas: List<Entrega>
+    estado: EstadoRuta
+    --
+    iniciar(): void
+  }
+
+  Entrega "1" --> "*" EnvioEncolado : tiene
+  Entrega "*" --> "1" EstadoEntrega : es de tipo
+  Camion "1" --> "1" Coordenadas : tiene
+  Ruta "1" --> "1" Camion : tiene
+  Ruta "1" --> "*" Entrega : tiene
+  Ruta "*" --> "1" EstadoRuta : es de tipo
+
+@enduml

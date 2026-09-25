@@ -1,6 +1,6 @@
 package donante;
 
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
@@ -11,6 +11,7 @@ import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-public class RepositorioPersonasTest {
+public class RepositorioPersonasTest implements SimplePersistenceTest {
 
     private RepositorioPersonas repositorioPersonas;
     private PersonaHumana donanteHumano;
@@ -29,7 +30,7 @@ public class RepositorioPersonasTest {
 
     @BeforeEach
     void setUp() {
-        repositorioPersonas = new RepositorioPersonas();
+        repositorioPersonas = new RepositorioPersonas(entityManager());
         donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
         donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
     }

@@ -1,14 +1,21 @@
 package donaciones.domain;
 
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 
+
+@Entity
+@Table(name = "persona_administradora")
 public class PersonaAdministradora implements Notificable {
-    private final String nombre;
-    private final List<Contacto> contactos = new ArrayList<>();
-    private Contacto medioPredeterminado;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_administradora_id") private Long id;
+    private String nombre;
+    @Transient private List<Contacto> contactos = new ArrayList<>();
+    @Transient private Contacto medioPredeterminado;
+
+    protected PersonaAdministradora() { }
 
     public PersonaAdministradora(String nombre, List<Contacto> contactos, Contacto medioPredeterminado) {
         this.nombre = nombre;
@@ -18,6 +25,8 @@ public class PersonaAdministradora implements Notificable {
         this.medioPredeterminado = medioPredeterminado;
     }
 
+    public Long getId() { return id; }
+
     public String getNombre() {
         return nombre;
     }
@@ -25,6 +34,11 @@ public class PersonaAdministradora implements Notificable {
     @Override
     public List<Contacto> getContactos() {
         return contactos;
+    }
+
+    public void reconstruirContactos(List<Contacto> contactos) {
+        this.contactos = new ArrayList<>(contactos);
+        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
     }
 
     @Override

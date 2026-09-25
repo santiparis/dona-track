@@ -3,15 +3,22 @@ package donaciones.domain;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "bien")
 public class Bien {
-    private final Subcategoria subcategoria;
-    private final Integer cantidad;
-    private final String unidad;
-    private final EstadoBien estado;
-    private final LocalDate vencimiento;
-    private final String descripcion;
-    private final String foto;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bien_id") private Long id;
+    @Enumerated(EnumType.STRING) @Column(name = "subcategoria_id", nullable = false) private Subcategoria subcategoria;
+    private Integer cantidad;
+    @Column(length = 8) private String unidad;
+    @Enumerated(EnumType.STRING) private EstadoBien estado;
+    private LocalDate vencimiento;
+    private String descripcion;
+    private String foto;
+
+    protected Bien() { }
 
     public Bien(
             @NotNull Subcategoria subcategoria,
@@ -52,6 +59,7 @@ public class Bien {
     }
 
     public Subcategoria getSubcategoria() {return this.subcategoria; }
+    public Long getId() { return id; }
 
     public Integer getCantidad() {
         return this.cantidad;

@@ -1,51 +1,37 @@
 package donaciones.domain.donante;
 
-import java.util.ArrayList;
+import donaciones.persistence.JpaContext;
+import donaciones.persistence.JpaRepository;
+import donaciones.repository.ContactoRepository;
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repositorio en memoria para gestionar las entidades Persona.
- * Se encarga de las operaciones de acceso y almacenamiento de datos.
- */
-public class RepositorioPersonas {
-    private final List<Persona> personas = new ArrayList<>();
-    private static long idSequence = 1L;
-
+/** Repositorio JPA de personas; no mantiene estado en memoria. */
+public class RepositorioPersonas extends JpaRepository {
+    public RepositorioPersonas() { this(JpaContext.INSTANCE.entityManager()); }
+    public RepositorioPersonas(EntityManager entityManager) { super(entityManager); }
     public Optional<Persona> buscarPorId(Long id) {
-        return personas.stream()
-            .filter(p -> p.getId() != null && p.getId().equals(id))
-            .findFirst();
+        Persona persona = entityManager().find(Persona.class, id);
+        reconstruirContactos(persona);
+        return Optional.ofNullable(persona);
     }
-
-    public Optional<Persona> buscarPorEmail(String email) {
-        return personas.stream()
-            .filter(p -> p.getEmail().equals(email))
-            .findFirst();
-    }
-
-    public Optional<Persona> buscarPorDocumento(String documento) {
-        return personas.stream()
-            .filter(p -> p.getDocumento().equals(documento))
-            .findFirst();
-    }
-
-    public void agregar(Persona persona) {
-        if (persona.getId() == null) {
-            persona.setId(idSequence++);
-        }
-        personas.add(persona);
-    }
-
-    public void eliminarPorId(Long id) {
-        personas.removeIf(p -> p.getId() != null && p.getId().equals(id));
-    }
-
-    public void eliminarPorDocumento(String documento) {
-        personas.removeIf(p -> p.getDocumento().equals(documento));
-    }
-
+    public Optional<Persona> buscarPorEmail(String email) { return obtenerTodas().stream().filter(p -> email.equals(p.getEmail())).findFirst(); }
+    public Optional<Persona> buscarPorDocumento(String documento) { return entityManager().createQuery("from Persona p where p.documento = :documento", Persona.class).setParameter("documento", documento).getResultStream().findFirst(); }
+    public void agregar(Persona persona) { enTransaccion(() -> { if (persona.getId() == null) entityManager().persist(persona); else entityManager().merge(persona); }); }
+    public void eliminarPorId(Long id) { enTransaccion(() -> { Persona p = entityManager().find(Persona.class, id); if (p != null) entityManager().remove(p); }); }
+    public void eliminarPorDocumento(String documento) { buscarPorDocumento(documento).ifPresent(p -> eliminarPorId(p.getId())); }
     public List<Persona> obtenerTodas() {
-        return new ArrayList<>(personas); // Devuelve una copia para proteger la lista interna
+        List<Persona> personas = entityManager().createQuery("from Persona", Persona.class).getResultList();
+        personas.forEach(this::reconstruirContactos);
+        return personas;
+    }
+
+    private void reconstruirContactos(Persona persona) {
+        if (persona != null && persona.getId() != null) {
+            List<donaciones.domain.notificacion.Contacto> contactos = new ContactoRepository(entityManager())
+                .buscarPorNotificable(persona.getId(), "PERSONA");
+            if (!contactos.isEmpty()) persona.reconstruirContactos(contactos);
+        }
     }
 }

@@ -1,84 +1,85 @@
 package donaciones;
 
-import donaciones.controller.AsignacionController;
-import donaciones.controller.DonacionController;
-import donaciones.controller.DonanteController;
-import donaciones.controller.EntidadesBeneficiariasController;
+import donaciones.controller.*;
+import donaciones.domain.algoritmos.CompatibilidadSemantica;
+import donaciones.domain.algoritmos.OrganizadorAsignaciones;
+import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.donante.RepositorioPersonas;
-import donaciones.domain.eventos.*;
-import donaciones.domain.eventos.listeners.DonacionAsignadaListener;
-import donaciones.domain.eventos.listeners.EntregaNoSatisfactoriaListener;
-import donaciones.domain.eventos.listeners.EntregaRealizadaListener;
-import donaciones.domain.eventos.listeners.InicioRutaListener;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
-import donaciones.service.AsignacionService;
-import donaciones.service.DonacionService;
-import donaciones.service.DonanteService;
+import donaciones.repository.NotificacionRepository;
+import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
-import donaciones.repository.DonanteRepository;
-import donaciones.service.EntidadBeneficiariaService;
 import io.javalin.Javalin;
+import donaciones.controller.*;
+
+import java.util.List;
 
 public class Main {
   public static void main(String[] args) {
-    // Publicador de eventos y listeners
-    PersonasAdministradorasRepository adminRepo = new PersonasAdministradorasRepository();
-    PublicadorDeEventos publicador = new PublicadorDeEventos();
-    publicador.suscribir(DonacionAsignadaEvent.class, new DonacionAsignadaListener());
-    publicador.suscribir(InicioRutaEvent.class, new InicioRutaListener());
-    publicador.suscribir(EntregaRealizadaEvent.class, new EntregaRealizadaListener());
-    publicador.suscribir(EntregaNoSatisfactoriaEvent.class, new EntregaNoSatisfactoriaListener(adminRepo));
 
+    PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
     RepositorioPersonas personasRepository = new RepositorioPersonas();
-    DonanteRepository donanteRepo = new DonanteRepository();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    DonacionService service = new DonacionService(donacionesRepository, personasRepository, publicador);
-    DonacionController controller = new DonacionController(service);
-    DonanteService donanteService = new DonanteService(donanteRepo);
-    DonanteController donanteController = new DonanteController(donanteService);
+    Notificador notificador = new Notificador(new NotificacionRepository());
 
-    AsignacionService asignacionService = new AsignacionService(donacionesRepository, entidadRepo, logisticaAPICalls, publicador);
-    EntidadBeneficiariaService entidadService = new EntidadBeneficiariaService(entidadRepo);
-    EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadService);
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
+    DonanteController donanteController = new DonanteController(personasRepository);
+    IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
+    SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
-    AsignacionController asignacionController = new AsignacionController(asignacionService);
+    EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
+
+    OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
+
+    AsignacionesController asignacionesController = new AsignacionesController(
+        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
 
     Javalin app = Javalin.create().start(8081);
 
+    // CRUD Donaciones
     app.get("/api/donaciones", controller::listar);
+    app.get("/api/donaciones/{id}", controller::obtener);
     app.post("/api/donaciones", controller::crear);
     app.put("/api/donaciones/{id}", controller::actualizar);
     app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-    app.patch("/api/donaciones/{id}/estado", controller::cambiarEstado);
     app.delete("/api/donaciones/{id}", controller::eliminar);
 
+    // CRUD Donantes
     app.get("/api/donantes", donanteController::listar);
+    app.get("/api/donantes/{id}", donanteController::obtener);
     app.post("/api/donantes", donanteController::crear);
     app.put("/api/donantes/{id}", donanteController::actualizar);
+    app.patch("/api/donantes/{id}", donanteController::actualizarParcial);
     app.delete("/api/donantes/{id}", donanteController::eliminar);
 
+    // CRUD Entidades beneficiarias
     app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
+    app.get("/api/entidades-beneficiarias/{id}", entidadesController::getEntidadBeneficiaria);
     app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
     app.put("/api/entidades-beneficiarias/{id}", entidadesController::putEntidadBeneficiaria);
     app.patch("/api/entidades-beneficiarias/{id}", entidadesController::patchEntidadBeneficiaria);
     app.delete("/api/entidades-beneficiarias/{id}", entidadesController::deleteEntidadBeneficiaria);
 
+    // CRUD Necesidades
     app.get("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::getNecesidades);
     app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
     app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
     app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
     app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
 
-    app.get("/api/donaciones/{id}/sugerencias", asignacionController::obtenerRanking);
-    app.post("/api/donaciones/{id}/asignaciones/{idEntidad}", asignacionController::seleccionarEntidad);
+    app.get("/api/sugerencias", asignacionesController::getSugerencias);
+    app.post("/api/sugerencias", asignacionesController::ejecutarAlgoritmos);
+    app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
+    app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
+    app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
   }
 }

@@ -1,11 +1,17 @@
 package donaciones.domain.donante;
 
+import donaciones.domain.notificacion.Contacto;
 import java.util.List;
+import javax.persistence.*;
 
+@Entity
+@DiscriminatorValue("JURIDICA")
 public class PersonaJuridica extends Persona {
-    private final RazonSocial razonSocial;
-    private String rubro;
-    private List<PersonaHumana> representantesHabilitados;
+    @Enumerated(EnumType.STRING) @Column(name = "razon_social") private RazonSocial razonSocial;
+    @Column(name = "rubro") private String rubro;
+    @ManyToMany private List<PersonaHumana> representantesHabilitados;
+
+    protected PersonaJuridica() { }
 
     public PersonaJuridica(
             TipoDoc tipoDoc,
@@ -44,6 +50,13 @@ public class PersonaJuridica extends Persona {
             this.representantesHabilitados = nuevosDatos.getRepresentantesHabilitados();
         } else {
             throw new IllegalArgumentException("Incompatibilidad de tipos: no se puede actualizar una PersonaJuridica con datos de " + personaConNuevosDatos.getClass().getSimpleName());
+        }
+    }
+
+    @Override
+    protected void actualizarDatosPropios(String apellido, Integer edad, String direccion, String rubro) {
+        if (rubro != null) {
+            this.rubro = rubro;
         }
     }
 }

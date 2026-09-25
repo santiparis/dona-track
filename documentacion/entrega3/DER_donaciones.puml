@@ -1,0 +1,149 @@
+@startuml
+skinparam linetype ortho
+
+entity Bien {
+    bien_id (PK)
+    ---
+    subcategoria_id (FK)
+    cantidad: int
+    unidad: nvarchar(8)
+    estado: nvarchar(32)
+    vencimiento: date
+    descripcion: nvarchar(255)
+    foto: nvarchar(255)
+}
+
+entity Subcategoria {
+    subcategoria_id (PK)
+    ---
+    nombre: nvarchar(32)
+    categoria: nvarchar(32)
+    requiere_estado: nvarchar(8)
+    requiere_vencimiento: nvarchar(8)
+}
+
+entity Necesidad {
+    necesidad_id (PK)
+    ---
+    entidad_id (FK)
+    descripcion: nvarchar(255)
+    fecha_inicio: date
+    fecha_fin: date
+    periodo: nvarchar(32)
+}
+
+entity CantidadRequerida {
+    necesidad_id (FK)
+    subcategoria_id (FK)
+    ---
+    cantidad_requerida: int
+}
+
+entity CantidadSuplida {
+    necesidad_id (FK)
+    subcategoria_id (FK)
+    ---
+    cantidad_suplida: int
+}
+
+entity EntidadBeneficiaria {
+    entidad_id (PK)
+    ---
+    razon_social: nvarchar(255)
+    direccion: nvarchar(255)
+    telefono: nvarchar(32)
+    medio_predeterminado_id (FK)
+}
+
+entity Contacto {
+    notificable_id (FK)
+    tipo_notificable: nvarchar(8) 
+    ---
+    valor: nvarchar(255)
+    tipo_contacto: nvarchar(8)
+}
+
+entity Notificacion {
+    notificacion_id (PK)
+    ---
+    receptor_id (referencia lógica)
+    tipo_receptor: nvarchar(32)
+    mensaje: nvarchar(1000)
+    estado: nvarchar(32)
+    fecha: datetime
+}
+
+entity Donacion {
+    donacion_id (PK)
+    ---
+    donante_id (FK)
+    entidad_id (FK)
+    bien_id (FK)
+    donacion_estado: nvarchar(32)
+    fecha: date
+}
+
+entity RegistroCambioEstado {
+    registro_id (PK)
+    ---
+    donacion_id (FK)
+    estado_anterior: nvarchar(32)
+    estado_nuevo: nvarchar(32)
+    fecha: date
+    justificacion: nvarchar(255)
+}
+
+entity Persona {
+    persona_id (PK)
+    ---
+    tipo_doc: nvarchar(32)
+    documento: nvarchar(255)
+    nombre: nvarchar(255)
+    medio_predeterminado_id (FK)
+    usuario_id (FK)
+    ultima_interaccion: datetime
+    ---
+    tipo: nvarchar(255)
+    rubro: nvarchar(255)
+    ---
+    apellido: nvarchar(255)
+    edad: int
+    genero: nvarchar(32)
+    direccion: nvarchar(255)
+}
+
+entity PersonaAdministradora {
+    persona_administradora_id (PK)
+    ---
+    nombre: nvarchar(255)
+}
+
+entity Usuario {
+    usuario_id (PK)
+    ---
+    nombre_usuario: nvarchar(255)
+    constrasenia: nvarchar(255)
+} 
+
+Persona ||--o{ Contacto
+Persona ||--o| Usuario
+PersonaAdministradora ||--o{ Contacto
+Notificacion }o--|| Persona : receptor_id + tipo_receptor (lógica)
+Notificacion }o--|| EntidadBeneficiaria : receptor_id + tipo_receptor (lógica)
+Notificacion }o--|| PersonaAdministradora : receptor_id + tipo_receptor (lógica)
+
+Bien }o--|| Subcategoria
+Bien ||--|| Donacion
+
+CantidadRequerida }o--|| Necesidad
+CantidadRequerida }o--|| Subcategoria
+
+CantidadSuplida }o--|| Necesidad
+CantidadSuplida }o--|| Subcategoria
+
+EntidadBeneficiaria ||--o{ Necesidad
+EntidadBeneficiaria ||--o{ Contacto
+EntidadBeneficiaria |o--o{ Donacion
+
+Donacion ||--o{ RegistroCambioEstado
+@enduml

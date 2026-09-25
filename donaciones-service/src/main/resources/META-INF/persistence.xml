@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+  <persistence-unit name="donaciones-production" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <class>donaciones.domain.Bien</class>
+    <class>donaciones.domain.Donacion</class>
+    <class>donaciones.domain.EntidadBeneficiaria</class>
+    <class>donaciones.domain.Necesidad</class>
+    <class>donaciones.domain.RegistroCambioEstado</class>
+    <class>donaciones.domain.PersonaAdministradora</class>
+    <class>donaciones.domain.donante.Persona</class>
+    <class>donaciones.domain.donante.PersonaHumana</class>
+    <class>donaciones.domain.donante.PersonaJuridica</class>
+    <class>donaciones.domain.donante.Usuario</class>
+    <class>donaciones.domain.notificacion.Contacto</class>
+    <class>donaciones.domain.notificacion.ContactoPorEmail</class>
+    <class>donaciones.domain.notificacion.ContactoPorSMS</class>
+    <class>donaciones.domain.notificacion.ContactoPorWhatsApp</class>
+    <class>donaciones.domain.notificacion.Notificacion</class>
+    <class>donaciones.domain.algoritmos.SugerenciaAsignacion</class>
+    <properties>
+      <property name="hibernate.archive.autodetection" value="class"/>
+      <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/donaciones"/>
+      <property name="hibernate.connection.username" value="donaciones"/>
+      <property name="hibernate.connection.password" value="donaciones"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+    </properties>
+  </persistence-unit>
+</persistence>

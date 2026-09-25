@@ -1,6 +1,5 @@
 package donaciones.domain.notificacion;
 
-import donaciones.domain.donante.Contacto;
 import java.util.List;
 
 public interface Notificable {
@@ -9,12 +8,16 @@ public interface Notificable {
 
     default Notificacion notificar(String mensaje) {
         Contacto medio = getMedioPredeterminado();
+        Notificacion notificacion = new Notificacion(this, mensaje);
         if (medio == null && getContactos() != null && !getContactos().isEmpty()) {
             medio = getContactos().get(0);
         }
         if (medio != null) {
-            Notificacion notificacion = new Notificacion(medio, mensaje);
-            notificacion.enviar();
+            if (medio.enviar(mensaje)) {
+                notificacion.marcarComoCompletada();
+            }  else {
+                notificacion.marcarComoFallida();
+            }
             return notificacion;
         }
         return null;

@@ -3,13 +3,25 @@ package donaciones.domain;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "necesidad")
 public class Necesidad {
-    private Long id;
-    private final String descripcion;
-    private final Map<Subcategoria, Integer> cantidadesRequeridas;
-    private Map<Subcategoria, Integer> cantidadesSuplidas;
-    private final PoliticaDeRenovacion renovacion;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "necesidad_id") private Long id;
+    @Column(name = "descripcion") private String descripcion;
+    @ElementCollection @CollectionTable(name = "cantidad_requerida", joinColumns = @JoinColumn(name = "necesidad_id"))
+    @MapKeyEnumerated(EnumType.STRING) @MapKeyColumn(name = "subcategoria_id") @Column(name = "cantidad_requerida")
+    private Map<Subcategoria, Integer> cantidadesRequeridas = new HashMap<>();
+    @ElementCollection @CollectionTable(name = "cantidad_suplida", joinColumns = @JoinColumn(name = "necesidad_id"))
+    @MapKeyEnumerated(EnumType.STRING) @MapKeyColumn(name = "subcategoria_id") @Column(name = "cantidad_suplida")
+    private Map<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
+    @Column(name = "fecha_inicio") private java.time.LocalDate fechaInicio;
+    @Column(name = "fecha_fin") private java.time.LocalDate fechaFin;
+    @Enumerated(EnumType.STRING) @Column(name = "periodo") private Periodo periodo;
+    @Transient private PoliticaDeRenovacion renovacion;
+
+    protected Necesidad() { }
 
     public Necesidad(
             String descripcion,
@@ -17,7 +29,10 @@ public class Necesidad {
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
         this.descripcion = descripcion;
-        this.renovacion = renovacion;
+        this.renovacion = renovacion == null ? new SinRenovacion() : renovacion;
+        this.fechaInicio = this.renovacion.getFechaInicio();
+        this.fechaFin = this.renovacion.getFechaFin();
+        this.periodo = this.renovacion.getPeriodo();
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
@@ -32,8 +47,17 @@ public class Necesidad {
     }
 
     public PoliticaDeRenovacion getRenovacion() {
+        if (renovacion == null) {
+            renovacion = periodo == null
+                    ? new SinRenovacion()
+                    : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
+        }
         return this.renovacion;
     }
+
+    public java.time.LocalDate getFechaInicio() { return fechaInicio; }
+    public java.time.LocalDate getFechaFin() { return fechaFin; }
+    public Periodo getPeriodo() { return periodo; }
 
     public void registrarSuplido(Bien bien) {
         if (bien.getCantidad() <= 0) {

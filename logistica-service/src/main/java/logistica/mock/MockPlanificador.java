@@ -2,7 +2,7 @@ package logistica.mock;
 
 import io.javalin.Javalin;
 import logistica.domain.Camion;
-import logistica.domain.Donacion;
+import logistica.domain.DonacionEncolada;
 import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
 import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
@@ -73,20 +73,20 @@ public class MockPlanificador {
    */
   private static PlanificacionCallbackRequest planificar(PlanificacionRequest request) {
     List<Camion> camiones = request.camiones() == null ? List.of() : request.camiones();
-    List<Donacion> donaciones = request.donaciones() == null ? List.of() : request.donaciones();
+    List<DonacionEncolada> donaciones = request.donaciones() == null ? List.of() : request.donaciones();
 
     if (camiones.isEmpty()) {
       return new PlanificacionCallbackRequest(List.of(), new ArrayList<>(donaciones));
     }
 
     // agrupo las donaciones por entidad -> cada grupo es una parada
-    Map<String, List<Donacion>> porEntidad = new LinkedHashMap<>();
-    for (Donacion d : donaciones) {
+    Map<String, List<DonacionEncolada>> porEntidad = new LinkedHashMap<>();
+    for (DonacionEncolada d : donaciones) {
       porEntidad.computeIfAbsent(d.getEntidadNombre(), k -> new ArrayList<>()).add(d);
     }
 
     List<ParadaPlanificada> paradas = new ArrayList<>();
-    for (List<Donacion> grupo : porEntidad.values()) {
+    for (List<DonacionEncolada> grupo : porEntidad.values()) {
       paradas.add(new ParadaPlanificada(grupo));
     }
 

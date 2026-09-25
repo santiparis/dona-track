@@ -1,23 +1,30 @@
 package donaciones.domain;
 
-import donaciones.domain.donante.Contacto;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "entidad_beneficiaria")
 public class EntidadBeneficiaria implements Notificable {
 
-    private Long id;
-    private String razonSocial;
-    private String direccion;
-    private String telefono;
-    private List<String> correosRepresentantes;
-    private final List<Necesidad> necesidades = new ArrayList<>();
-    private final List<Contacto> contactos = new ArrayList<>();
-    private Contacto medioPredeterminado;
-    private final List<Donacion> donacionesRecibidas = new ArrayList<>();
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "entidad_id") private Long id;
+    @Column(name = "razon_social") private String razonSocial;
+    @Column(name = "direccion") private String direccion;
+    @Column(name = "telefono") private String telefono;
+    @ElementCollection @CollectionTable(name = "correo_representante", joinColumns = @JoinColumn(name = "entidad_id"))
+    @Column(name = "correo") private List<String> correosRepresentantes = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "entidad_id")
+    private List<Necesidad> necesidades = new ArrayList<>();
+    @Transient private List<Contacto> contactos = new ArrayList<>();
+    @Transient private Contacto medioPredeterminado;
+    @OneToMany(mappedBy = "entidadBeneficiaria") private List<Donacion> donacionesRecibidas = new ArrayList<>();
+
+    protected EntidadBeneficiaria() { }
 
     public EntidadBeneficiaria(
             String razonSocial,
@@ -90,6 +97,11 @@ public class EntidadBeneficiaria implements Notificable {
     @Override
     public List<Contacto> getContactos() {
         return this.contactos;
+    }
+
+    public void reconstruirContactos(List<Contacto> contactos) {
+        this.contactos = new ArrayList<>(contactos);
+        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
     }
 
     @Override

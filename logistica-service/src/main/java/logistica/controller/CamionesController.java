@@ -3,27 +3,33 @@ package logistica.controller;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import logistica.domain.Camion;
+import logistica.domain.Coordenadas;
 import logistica.dto.CamionDTO;
 import logistica.dto.LocalizacionDTO;
-import logistica.service.CamionesService;
+import logistica.repository.CamionesRepository;
 
 import java.util.NoSuchElementException;
 
 public class CamionesController {
-  private final CamionesService camionesService;
+  private final CamionesRepository camionesRepository;
 
-  public CamionesController(CamionesService camionesService) {
-    this.camionesService = camionesService;
+  // Como no hay service ahora el controller conoce al repository
+  public CamionesController(CamionesRepository camionesRepository) {
+    this.camionesRepository = camionesRepository;
   }
 
   public void getCamiones(Context ctx) {
-    ctx.json(camionesService.getCamiones());
+    ctx.json(camionesRepository.obtenerTodos());
   }
 
   public void postCamiones(Context ctx) {
     try {
       CamionDTO dto = ctx.bodyAsClass(CamionDTO.class);
-      this.camionesService.postCamion(dto);
+      this.camionesRepository.agregar(new Camion(dto.patente(),
+          dto.volumen(),
+          dto.altura(),
+          dto.cargaMax()
+      ));
       ctx.status(HttpStatus.CREATED);
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
@@ -33,7 +39,9 @@ public class CamionesController {
   public void getCamion(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      ctx.json(camionesService.getCamionPorId(id));
+      Camion camion = camionesRepository.buscarPorId(id)
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+      ctx.json(camion);
     } catch (NumberFormatException e) {
       ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (NoSuchElementException e) {
@@ -45,8 +53,13 @@ public class CamionesController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       CamionDTO dto = ctx.bodyAsClass(CamionDTO.class);
-      Camion camionActualizado = this.camionesService.actualizarCamion(id, dto);
-      ctx.status(HttpStatus.OK).json(camionActualizado);
+
+      Camion camion = this.camionesRepository.buscarPorId(id)
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+
+      camion.actualizarDatos(dto.patente(), dto.volumen(), dto.altura(), dto.cargaMax());
+
+      ctx.status(HttpStatus.OK).json(camion);
     } catch (NumberFormatException e) {
       ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (RuntimeException e) {
@@ -57,7 +70,9 @@ public class CamionesController {
   public void deleteCamion(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      this.camionesService.deleteCamion(id);
+      camionesRepository.buscarPorId(id)
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+      camionesRepository.eliminarPorId(id);
       ctx.status(HttpStatus.NO_CONTENT);
     } catch (NumberFormatException e) {
       ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
@@ -70,7 +85,11 @@ public class CamionesController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       LocalizacionDTO dto = ctx.bodyAsClass(LocalizacionDTO.class);
-      this.camionesService.actualizarLocalizacion(id, dto);
+
+      Camion camion = camionesRepository.buscarPorId(id)
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+      camion.actualizarLocalizacion(new Coordenadas(dto.latitud(), dto.longitud()), dto.velocidad());
+
       ctx.status(HttpStatus.OK);
     } catch (NumberFormatException e) {
       ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
@@ -79,7 +98,7 @@ public class CamionesController {
     }
   }
 
-  public record ErrorResponse(String mensaje) {}
+  public record ErrorResponse(String mensaje) { }
 
   private void manejarExcepcion(Context ctx, RuntimeException e) {
     if (e instanceof IllegalArgumentException) {

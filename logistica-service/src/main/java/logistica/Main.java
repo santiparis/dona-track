@@ -2,6 +2,7 @@ package logistica;
 
 import io.javalin.Javalin;
 import logistica.controller.CamionesController;
+import logistica.db.TransaccionPorRequest;
 import logistica.controller.DonacionesAPIController;
 import logistica.controller.EntregasController;
 import logistica.controller.PlanificadorController;
@@ -10,11 +11,9 @@ import logistica.retrofit_client.RetrofitConfig;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.SeedCamiones;
-import logistica.service.CamionesService;
-import logistica.service.DonacionesService;
-import logistica.service.EntregasService;
-import logistica.service.PlanificadorService;
+import logistica.planificacion.ClientePlanificador;
 
 public class Main {
   public static void main(String[] args) {
@@ -22,21 +21,30 @@ public class Main {
     var repositorioDonaciones = new DonacionesRepository();
     var repositorioRutas = new RutasRepository();
     var retrofitConfig = new RetrofitConfig();
+    var transaccion = new TransaccionPorRequest();
 
-    var entregasService = new EntregasService(repositorioRutas, retrofitConfig.donacionesAPICalls());
-    var donacionesService = new DonacionesService(repositorioDonaciones);
-    var donacionesController = new DonacionesAPIController(donacionesService);
-    var rutasController = new RutasController(entregasService);
-    var entregasController = new EntregasController(entregasService);
-    var camionesService = new CamionesService(repositorioCamiones);
-    var camionesController = new CamionesController(camionesService);
+    var notificadorEntregas = new NotificadorEntregas(retrofitConfig.donacionesAPICalls());
+    var donacionesController = new DonacionesAPIController(repositorioDonaciones);
+    var rutasController = new RutasController(repositorioRutas, notificadorEntregas);
+    var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);
+    var camionesController = new CamionesController(repositorioCamiones);
 
-    var planificadorService = new PlanificadorService(repositorioCamiones, repositorioRutas, repositorioDonaciones, retrofitConfig.planificadorAPICalls());
-    var planificadorController = new PlanificadorController(planificadorService);
+    var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
+    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
 
-    repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+    // la flota ya no vive en memoria: si la base la tiene, cargarla de nuevo duplicaria
+    // camiones y romperia el unique de la patente
+    transaccion.withTransaction(() -> {
+      if (repositorioCamiones.obtenerTodos().isEmpty()) {
+        repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+      }
+    });
 
     var app = Javalin.create(config -> {
+      // una transaccion por pedido: se abre antes del handler y se cierra despues
+      config.routes.before(ctx -> transaccion.abrir());
+      config.routes.after(ctx -> transaccion.cerrar(ctx.statusCode()));
+
       //health
       config.routes.get("/", ctx -> ctx.result("logistica-service OK"));
 
@@ -58,6 +66,9 @@ public class Main {
 
       //endpoints consumidos por el planificador externo (callback con las rutas armadas)
       config.routes.post("/api/rutas", planificadorController::obtenerRutas);
+
+      // listado general de rutas planificadas
+      config.routes.get("/api/rutas", rutasController::obtenerRutas);
 
       //lectura de una ruta (app del chofer: consulta el recorrido antes de iniciar)
       config.routes.get("/api/rutas/{id}", rutasController::obtenerRuta);
