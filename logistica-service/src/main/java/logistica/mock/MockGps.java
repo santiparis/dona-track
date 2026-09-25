@@ -12,12 +12,7 @@ import java.util.List;
 
 /**
  * Mock del dispositivo GPS instalado en el camion (actor EXTERNO de campo).
- * Corre como proceso aparte y simula el hardware real: mientras esta encendido,
- * cada pocos segundos reporta por HTTP su ubicacion y velocidad al logistica-service.
- *
- * A diferencia del MockPlanificador, este es un cliente PURO: solo emite, nadie
- * le pega. Por eso no necesita Javalin, solo Retrofit + un loop periodico.
- * En produccion, este componente lo provee y configura el equipo de dispositivos.
+   no necesita Javalin, solo Retrofit + un loop periodico.
  */
 public class MockGps {
 
