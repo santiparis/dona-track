@@ -67,6 +67,11 @@ public abstract class Persona implements Notificable {
         return contactos;
     }
 
+    public void reconstruirContactos(List<Contacto> contactos) {
+        this.contactos = new ArrayList<>(contactos);
+        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
+    }
+
     public void agregarContactos(List<Contacto> nuevosContactos) {
         nuevosContactos.forEach(nuevoContacto -> {
             if (!this.contactos.contains(nuevoContacto)) {

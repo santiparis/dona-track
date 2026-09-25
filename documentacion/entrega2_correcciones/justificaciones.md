@@ -39,3 +39,10 @@
 **Estado actual:** las llamadas a `notificar` están comentadas dentro de los métodos de `Donacion` hasta que se implemente el paso que las mueve al controller.
 
 Ver diagrama: [dc_notificaciones_donacion.puml](./dc_notificaciones_donacion.puml)
+---
+## Asiganciones
+Un proceso ejecutable por cron procesa las donaciones que se encuentran en estado EN_DEPOSITO. Para cada una, considera las entidades con necesidades activas y genera una sugerencia mediante los algoritmos de asignación. La sugerencia contiene las entidades propuestas por cada algoritmo y las coincidencias entre todos ellos.
+
+Las sugerencias se guardan en el microservicio de donaciones y pueden consultarse mediante sus endpoints. Una persona administradora selecciona una entidad propuesta por alguno de los algoritmos. La donación se asocia a esa entidad, pasa a estado ASIGNADA, se notifica el cambio y se informa la asignación al microservicio de logística para su posterior planificación. Luego, la sugerencia se elimina.
+
+El horario exacto de ejecución, por ejemplo las 2:00, depende de la configuración externa de cron.

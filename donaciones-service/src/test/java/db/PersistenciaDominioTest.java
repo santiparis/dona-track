@@ -5,6 +5,9 @@ import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoId;
 import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.domain.notificacion.EstadoNotificacion;
+import donaciones.domain.notificacion.Notificacion;
+import donaciones.domain.donante.RepositorioPersonas;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import org.hibernate.Session;
 import org.junit.jupiter.api.Test;
@@ -174,6 +177,53 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                 () -> assertEquals("notificaciones@example.org", recuperado.getValor())
         );
     }
+
+        @Test
+        void persisteNotificacionConReferenciaPolimorficaAlReceptor() {
+                EntityManager em = entityManager();
+                PersonaHumana receptor = personaHumana("receptor@example.org");
+                em.persist(receptor);
+                em.flush();
+
+                Notificacion notificacion = new Notificacion(receptor, "Mensaje persistido");
+                notificacion.marcarComoCompletada();
+                em.persist(notificacion);
+                em.flush();
+                Long notificacionId = notificacion.getId();
+                em.clear();
+
+                Notificacion recuperada = em.find(Notificacion.class, notificacionId);
+
+                assertAll(
+                                () -> assertEquals(receptor.getId(), recuperada.getReceptorId()),
+                                () -> assertEquals("PERSONA", recuperada.getTipoReceptor()),
+                                () -> assertEquals("Mensaje persistido", recuperada.getMensaje()),
+                                () -> assertEquals(EstadoNotificacion.COMPLETADA, recuperada.getEstado()),
+                                () -> assertNotNull(recuperada.getFecha())
+                );
+        }
+
+        @Test
+        void reconstruyeContactosDeUnaPersonaDesdeLaClaveDelNotificable() {
+                EntityManager em = entityManager();
+                PersonaHumana persona = personaHumana("reconstruida@example.org");
+                em.persist(persona);
+                em.flush();
+
+                Contacto contacto = new ContactoPorEmail("reconstruida@example.org");
+                contacto.identificarNotificable(persona.getId(), "PERSONA");
+                em.persist(contacto);
+                em.flush();
+                em.clear();
+
+                Persona recuperada = new RepositorioPersonas(em).buscarPorId(persona.getId()).orElseThrow();
+
+                assertAll(
+                                () -> assertEquals(1, recuperada.getContactos().size()),
+                                () -> assertEquals("reconstruida@example.org", recuperada.getContactos().get(0).getValor()),
+                                () -> assertEquals(recuperada.getContactos().get(0), recuperada.getMedioPredeterminado())
+                );
+        }
 
     private PersonaHumana personaHumana(String email) {
         Contacto contacto = new ContactoPorEmail(email);

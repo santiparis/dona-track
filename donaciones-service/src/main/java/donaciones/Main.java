@@ -8,6 +8,7 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
+import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
@@ -27,7 +28,7 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    Notificador notificador = new Notificador();
+    Notificador notificador = new Notificador(new NotificacionRepository());
 
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteController donanteController = new DonanteController(personasRepository);

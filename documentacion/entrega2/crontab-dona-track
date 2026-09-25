@@ -1,0 +1,14 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+DONA_TRACK_ROOT=/home/fear/Desktop/facu/DDS/dona-track
+JAVA_BIN=/usr/bin/java
+LOG_DIR=/home/fear/Desktop/facu/DDS/dona-track/logs
+
+# Genera y persiste sugerencias para las donaciones EN_DEPOSITO.
+# Ejecuta a las 02:00 todos los dias.
+0 2 * * * mkdir -p "$LOG_DIR" && "$JAVA_BIN" -jar "$DONA_TRACK_ROOT/donaciones-service/target/procesador-asignaciones-cron-jar-with-dependencies.jar" >> "$LOG_DIR/procesador-asignaciones.log" 2>&1
+
+# Notifica a personas inactivas por mas de 20 dias.
+# Ejecutaria a las 02:30 para no solapar ambas tareas.
+30 2 * * * mkdir -p "$LOG_DIR" && "$JAVA_BIN" -jar "$DONA_TRACK_ROOT/donaciones-service/target/notificador-personas-inactivas-jar-with-dependencies.jar" >> "$LOG_DIR/notificador-personas-inactivas.log" 2>&1

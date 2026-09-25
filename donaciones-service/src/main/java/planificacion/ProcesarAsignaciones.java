@@ -8,6 +8,7 @@ import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import donaciones.repository.NotificacionRepository;
 import donaciones.retrofit_client.RetrofitConfig;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class ProcesarAsignaciones {
         entidadRepository,
         sugerenciaRepository,
         new RetrofitConfig().logisticaAPICalls(),
-        new Notificador(),
+        new Notificador(new NotificacionRepository()),
         organizadorAsignaciones
     );
 
