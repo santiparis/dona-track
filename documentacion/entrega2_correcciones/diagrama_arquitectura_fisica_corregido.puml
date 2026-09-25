@@ -1,0 +1,42 @@
+@startuml
+title Arquitectura Física
+
+actor Donante
+actor "Entidad Beneficiaria" as Entidad
+actor Administrador
+actor Chofer
+
+node DonaTrack{
+  node "Servidor Donaciones" as ServerDon
+  database "BD Donaciones" as DBDon
+  ServerDon -- DBDon
+
+  node "Servidor Logística" as ServerLog
+  database "BD Logística" as DBLog
+  ServerLog -- DBLog
+
+  ServerDon --> ServerLog : http
+  ServerDon <-- ServerLog
+}
+
+node "GPS" as gps
+node "Proveedores de Notificación" as ExtNotif
+node "Planificador de Rutas" as PlanifRutas
+
+cloud Internet
+
+Administrador --> Internet : http
+Donante --> Internet : http
+Entidad --> Internet : http
+Chofer --> Internet : http
+gps --> Internet : http
+PlanifRutas --> Internet
+Internet --> PlanifRutas : http
+ExtNotif --> Internet : http
+
+
+Internet --> ServerDon : http
+Internet --> ServerLog : http
+
+
+@enduml
