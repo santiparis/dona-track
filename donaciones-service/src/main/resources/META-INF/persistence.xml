@@ -21,8 +21,8 @@
       <property name="hibernate.archive.autodetection" value="class"/>
       <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>
       <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/donaciones"/>
-      <property name="hibernate.connection.username" value="root"/>
-      <property name="hibernate.connection.password" value=""/>
+      <property name="hibernate.connection.username" value="donaciones"/>
+      <property name="hibernate.connection.password" value="donaciones"/>
       <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
       <property name="hibernate.hbm2ddl.auto" value="update"/>
     </properties>

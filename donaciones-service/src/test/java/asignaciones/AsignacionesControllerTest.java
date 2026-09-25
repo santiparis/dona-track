@@ -22,6 +22,7 @@ import java.io.IOException;
 import io.javalin.http.Context;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
-public class AsignacionesControllerTest {
+public class AsignacionesControllerTest implements SimplePersistenceTest {
 
   private DonacionRepository donacionRepository;
   private EntidadBeneficiariaRepository entidadRepository;
@@ -48,19 +49,9 @@ public class AsignacionesControllerTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    donacionRepository = new DonacionRepository();
-    entidadRepository = new EntidadBeneficiariaRepository();
-    sugerenciaRepository = new SugerenciaAsignacionRepository();
-    sugerenciaRepository.limpiar();
-    donacionRepository.obtenerTodas().stream()
-      .map(Donacion::getId)
-      .toList()
-      .forEach(donacionRepository::borrarPorId);
-    entidadRepository.obtenerTodas().stream()
-      .filter(entidad -> entidad.getId() != null && entidad.getId() >= 3)
-      .map(EntidadBeneficiaria::getId)
-      .toList()
-      .forEach(entidadRepository::eliminarPorId);
+    donacionRepository = new DonacionRepository(entityManager());
+    entidadRepository = new EntidadBeneficiariaRepository(entityManager());
+    sugerenciaRepository = new SugerenciaAsignacionRepository(entityManager());
     organizadorAsignaciones = new OrganizadorAsignaciones(
         List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
     );

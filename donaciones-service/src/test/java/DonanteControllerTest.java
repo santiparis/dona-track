@@ -8,6 +8,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class DonanteControllerTest {
+public class DonanteControllerTest implements SimplePersistenceTest {
 
     private RepositorioPersonas personasRepository;
     private DonanteController controller;
@@ -23,8 +24,7 @@ public class DonanteControllerTest {
 
     @BeforeEach
     void setUp() {
-        personasRepository = new RepositorioPersonas();
-        personasRepository.obtenerTodas().stream().map(donaciones.domain.donante.Persona::getId).toList().forEach(personasRepository::eliminarPorId);
+        personasRepository = new RepositorioPersonas(entityManager());
         controller = new DonanteController(personasRepository);
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
