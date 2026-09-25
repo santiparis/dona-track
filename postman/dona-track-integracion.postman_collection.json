@@ -1,0 +1,369 @@
+{
+  "info": {
+    "name": "dona-track - Integración donaciones + logística (E2E)",
+    "description": "Recorrido de punta a punta entre los dos microservicios, en orden: donante -> entidad y necesidad -> donación -> sugerencias -> asignación -> planificación -> ruta -> entrega.\n\nLos requests encadenan los ids con scripts: las respuestas de alta de donaciones-service no devuelven el id, así que cada paso 'Obtener id...' lo busca y lo guarda en las variables de la colección.\n\nCorrerla con el Collection Runner, de arriba hacia abajo. Cada corrida usa un documento y una razón social nuevos, así que se puede repetir.\n\nANTES DE CORRER:\n1. MySQL de donaciones levantado (docker compose up -d en donaciones-service).\n2. PostgreSQL de logística vacío: psql -U postgres -h localhost -d logistica -f logistica-service/db/reset-datos.sql. Los ids de donación los genera MySQL desde 1; si logística ya tiene esa donación, el alta en su pool choca con la clave.\n3. Procesos corriendo: donaciones.Main (8081), logistica.Main (7070) y logistica.mock.MockPlanificador (9090).\n\nLos tests verifican el comportamiento CORRECTO. Si uno falla, es un problema real de la integración, no de la colección.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "donacionesBaseUrl", "value": "http://localhost:8081/api" },
+    { "key": "logisticaBaseUrl", "value": "http://localhost:7070/api" },
+    { "key": "documento", "value": "" },
+    { "key": "razonSocial", "value": "" },
+    { "key": "donanteId", "value": "" },
+    { "key": "entidadId", "value": "" },
+    { "key": "donacionId", "value": "" },
+    { "key": "rutaId", "value": "" },
+    { "key": "entregaId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0 - Chequeo de servicios",
+      "item": [
+        {
+          "name": "donaciones-service responde",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('donaciones-service responde 200', () => pm.response.to.have.status(200));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donantes" }
+        },
+        {
+          "name": "logistica-service responde y tiene flota",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('logistica-service responde 200', () => pm.response.to.have.status(200));",
+            "pm.test('Hay camiones cargados', () => pm.expect(pm.response.json().length).to.be.above(0));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{logisticaBaseUrl}}/camiones" }
+        }
+      ]
+    },
+    {
+      "name": "1 - Donaciones: alta de donante, entidad y donación",
+      "item": [
+        {
+          "name": "Crear donante",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "// documento y razón social nuevos en cada corrida, para poder repetirla",
+              "const sufijo = Date.now().toString().slice(-8);",
+              "pm.collectionVariables.set('documento', sufijo);",
+              "pm.collectionVariables.set('razonSocial', 'Comedor E2E ' + sufijo);"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Donante creado (201)', () => pm.response.to.have.status(201));"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"documento\": \"{{documento}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Perez\",\n  \"edad\": 35,\n  \"direccion\": \"Calle Falsa 123\",\n  \"razonSocial\": null,\n  \"rubro\": null,\n  \"contactos\": [\n    { \"estrategia\": \"EMAIL\", \"valor\": \"ana.perez@example.com\" },\n    { \"estrategia\": \"WHATSAPP\", \"valor\": \"+5491122334455\" }\n  ]\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{donacionesBaseUrl}}/donantes"
+          }
+        },
+        {
+          "name": "Obtener id del donante",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "// la API no expone el id del donante: se prueba GET /donantes/{id} hasta dar con el documento.",
+            "// El donante recién creado tiene el id más alto, que es mayor o igual a la cantidad de donantes.",
+            "const base = pm.collectionVariables.get('donacionesBaseUrl');",
+            "const documento = pm.collectionVariables.get('documento');",
+            "const total = pm.response.json().length;",
+            "",
+            "function buscar(id) {",
+            "  if (id > total + 50) {",
+            "    pm.test('Se encontró el id del donante', () => pm.expect.fail('No hay donante con documento ' + documento));",
+            "    return;",
+            "  }",
+            "  pm.sendRequest(base + '/donantes/' + id, (err, res) => {",
+            "    let body = null;",
+            "    try { body = res.json(); } catch (e) { }",
+            "    if (!err && res.code === 200 && body && body.documento === documento) {",
+            "      pm.collectionVariables.set('donanteId', id);",
+            "      pm.test('Se encontró el id del donante: ' + id, () => {});",
+            "      pm.test('El donante volvió con sus 2 contactos', () => pm.expect(body.contactos.length).to.eql(2));",
+            "    } else {",
+            "      buscar(id + 1);",
+            "    }",
+            "  });",
+            "}",
+            "buscar(Math.max(total, 1));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donantes" }
+        },
+        {
+          "name": "Crear entidad beneficiaria",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Entidad creada (201)', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"razonSocial\": \"{{razonSocial}}\",\n  \"direccion\": \"Av. Integracion 123\",\n  \"telefono\": \"1122334455\",\n  \"correosRepresentantes\": [\"contacto@comedore2e.com\"]\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{donacionesBaseUrl}}/entidades-beneficiarias"
+          }
+        },
+        {
+          "name": "Obtener id de la entidad",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const razonSocial = pm.collectionVariables.get('razonSocial');",
+            "const entidad = pm.response.json().find(e => e.razonSocial === razonSocial);",
+            "pm.test('Se encontró la entidad creada', () => pm.expect(entidad).to.not.be.undefined);",
+            "if (entidad) pm.collectionVariables.set('entidadId', entidad.id);"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/entidades-beneficiarias" }
+        },
+        {
+          "name": "Registrar necesidad de la entidad",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Necesidad creada (201)', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Arroz para el comedor\",\n  \"renovacion\": false,\n  \"cantidadesRequeridas\": { \"ARROZ\": 20 },\n  \"fechaInicio\": null,\n  \"periodo\": null\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{donacionesBaseUrl}}/entidades-beneficiarias/{{entidadId}}/necesidades",
+            "description": "Sin una necesidad que coincida con el bien donado, los algoritmos no sugieren a esta entidad."
+          }
+        },
+        {
+          "name": "Crear donación",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Donación creada (201)', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"idDonante\": {{donanteId}},\n  \"descripcion\": \"Donación de prueba E2E\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{donacionesBaseUrl}}/donaciones"
+          }
+        },
+        {
+          "name": "Obtener id de la donación",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const documento = pm.collectionVariables.get('documento');",
+            "const delDonante = pm.response.json()",
+            "  .filter(d => d.donante && d.donante.documento === documento)",
+            "  .sort((a, b) => b.id - a.id);",
+            "pm.test('Se encontró la donación creada', () => pm.expect(delDonante.length).to.be.above(0));",
+            "if (delDonante.length) {",
+            "  pm.collectionVariables.set('donacionId', delDonante[0].id);",
+            "  pm.test('La donación arranca EN_DEPOSITO', () => pm.expect(delDonante[0].estado).to.eql('EN_DEPOSITO'));",
+            "}"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donaciones" }
+        }
+      ]
+    },
+    {
+      "name": "2 - Donaciones: sugerencias y asignación (avisa a logística)",
+      "item": [
+        {
+          "name": "Ejecutar algoritmos de asignación",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Algoritmos ejecutados (201)', () => pm.response.to.have.status(201));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{donacionesBaseUrl}}/sugerencias",
+            "description": "Lo mismo que hace el cron ProcesarAsignaciones: genera una sugerencia por cada donación EN_DEPOSITO. Conocido en fix/persistencia: responde 500 al serializar (SugerenciaAsignacion tiene getID() y getId()), aunque las sugerencias se guardan. El siguiente request lo confirma."
+          }
+        },
+        {
+          "name": "Ver entidades sugeridas por algoritmo",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+            "const entidadId = Number(pm.collectionVariables.get('entidadId'));",
+            "const sugeridas = Object.values(pm.response.json()).flat().map(e => e.id);",
+            "pm.test('Algún algoritmo sugirió la entidad creada', () => pm.expect(sugeridas).to.include(entidadId));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/sugerencias/{{donacionId}}/algoritmos" }
+        },
+        {
+          "name": "Asignar la donación a la entidad",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Asignación confirmada (2xx)', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+          ] } }],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"idEntidad\": {{entidadId}},\n  \"nombreEntidadSeleccionada\": \"{{razonSocial}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{donacionesBaseUrl}}/sugerencias/{{donacionId}}/asignaciones",
+            "description": "Integración: donaciones le envía la donación a logística (POST /api/donaciones de logística), que la agrega a su pool de pendientes. Conocido en fix/persistencia: responde 500 porque LogisticaAPICalls espera un String y logística devuelve un array JSON. Los requests siguientes muestran si igual quedó asignada y si llegó a logística."
+          }
+        },
+        {
+          "name": "La donación quedó ASIGNADA",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Estado ASIGNADA', () => pm.expect(pm.response.json().estado).to.eql('ASIGNADA'));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donaciones/{{donacionId}}" }
+        }
+      ]
+    },
+    {
+      "name": "3 - Logística: planificación de rutas",
+      "item": [
+        {
+          "name": "Ver la flota antes de planificar",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+            "const camiones = pm.response.json();",
+            "pm.test('Hay camiones para asignar rutas', () => pm.expect(camiones.length).to.be.above(0));",
+            "console.log('Camiones:', camiones.map(c => c.patente + ' (id ' + c.id + ')').join(', '));"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{logisticaBaseUrl}}/camiones",
+            "description": "Si está vacía, logística no se reinició después de reset-datos.sql: los camiones de ejemplo se cargan solo al arrancar logistica.Main."
+          }
+        },
+        {
+          "name": "Disparar planificación",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Planificación disparada (202)', () => pm.response.to.have.status(202));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{logisticaBaseUrl}}/planificaciones",
+            "description": "Lo que hace el cron LanzadorPlanificacion. Manda las pendientes y los camiones disponibles al planificador externo (MockPlanificador en :9090), que responde OK y a los ~1,5 s devuelve las rutas por el callback POST /api/rutas. Si el mock no está corriendo, responde 502. Si responde 200 'No hay donaciones pendientes', la asignación no llegó a logística."
+          }
+        },
+        {
+          "name": "Obtener la ruta de la donación (espera el callback)",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "// el planificador devuelve las rutas de forma asincrónica: se le da tiempo al callback",
+              "setTimeout(() => {}, 3000);"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const donacionId = Number(pm.collectionVariables.get('donacionId'));",
+              "let encontrada = null;",
+              "pm.response.json().forEach(ruta => (ruta.entregas || []).forEach(entrega =>",
+              "  (entrega.listaDonaciones || []).forEach(d => {",
+              "    if (d.donacionID === donacionId) encontrada = { ruta, entrega };",
+              "  })));",
+              "pm.test('La donación está en una ruta', () => pm.expect(encontrada).to.not.be.null);",
+              "if (encontrada) {",
+              "  pm.collectionVariables.set('rutaId', encontrada.ruta.id);",
+              "  pm.collectionVariables.set('entregaId', encontrada.entrega.id);",
+              "  pm.test('La ruta está PLANIFICADA', () => pm.expect(encontrada.ruta.estado).to.eql('PLANIFICADA'));",
+              "  pm.test('La entrega está PENDIENTE', () => pm.expect(encontrada.entrega.estado).to.eql('PENDIENTE'));",
+              "}"
+            ] } }
+          ],
+          "request": { "method": "GET", "url": "{{logisticaBaseUrl}}/rutas" }
+        },
+        {
+          "name": "Ver la ruta completa",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+            "const ruta = pm.response.json();",
+            "pm.test('La ruta tiene un camión asignado', () => pm.expect(ruta.camion.patente).to.be.a('string'));",
+            "pm.test('La ruta tiene al menos una entrega', () => pm.expect(ruta.entregas.length).to.be.above(0));",
+            "console.log('Ruta ' + ruta.id + ': camión ' + ruta.camion.patente + ', ' + ruta.entregas.length + ' entrega(s), estado ' + ruta.estado);"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{logisticaBaseUrl}}/rutas/{{rutaId}}",
+            "description": "Lo que armó el planificador y logística guardó: el camión, las entregas (una por destino) y las donaciones de cada entrega."
+          }
+        },
+        {
+          "name": "Ver la entrega y sus donaciones",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+            "const entrega = pm.response.json();",
+            "const donacionId = Number(pm.collectionVariables.get('donacionId'));",
+            "const donacion = entrega.listaDonaciones.find(d => d.donacionID === donacionId);",
+            "pm.test('La entrega contiene la donación', () => pm.expect(donacion).to.not.be.undefined);",
+            "pm.test('Destino = dirección de la entidad', () => pm.expect(entrega.destino).to.eql('Av. Integracion 123'));",
+            "pm.test('Entidad = la elegida en la asignación', () =>",
+            "  pm.expect(entrega.entidadNombre).to.eql(pm.collectionVariables.get('razonSocial')));",
+            "if (donacion) {",
+            "  pm.test('Datos del bien que envió donaciones: 10 kg', () => {",
+            "    pm.expect(donacion.cantidadBienes).to.eql(10);",
+            "    pm.expect(donacion.unidad).to.eql('kg');",
+            "  });",
+            "}"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{logisticaBaseUrl}}/entregas/{{entregaId}}",
+            "description": "Muestra la copia de la donación que guardó logística (DonacionEncolada): el id de donaciones-service y los datos que viajaron en la asignación."
+          }
+        },
+        {
+          "name": "En donaciones sigue ASIGNADA",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Estado ASIGNADA (planificar no le avisa nada a donaciones)', () =>",
+            "  pm.expect(pm.response.json().estado).to.eql('ASIGNADA'));"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{donacionesBaseUrl}}/donaciones/{{donacionId}}",
+            "description": "Planificar es interno de logística: donaciones recién se entera cuando la ruta arranca (carpeta 4)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Recorrido y entrega (logística avisa a donaciones)",
+      "item": [
+        {
+          "name": "Iniciar la ruta",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Ruta iniciada (200)', () => pm.response.to.have.status(200));",
+            "pm.test('Ruta EN_CURSO', () => pm.expect(pm.response.json().estado).to.eql('EN_CURSO'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{logisticaBaseUrl}}/rutas/{{rutaId}}/inicio",
+            "description": "Integración: logística le avisa a donaciones con PATCH /api/donaciones/{id} y estado EN_TRASLADO. Si donaciones no responde, logística devuelve 409 y revierte."
+          }
+        },
+        {
+          "name": "La donación está EN_TRASLADO",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Estado EN_TRASLADO', () => pm.expect(pm.response.json().estado).to.eql('EN_TRASLADO'));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donaciones/{{donacionId}}" }
+        },
+        {
+          "name": "Confirmar la entrega",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Entrega confirmada (200)', () => pm.response.to.have.status(200));",
+            "const entrega = pm.response.json();",
+            "pm.test('Entrega ENTREGADA', () => pm.expect(entrega.estado).to.eql('ENTREGADA'));",
+            "pm.test('Tiene comprobante', () => pm.expect(entrega.comprobante).to.match(/^ENT-/));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{logisticaBaseUrl}}/entregas/{{entregaId}}/confirmacion",
+            "description": "Integración: logística le avisa a donaciones con estado ENTREGADA y el comprobante, la fecha y la patente del camión."
+          }
+        },
+        {
+          "name": "La donación está ENTREGADA con su historial",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const donacion = pm.response.json();",
+            "pm.test('Estado ENTREGADA', () => pm.expect(donacion.estado).to.eql('ENTREGADA'));",
+            "const recorrido = donacion.historialEstados.map(r => r.estadoNuevo);",
+            "pm.test('Historial EN_DEPOSITO -> ASIGNADA -> EN_TRASLADO -> ENTREGADA', () =>",
+            "  pm.expect(recorrido).to.eql(['EN_DEPOSITO', 'ASIGNADA', 'EN_TRASLADO', 'ENTREGADA']));"
+          ] } }],
+          "request": { "method": "GET", "url": "{{donacionesBaseUrl}}/donaciones/{{donacionId}}" }
+        },
+        {
+          "name": "La ruta quedó COMPLETADA",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Ruta COMPLETADA', () => pm.expect(pm.response.json().estado).to.eql('COMPLETADA'));"
+          ] } }],
+          "request": {
+            "method": "GET",
+            "url": "{{logisticaBaseUrl}}/rutas/{{rutaId}}",
+            "description": "Al no quedar entregas en traslado, la ruta se completa y el camión se libera."
+          }
+        }
+      ]
+    }
+  ]
+}
