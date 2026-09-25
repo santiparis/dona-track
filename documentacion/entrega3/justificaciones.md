@@ -2,7 +2,7 @@
 
 Alcance de este documento: microservicio de **Donaciones**. El mapeo se hace con **JPA (Hibernate)** más `jpa-extras`, sobre HSQLDB en memoria para testing.
 
-Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_donante.puml](./dc_donante.puml), [dc_notificacion.puml](./dc_notificacion.puml), [dc_donacion.puml](./dc_donacion.puml), [dc_entidad_necesidad.puml](./dc_entidad_necesidad.puml) y el modelo físico en [der.puml](./der.puml).
+Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_donante.puml](./dc_donante.puml), [dc_notificacion.puml](./dc_notificacion.puml), [dc_donacion.puml](./dc_donacion.puml), [dc_entidad_necesidad.puml](./dc_entidad_necesidad.puml) y el modelo físico en [DER_donaciones.puml](./DER_donaciones.puml).
 
 ## Esquema propio por servicio
 
@@ -11,9 +11,9 @@ Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_do
 
 ## Identidad
 
-* Todas las entidades persistidas usan `id: Long` con `GenerationType.IDENTITY`: la base genera el valor y el dominio no arrastra lógica de numeración.
+* Las entidades con identidad propia usan `id: Long` y, cuando corresponde, `GenerationType.IDENTITY`: la base genera el valor y el dominio no arrastra lógica de numeración. `Contacto` usa una clave compuesta y `SugerenciaAsignacion` usa como id el de su donación.
 * Hasta la entrega 2 la identidad de objeto alcanzaba para el dominio, pero los recursos REST ya exponían ids. Con el ORM el id pasa a ser el mismo en ambos lados, en vez de una secuencia propia del repositorio en memoria.
-* `Notificacion`, `PersonaAdministradora` y los objetos de los algoritmos de asignación (`SugerenciaAsignacion` y las estrategias) **no** se persisten: son resultados de una ejecución, no información que el sistema tenga que recuperar después.
+* `Notificacion` y `PersonaAdministradora` se persisten porque el historial de avisos y sus destinatarios deben sobrevivir a un reinicio. `SugerenciaAsignacion` también se persiste para permitir la revisión administrativa; el mapa completo de entidades por algoritmo permanece transitorio. Las estrategias de asignación no se persisten porque son reglas de cálculo, no datos del negocio.
 
 ## Herencia de `Persona`: tabla única
 
@@ -65,6 +65,10 @@ Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_do
 * **Por qué:** un `RegistroCambioEstado` no existe sin su donación; se crea y se borra con ella. La trazabilidad que pide el enunciado es parte del agregado, no una entidad independiente.
 * El `Bien` se mapea `@OneToOne` con cascada desde `Donacion` por la misma razón: la segmentación deja exactamente un bien por donación.
 
+## Contactos
+
+* `contactos` y `medioPredeterminado` siguen siendo `@Transient` en `Persona`, `EntidadBeneficiaria` y `PersonaAdministradora`. La tabla `contacto` se consulta mediante `ContactoRepository`; al reconstruir se usa el primer contacto como medio predeterminado, porque el modelo actual no persiste cuál fue seleccionado. Si no hay contactos persistidos, se conserva la colección que el objeto ya tuviera en memoria; la creación y actualización de contactos todavía requiere persistirlos explícitamente.
+
 ## Consideraciones de diseño relacional
 
 * **Normalización:** el esquema está en 3FN salvo por dos desnormalizaciones explícitas y justificadas arriba — las columnas nullables de la tabla única `persona`, y `fecha_fin` de `necesidad`, que es derivable de `fecha_inicio` + `periodo` pero se guarda para poder filtrar necesidades vencidas desde una consulta.
@@ -74,8 +78,8 @@ Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_do
 
 ## Pendientes y simplificaciones a propósito
 
-* **Los repositorios siguen siendo en memoria.** Las entidades están mapeadas y `PersistenciaDominioTest` verifica el mapeo contra HSQLDB, pero `DonacionRepository`, `DonanteRepository`, `EntidadBeneficiariaRepository` y `PersonasAdministradorasRepository` todavía guardan en listas estáticas con una secuencia propia de ids. Falta moverlos al `EntityManager`.
-* **`contactos` y `medioPredeterminado` están `@Transient`** en `Persona` y en `EntidadBeneficiaria`: la tabla `contacto` existe en el DER y `Contacto` está mapeado, pero falta la relación desde el lado del dueño, así que hoy los contactos no se guardan.
+* **Persistencia en evolución.** Las entidades están mapeadas y `PersistenciaDominioTest` verifica el mapeo contra HSQLDB. Donaciones, donantes, entidades beneficiarias, administradoras y notificaciones cuentan con repositorios JPA. Los contactos se reconstruyen al recuperar cada notificable consultando `notificable_id` y `tipo_notificable`.
+* **Contactos:** `contactos` y `medioPredeterminado` siguen siendo `@Transient` en `Persona`, `EntidadBeneficiaria` y `PersonaAdministradora`. La tabla `contacto` se consulta mediante `ContactoRepository`; al reconstruir se usa el primer contacto como medio predeterminado, porque el modelo actual no persiste cuál fue seleccionado. Si no hay contactos persistidos, se conserva la colección que el objeto ya tuviera en memoria; la creación y actualización de contactos todavía requiere persistirlos explícitamente.
 * **`RegistroCambioEstado` usa `java.util.Date`** y sigue siendo genérica (`<T>`) aunque solo se instancia con `EstadoDonacion`. Ambas cosas vienen marcadas en las correcciones de la entrega 2.
-* **Falta la base cliente-servidor para despliegue local**: `persistence.xml` solo tiene configurado HSQLDB en memoria; PostgreSQL/MariaDB está pendiente.
-* **El DER no refleja todavía** la tabla `correo_representante` ni el `razon_social` de `PersonaJuridica`, y muestra `Subcategoria` y `Categoria` como tablas cuando en el código son enums.
+* **Configuración de base:** la unidad de persistencia de producción usa MySQL y la de testing usa HSQLDB en memoria. La configuración cliente-servidor depende de que MySQL esté disponible en el entorno local.
+* `Notificacion` referencia al receptor mediante `receptor_id` y `tipo_receptor`. Como `Notificable` es una interfaz implementada por varias entidades, esa referencia es lógica y no una FK SQL directa.

@@ -99,6 +99,11 @@ public class EntidadBeneficiaria implements Notificable {
         return this.contactos;
     }
 
+    public void reconstruirContactos(List<Contacto> contactos) {
+        this.contactos = new ArrayList<>(contactos);
+        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
+    }
+
     @Override
     public Contacto getMedioPredeterminado() {
         return this.medioPredeterminado;

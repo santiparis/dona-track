@@ -63,6 +63,16 @@ entity Contacto {
     tipo_contacto: nvarchar(8)
 }
 
+entity Notificacion {
+    notificacion_id (PK)
+    ---
+    receptor_id (referencia lógica)
+    tipo_receptor: nvarchar(32)
+    mensaje: nvarchar(1000)
+    estado: nvarchar(32)
+    fecha: datetime
+}
+
 entity Donacion {
     donacion_id (PK)
     ---
@@ -102,6 +112,12 @@ entity Persona {
     direccion: nvarchar(255)
 }
 
+entity PersonaAdministradora {
+    persona_administradora_id (PK)
+    ---
+    nombre: nvarchar(255)
+}
+
 entity Usuario {
     usuario_id (PK)
     ---
@@ -111,6 +127,10 @@ entity Usuario {
 
 Persona ||--o{ Contacto
 Persona ||--o| Usuario
+PersonaAdministradora ||--o{ Contacto
+Notificacion }o--|| Persona : receptor_id + tipo_receptor (lógica)
+Notificacion }o--|| EntidadBeneficiaria : receptor_id + tipo_receptor (lógica)
+Notificacion }o--|| PersonaAdministradora : receptor_id + tipo_receptor (lógica)
 
 Bien }o--|| Subcategoria
 Bien ||--|| Donacion

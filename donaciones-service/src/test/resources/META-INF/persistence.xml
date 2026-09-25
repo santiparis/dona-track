@@ -16,6 +16,7 @@
     <class>donaciones.domain.notificacion.ContactoPorEmail</class>
     <class>donaciones.domain.notificacion.ContactoPorSMS</class>
     <class>donaciones.domain.notificacion.ContactoPorWhatsApp</class>
+    <class>donaciones.domain.notificacion.Notificacion</class>
     <class>donaciones.domain.algoritmos.SugerenciaAsignacion</class>
     <properties>
       <property name="hibernate.archive.autodetection" value="class"/>

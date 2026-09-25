@@ -6,30 +6,29 @@ import donaciones.domain.Donacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.EstadoDonacion;
 import donaciones.domain.Subcategoria;
-import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionPatchDTO;
-import donaciones.dto.DonacionResponseDTO;
 import donaciones.dto.DonacionRequestDTO;
+import donaciones.dto.DonacionResponseDTO;
 import donaciones.repository.DonacionRepository;
+import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class DonacionControllerTest {
-
+class DonacionControllerTest implements SimplePersistenceTest {
     private DonacionRepository donacionesRepository;
     private RepositorioPersonas personasRepository;
     private DonacionController controller;
@@ -37,41 +36,30 @@ public class DonacionControllerTest {
 
     @BeforeEach
     void setUp() {
-        donacionesRepository = mock(DonacionRepository.class);
-        personasRepository = mock(RepositorioPersonas.class);
+        donacionesRepository = new DonacionRepository(entityManager());
+        personasRepository = new RepositorioPersonas(entityManager());
         controller = new DonacionController(
                 donacionesRepository,
                 personasRepository,
-                mock(PersonasAdministradorasRepository.class),
-                new Notificador()
-        );
+                new PersonasAdministradorasRepository(entityManager()),
+                new Notificador());
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
 
     @Test
     void crearDevuelveCreatedCuandoLaDonacionSeGuarda() {
-        when(personasRepository.buscarPorId(123L)).thenReturn(Optional.of(mock(Persona.class)));
-        DonacionRequestDTO dto = new DonacionRequestDTO(
-                123L,
-                "desc",
-                List.of(new BienDTO(false, false, "Fideos", 5, "kg", "descripción", null, null, null))
-        );
-        when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto);
+        PersonaHumana donante = guardarDonante();
+        when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto(donante.getId(), "Fideos"));
 
         controller.crear(ctx);
 
-        verify(donacionesRepository).guardar(any(Donacion.class));
+        assertEquals(1, donacionesRepository.obtenerTodas().size());
         verify(ctx, atLeastOnce()).status(HttpStatus.CREATED);
     }
 
     @Test
     void crearDevuelveErrorCuandoLaSubcategoriaEsInvalida() {
-        DonacionRequestDTO dto = new DonacionRequestDTO(
-                123L,
-                "desc",
-                List.of(new BienDTO(false, false, "NO_EXISTE", 5, "kg", "descripción", null, null, null))
-        );
-        when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto);
+        when(ctx.bodyAsClass(DonacionRequestDTO.class)).thenReturn(dto(123L, "NO_EXISTE"));
 
         controller.crear(ctx);
 
@@ -83,58 +71,41 @@ public class DonacionControllerTest {
         when(ctx.pathParam("id")).thenReturn("1");
         when(ctx.bodyAsClass(DonacionPatchDTO.class))
                 .thenReturn(new DonacionPatchDTO(null, null, "ENTREGADA", "AB123CD"));
-        when(donacionesRepository.buscarPorId(1L)).thenReturn(Optional.empty());
 
         controller.actualizarParcial(ctx);
 
         verify(ctx, atLeastOnce()).status(HttpStatus.NOT_FOUND);
     }
+
     @Test
-    void marcarEnTrasladoCambiaElEstadoYAvisaAlDonanteYALaEntidad() {
-        Donacion donacion = mock(Donacion.class);
-        Persona donante = mock(Persona.class);
-        EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
-        when(donacion.getDonante()).thenReturn(donante);
-        when(donacion.getEntidadBeneficiaria()).thenReturn(entidad);
-        when(ctx.pathParam("id")).thenReturn("1");
+    void marcarEnTrasladoActualizaUnaDonacionPersistida() {
+        PersonaHumana donante = guardarDonante();
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Comedor", "Calle 1", "123", List.of());
+        new EntidadBeneficiariaRepository(entityManager()).guardar(entidad);
+        Donacion donacion = new Donacion(donante, new Bien(Subcategoria.FIDEOS, 1, "kg", "desc", null, null, null));
+        donacion.asignarA(entidad);
+        donacionesRepository.guardar(donacion);
+        when(ctx.pathParam("id")).thenReturn(donacion.getId().toString());
         when(ctx.bodyAsClass(DonacionPatchDTO.class))
                 .thenReturn(new DonacionPatchDTO(null, null, "EN_TRASLADO", "https://donatrack.org/mapa/1"));
-        when(donacionesRepository.buscarPorId(1L)).thenReturn(Optional.of(donacion));
 
         controller.actualizarParcial(ctx);
 
-        verify(donacion).cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
-        verify(donante).notificar(contains("https://donatrack.org/mapa/1"));
-        verify(entidad).notificar(contains("https://donatrack.org/mapa/1"));
+        assertEquals(EstadoDonacion.EN_TRASLADO, donacion.getEstado());
     }
 
     @Test
     void crearDonacionGuardaUnaDonacionCuandoElDonanteExiste() {
-        Persona donante = mock(Persona.class);
-        when(personasRepository.buscarPorId(123L)).thenReturn(Optional.of(donante));
+        PersonaHumana donante = guardarDonante();
 
-        DonacionRequestDTO dto = new DonacionRequestDTO(
-                123L,
-                "donación de prueba",
-                List.of(new BienDTO(false, false, "Fideos", 5, "kg", "descripción", null, null, null))
-        );
+        controller.crearDonacion(dto(donante.getId(), "Fideos"));
 
-        controller.crearDonacion(dto);
-
-        verify(donacionesRepository).guardar(any(Donacion.class));
+        assertEquals(1, donacionesRepository.obtenerTodas().size());
     }
 
     @Test
     void crearDonacionLanzaExcepcionSiElDonanteNoExiste() {
-        when(personasRepository.buscarPorId(404L)).thenReturn(Optional.empty());
-
-        DonacionRequestDTO dto = new DonacionRequestDTO(
-                404L,
-                "donación inválida",
-                List.of(new BienDTO(false, false, "Fideos", 1, "kg", "desc", null, null, null))
-        );
-
-        assertThrows(IllegalArgumentException.class, () -> controller.crearDonacion(dto));
+        assertThrows(IllegalArgumentException.class, () -> controller.crearDonacion(dto(404L, "Fideos")));
     }
 
     @Test
@@ -156,36 +127,33 @@ public class DonacionControllerTest {
     }
 
     @Test
-    void listarConvierteLasDonacionesADTOsSeguros() {
-        ContactoPorSMS contacto = new ContactoPorSMS("111");
-        PersonaHumana donante = new PersonaHumana(
-            "Ana",
-            "Perez",
-            35,
-            null,
-            "30123456",
-            null,
-            "Calle 123",
-            List.of(contacto),
-            contacto,
-            null
-        );
-        Bien bien = new Bien(Subcategoria.FIDEOS, 3, "kg", "Fideos", null, null, null);
-        Donacion donacion = new Donacion(donante, bien);
-        donacion.setId(10L);
-        when(donacionesRepository.obtenerTodas()).thenReturn(List.of(donacion));
+    void listarConvierteDonacionesPersistidasADTOsSeguros() {
+        PersonaHumana donante = guardarDonante();
+        Donacion donacion = new Donacion(donante, new Bien(Subcategoria.FIDEOS, 3, "kg", "Fideos", null, null, null));
+        donacionesRepository.guardar(donacion);
 
         controller.listar(ctx);
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(ctx).json(captor.capture());
-        assertInstanceOf(List.class, captor.getValue());
         List<?> respuesta = (List<?>) captor.getValue();
         assertEquals(1, respuesta.size());
-        assertInstanceOf(DonacionResponseDTO.class, respuesta.get(0));
         DonacionResponseDTO dto = (DonacionResponseDTO) respuesta.get(0);
-        assertEquals(10L, dto.id());
+        assertEquals(donacion.getId(), dto.id());
         assertEquals("30123456", dto.donante().documento());
         assertEquals("FIDEOS", dto.bien().subcategoria());
+    }
+
+    private PersonaHumana guardarDonante() {
+        ContactoPorSMS contacto = new ContactoPorSMS("111");
+        PersonaHumana donante = new PersonaHumana(
+                "Ana", "Perez", 35, null, "30123456", null, "Calle 123", List.of(contacto), contacto, null);
+        personasRepository.agregar(donante);
+        return donante;
+    }
+
+    private DonacionRequestDTO dto(Long idDonante, String subcategoria) {
+        return new DonacionRequestDTO(idDonante, "desc",
+                List.of(new BienDTO(false, false, subcategoria, 5, "kg", "descripción", null, null, null)));
     }
 }

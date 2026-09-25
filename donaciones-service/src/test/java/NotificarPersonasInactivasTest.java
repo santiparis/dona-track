@@ -5,8 +5,9 @@ import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.ContactoPorEmail;
 
 import donaciones.domain.notificacion.Notificacion;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import planificacion.NotificarPersonasInactivas;
 
 import java.time.LocalDateTime;
@@ -17,12 +18,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NotificarPersonasInactivasTest {
+public class NotificarPersonasInactivasTest implements SimplePersistenceTest {
 
-    private static RepositorioPersonas repositorioPersonas;
+    private RepositorioPersonas repositorioPersonas;
 
-    @BeforeAll
-    public static void setUp() {
+    @BeforeEach
+    public void setUp() {
         ContactoPorEmail contactoMock = mock(ContactoPorEmail.class);
         when(contactoMock.enviar(anyString())).thenReturn(true);
 
@@ -32,7 +33,7 @@ public class NotificarPersonasInactivasTest {
         PersonaHumana donanteActivo = new PersonaHumana("Ana Activa", "Lopez", 35, TipoDoc.DNI, "22222222", Genero.FEMENINO, "Calle 2", List.of(contactoMock), contactoMock, null);
         donanteActivo.setUltimaInteraccion(LocalDateTime.now().minusDays(5));
 
-        repositorioPersonas = new RepositorioPersonas();
+        repositorioPersonas = new RepositorioPersonas(entityManager());
         repositorioPersonas.agregar(donanteAusente);
         repositorioPersonas.agregar(donanteActivo);
     }

@@ -8,6 +8,7 @@ import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.repository.NotificacionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,13 @@ public class NotificarPersonasInactivas {
   private static final int DIAS_INACTIVIDAD = 20;
 
   public static List<Notificacion> notificarInactivos(RepositorioPersonas repositorio) {
+    return notificarInactivos(repositorio, null);
+    }
+
+    public static List<Notificacion> notificarInactivos(
+      RepositorioPersonas repositorio,
+      NotificacionRepository notificacionRepository
+    ) {
     List<Notificacion> historial = new ArrayList<>();
     LocalDateTime umbralInactividad = LocalDateTime.now().minusDays(DIAS_INACTIVIDAD);
 
@@ -30,6 +38,9 @@ public class NotificarPersonasInactivas {
             + " días sin actividad. ¡Te invitamos a realizar una nueva donación en la plataforma!";
         Notificacion notificacion = persona.notificar(mensaje);
         if (notificacion != null) {
+          if (notificacionRepository != null) {
+            notificacionRepository.guardar(notificacion);
+          }
           historial.add(notificacion);
         }
         logger.info("Se generó una notificación para la persona: {}", persona.getNombre());
@@ -43,8 +54,9 @@ public class NotificarPersonasInactivas {
 
     try {
       RepositorioPersonas repositorio = new RepositorioPersonas();
+      NotificacionRepository notificacionRepository = new NotificacionRepository();
       poblarDatosDePrueba(repositorio);
-      List<Notificacion> notificaciones = notificarInactivos(repositorio);
+      List<Notificacion> notificaciones = notificarInactivos(repositorio, notificacionRepository);
       logger.info("Total de personas notificadas en la prueba: {}", notificaciones.size());
       logger.info("Notificación de personas inactivas finalizada con éxito");
     } catch (RuntimeException e) {
