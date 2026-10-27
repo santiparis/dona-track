@@ -19,11 +19,10 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
   @BeforeEach
   void setUp() {
     repositorio = new CamionesRepository();
-  }
 
-  private void recargar() {
-    entityManager().flush();
-    entityManager().clear();
+    withTransaction(() -> {
+      entityManager().createQuery("DELETE FROM Camion").executeUpdate();
+    });
   }
 
   @Test
@@ -31,67 +30,88 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
     Camion camion = new Camion("AB123CD", 45.0, 3.2, 12000);
     assertNull(camion.getId());
 
-    repositorio.agregar(camion);
+    withTransaction(() -> {
+      repositorio.agregar(camion);
+    });
 
     assertTrue(camion.getId() > 0);
   }
 
   @Test
   void seGuardaYSeRecuperaConTodosSusDatos() {
-    repositorio.agregar(new Camion("AB123CD", 45.0, 3.2, 12000));
-    recargar();
+    withTransaction(() -> {
+      repositorio.agregar(new Camion("AB123CD", 45.0, 3.2, 12000));
+    });
 
-    Camion recuperado = repositorio.buscarPorPatente("AB123CD").orElseThrow();
+    withTransaction(() -> {
+      Camion recuperado = repositorio.buscarPorPatente("AB123CD").orElseThrow();
 
-    assertEquals(45.0, recuperado.getVolumen());
-    assertEquals(3.2, recuperado.getAltura());
-    assertEquals(12000, recuperado.getCargaMax());
-    assertTrue(recuperado.estaDisponible());
+      assertEquals(45.0, recuperado.getVolumen());
+      assertEquals(3.2, recuperado.getAltura());
+      assertEquals(12000, recuperado.getCargaMax());
+      assertTrue(recuperado.estaDisponible());
+    });
   }
 
   @Test
   void seGuardaUnCamionSinLocalizacion() {
-    repositorio.agregar(new Camion("AB123CD", 45.0, 3.2, 12000));
-    recargar();
+    withTransaction(() -> {
+      repositorio.agregar(new Camion("AB123CD", 45.0, 3.2, 12000));
+    });
 
-    assertNull(repositorio.buscarPorPatente("AB123CD").orElseThrow().getLocalizacion());
+    withTransaction(() -> {
+      assertNull(repositorio.buscarPorPatente("AB123CD").orElseThrow().getLocalizacion());
+    });
   }
 
   @Test
   void laLocalizacionVuelveDeLaBase() {
     Camion camion = new Camion("AB123CD", 45.0, 3.2, 12000);
     camion.actualizarLocalizacion(new Coordenadas(-34.6, -58.4), 60);
-    repositorio.agregar(camion);
-    recargar();
 
-    Coordenadas localizacion = repositorio.buscarPorId(camion.getId()).orElseThrow().getLocalizacion();
+    withTransaction(() -> {
+      repositorio.agregar(camion);
+    });
 
-    assertEquals(-34.6, localizacion.getLatitud());
-    assertEquals(-58.4, localizacion.getLongitud());
+    withTransaction(() -> {
+      Coordenadas localizacion = repositorio.buscarPorId(camion.getId()).orElseThrow().getLocalizacion();
+
+      assertEquals(-34.6, localizacion.getLatitud());
+      assertEquals(-58.4, localizacion.getLongitud());
+    });
   }
 
   @Test
   void obtenerDisponiblesDejaAfueraALosOcupados() {
-    Camion disponible = new Camion("AB123CD", 45.0, 3.2, 12000);
-    Camion ocupado = new Camion("XY987ZW", 30.0, 2.8, 8000);
-    ocupado.ocupar();
-    repositorio.agregarTodos(List.of(disponible, ocupado));
-    recargar();
+    withTransaction(() -> {
+      Camion disponible = new Camion("AB123CD", 45.0, 3.2, 12000);
+      Camion ocupado = new Camion("XY987ZW", 30.0, 2.8, 8000);
+      ocupado.ocupar();
+      repositorio.agregarTodos(List.of(disponible, ocupado));
+    });
 
-    List<Camion> disponibles = repositorio.obtenerDisponibles();
+    withTransaction(() -> {
+      List<Camion> disponibles = repositorio.obtenerDisponibles();
 
-    assertEquals(1, disponibles.size());
-    assertEquals("AB123CD", disponibles.get(0).getPatente());
+      assertEquals(1, disponibles.size());
+      assertEquals("AB123CD", disponibles.get(0).getPatente());
+    });
   }
 
   @Test
   void eliminarPorIdLoSacaDeLaBase() {
     Camion camion = new Camion("AB123CD", 45.0, 3.2, 12000);
-    repositorio.agregar(camion);
 
-    repositorio.eliminarPorId(camion.getId());
-    recargar();
+    withTransaction(() -> {
+      repositorio.agregar(camion);
+    });
 
-    assertTrue(repositorio.obtenerTodos().isEmpty());
+    withTransaction(() -> {
+      repositorio.eliminarPorId(camion.getId());
+    });
+
+    withTransaction(() -> {
+      assertTrue(repositorio.obtenerTodos().isEmpty());
+    });
   }
 }
