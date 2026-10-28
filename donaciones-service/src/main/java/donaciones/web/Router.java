@@ -1,7 +1,10 @@
 package donaciones.web;
 
+import donaciones.controller.AsignacionesController;
+import donaciones.controller.DonacionController;
+import donaciones.controller.DonanteController;
+import donaciones.controller.EntidadesBeneficiariasController;
 import donaciones.web.controllers.AdminController;
-import donaciones.web.controllers.DonanteController;
 import donaciones.web.controllers.EntidadController;
 import donaciones.web.controllers.PublicoController;
 import donaciones.web.controllers.SesionController;
@@ -9,10 +12,24 @@ import io.javalin.Javalin;
 
 public class Router {
 
+  private final DonacionController donacionController;
+  private final DonanteController donanteController;
+  private final EntidadesBeneficiariasController entidadesController;
+  private final AsignacionesController asignacionesController;
+
+  public Router(DonacionController donacionController, DonanteController donanteController,
+                EntidadesBeneficiariasController entidadesController, AsignacionesController asignacionesController) {
+    this.donacionController = donacionController;
+    this.donanteController = donanteController;
+    this.entidadesController = entidadesController;
+    this.asignacionesController = asignacionesController;
+  }
+
   public void configure(Javalin app) {
     PublicoController publicoController = new PublicoController();
     SesionController sesionController = new SesionController();
-    DonanteController donanteController = new DonanteController();
+    // Hasta mover sus métodos conviven dos DonanteController: el de la API (campo) y este, por perfil
+    donaciones.web.controllers.DonanteController perfilDonanteController = new donaciones.web.controllers.DonanteController();
     EntidadController entidadController = new EntidadController();
     AdminController adminController = new AdminController();
 
@@ -25,11 +42,11 @@ public class Router {
     app.get("/usuarios/nuevo", ctx -> ctx.render("sesion/registro", sesionController.registro(ctx)));
     app.post("/usuarios", sesionController::registrar);
 
-    app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donanteController.donaciones(ctx)));
-    app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", donanteController.entidades(ctx)));
-    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
-    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", donanteController.notificaciones()));
-    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", donanteController.seguimiento()));
+    app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", perfilDonanteController.donaciones(ctx)));
+    app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", perfilDonanteController.entidades(ctx)));
+    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", perfilDonanteController.incentivos()));
+    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", perfilDonanteController.notificaciones()));
+    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", perfilDonanteController.seguimiento()));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadController.necesidades(ctx)));
     app.post("/entidad/necesidades", entidadController::crearNecesidad);
@@ -58,5 +75,44 @@ public class Router {
     app.post("/admin/camiones/{id}/eliminar", adminController::eliminarCamion);
     app.get("/admin/importacion", ctx -> ctx.render("admin/importacion", adminController.importacion(ctx)));
     app.post("/admin/importacion", adminController::importar);
+
+    // API REST
+
+    // CRUD Donaciones
+    app.get("/api/donaciones", donacionController::listar);
+    app.get("/api/donaciones/{id}", donacionController::obtener);
+    app.post("/api/donaciones", donacionController::crear);
+    app.put("/api/donaciones/{id}", donacionController::actualizar);
+    app.patch("/api/donaciones/{id}", donacionController::actualizarParcial);
+    app.delete("/api/donaciones/{id}", donacionController::eliminar);
+
+    // CRUD Donantes
+    app.get("/api/donantes", donanteController::listar);
+    app.get("/api/donantes/{id}", donanteController::obtener);
+    app.post("/api/donantes", donanteController::crear);
+    app.put("/api/donantes/{id}", donanteController::actualizar);
+    app.patch("/api/donantes/{id}", donanteController::actualizarParcial);
+    app.delete("/api/donantes/{id}", donanteController::eliminar);
+
+    // CRUD Entidades beneficiarias
+    app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
+    app.get("/api/entidades-beneficiarias/{id}", entidadesController::getEntidadBeneficiaria);
+    app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
+    app.put("/api/entidades-beneficiarias/{id}", entidadesController::putEntidadBeneficiaria);
+    app.patch("/api/entidades-beneficiarias/{id}", entidadesController::patchEntidadBeneficiaria);
+    app.delete("/api/entidades-beneficiarias/{id}", entidadesController::deleteEntidadBeneficiaria);
+
+    // CRUD Necesidades
+    app.get("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::getNecesidades);
+    app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
+    app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
+    app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
+    app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
+
+    app.get("/api/sugerencias", asignacionesController::getSugerencias);
+    app.post("/api/sugerencias", asignacionesController::ejecutarAlgoritmos);
+    app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
+    app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
+    app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
   }
 }
