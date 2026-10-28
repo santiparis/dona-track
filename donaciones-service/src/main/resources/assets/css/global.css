@@ -17,6 +17,15 @@
     --color-borde: #D1D5DB;
     --color-borde-input: #9CA3AF;
     --color-sombra: rgba(29, 78, 216, 0.25);
+    --color-principal-suave: #EFF6FF;
+
+    /* Chips de estado de una donación */
+    --color-entregada-fondo: #DCFCE7;
+    --color-entregada-texto: #166534;
+    --color-lista-fondo: #E0E7FF;
+    --color-lista-texto: #3730A3;
+    --color-traslado-fondo: #FFEDD5;
+    --color-traslado-texto: #9A3412;
 }
 
 body {
@@ -73,10 +82,38 @@ p {
     align-self: flex-start;
     padding: 4px 10px;
     border-radius: 999px;
-    background: var(--color-fondo);
+    background: var(--color-neutro);
     color: var(--color-texto);
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Un color por estado: la clase es el nombre del enum EstadoDonacion.
+   EN_DEPOSITO y VENCIDA quedan con el gris de base. */
+.chip.ASIGNADA {
+    background: var(--color-principal-claro);
+    color: var(--color-principal-oscuro);
+}
+
+.chip.LISTA_PARA_ENTREGAR {
+    background: var(--color-lista-fondo);
+    color: var(--color-lista-texto);
+}
+
+.chip.EN_TRASLADO {
+    background: var(--color-traslado-fondo);
+    color: var(--color-traslado-texto);
+}
+
+.chip.ENTREGADA {
+    background: var(--color-entregada-fondo);
+    color: var(--color-entregada-texto);
+}
+
+.chip.ENTREGA_FALLIDA {
+    background: var(--color-acento-hover);
+    color: var(--color-texto-invertido);
 }
 
 /* Botones:.btn principal, .btn2 secundario y .cta solo para la acción principal de la pantalla */

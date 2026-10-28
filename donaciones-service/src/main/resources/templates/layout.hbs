@@ -8,10 +8,15 @@
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/layout.css">
     <link rel="stylesheet" href="/assets/css/form.css">
+    <link rel="stylesheet" href="/assets/css/panel.css">
 </head>
 <body>
 
-{{> headers/publico}}
+{{#if (eq rol "donante")}}
+    {{> headers/donante}}
+{{else}}
+    {{> headers/publico}}
+{{/if}}
 
 <main class="wrap">
     {{#block "contenido"}}

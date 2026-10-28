@@ -1,0 +1,16 @@
+<header class="hdr">
+    <a class="logo" href="/donante/donaciones"><span class="logo-box"></span>DonaTrack</a>
+    <nav class="nav" aria-label="Donante">
+        <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/donante/donaciones">Mis donaciones</a>
+        <a {{#if (eq seccion "entidades")}}class="on"{{/if}} href="/donante/entidades">Entidades</a>
+        <a {{#if (eq seccion "incentivos")}}class="on"{{/if}} href="/donante/incentivos">Incentivos</a>
+        <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/donante/seguimiento">Seguimiento</a>
+        <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/donante/notificaciones">Notificaciones
+            {{#if donante.notificacionesSinLeer}}<span class="badge" aria-label="{{donante.notificacionesSinLeer}} sin leer">{{donante.notificacionesSinLeer}}</span>{{/if}}
+        </a>
+    </nav>
+    <div class="user">
+        <span>{{donante.nombre}}</span>
+        <a href="/">Cerrar sesión</a>
+    </div>
+</header>

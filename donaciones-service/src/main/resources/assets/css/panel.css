@@ -1,0 +1,51 @@
+/* Pantallas con sesión (donante, entidad, admin) */
+
+/* La tabla scrollea de costado en pantallas chicas en vez de romper el ancho */
+.tbl {
+    overflow-x: auto;
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-neutro);
+    vertical-align: middle;
+}
+
+th {
+    background: var(--color-principal-suave);
+    color: var(--color-principal-oscuro);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.acciones-tabla {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Contador de resultados, empujado a la derecha */
+.total {
+    margin-left: auto;
+}
+
+/* Lista de cambios de estado de una donación */
+.historial {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}

@@ -53,6 +53,32 @@
     font-weight: 600;
 }
 
+/* Contador de no leídas al lado de un link del nav */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: var(--color-acento);
+    color: var(--color-texto-invertido);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Nombre de quien inició sesión y el link para salir */
+.user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: var(--color-texto-invertido);
+}
+
 /* Sobre el header azul los botones se invierten */
 .hdr .btn {
     background: var(--color-superficie);
