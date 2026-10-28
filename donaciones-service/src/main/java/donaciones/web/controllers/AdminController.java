@@ -93,6 +93,25 @@ public class AdminController {
     ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
   }
 
+  public Map<String, Object> asignaciones(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Asignaciones pendientes");
+    model.put("rol", "admin");
+    model.put("seccion", "asignaciones");
+    model.put("usuario", DatosMock.admin());   // MOCK
+    model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
+    // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
+    model.put("sugerencias", DatosMock.sugerencias());   // MOCK
+    // Después de ejecutar los algoritmos se vuelve con ?ejecutado para mostrar el aviso
+    model.put("ejecutado", ctx.queryParam("ejecutado") != null);
+    return model;
+  }
+
+  public void ejecutarAlgoritmos(Context ctx) {
+    // Sin conexión todavía: acá se corre lo mismo que POST /api/sugerencias (limpiar sugerencias y procesar las donaciones en depósito)
+    ctx.redirect("/admin/asignaciones?ejecutado");
+  }
+
   public void registrarDonacion(Context ctx) {
     // Sin persistencia todavía: acá se arma la donación con sus bienes (bienes[i].subcategoria, cantidad, ...),
     // se segmenta por subcategoría y vencimiento, y las donaciones resultantes quedan En depósito

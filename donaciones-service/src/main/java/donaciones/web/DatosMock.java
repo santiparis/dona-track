@@ -189,6 +189,18 @@ public class DatosMock {
     );
   }
 
+  // Una sugerencia por donación en depósito: lo que propusieron los dos algoritmos para esa donación
+  public static List<Map<String, String>> sugerencias() {
+    return List.of(
+        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "coincidencias", "2", "resultado", "2 coincidencias"),
+        Map.of("id", "19", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
+            "ingreso", "24/10/2026", "coincidencias", "1", "resultado", "1 coincidencia"),
+        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
+            "ingreso", "27/10/2026", "coincidencias", "0", "resultado", "Sin coincidencias")
+    );
+  }
+
   public static List<Map<String, String>> donantes() {
     return List.of(
         Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),

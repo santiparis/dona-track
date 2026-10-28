@@ -1,0 +1,54 @@
+{{#partial "contenido"}}
+    <div class="encabezado-con-accion">
+        <div class="encabezado">
+            <h1>Asignaciones pendientes</h1>
+            <p class="muted">Última ejecución automática: {{ultimaEjecucion}}</p>
+        </div>
+        <form action="/admin/asignaciones/ejecutar" method="post">
+            <button class="btn2" type="submit">Ejecutar algoritmos ahora</button>
+        </form>
+    </div>
+
+    {{#if ejecutado}}
+        <p class="aviso" role="status">Se ejecutaron los algoritmos de asignación sobre las donaciones en depósito.</p>
+    {{/if}}
+
+    {{#if sugerencias}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Bien</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Donante</th>
+                        <th scope="col">Resultado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each sugerencias}}
+                        <tr>
+                            <td>{{id}}</td>
+                            <td>{{bien}}</td>
+                            <td>{{cantidad}}</td>
+                            <td>{{donante}}</td>
+                            {{!-- Sin coincidencias se elige desde los rankings de cada algoritmo --}}
+                            {{#if (eq coincidencias "0")}}
+                                <td><span class="chip">{{resultado}}</span></td>
+                                <td><a class="btn chico" href="/admin/asignaciones/{{id}}">Ver rankings</a></td>
+                            {{else}}
+                                <td><span class="chip ok">{{resultado}}</span></td>
+                                <td><a class="btn chico" href="/admin/asignaciones/{{id}}">Elegir entidad</a></td>
+                            {{/if}}
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <p class="muted">No hay donaciones esperando que se elija su destino.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

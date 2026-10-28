@@ -157,6 +157,7 @@ p {
 /* Botón más bajo, para acciones dentro de una tabla */
 .btn.chico,
 .btn2.chico {
+    white-space: nowrap;
     min-height: 36px;
     padding: 0 12px;
     font-size: 14px;
