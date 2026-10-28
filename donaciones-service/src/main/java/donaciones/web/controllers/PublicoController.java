@@ -11,4 +11,11 @@ public class PublicoController {
     model.put("seccion", "inicio");
     return model;
   }
+
+  public Map<String, Object> legal() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Legal y privacidad");
+    model.put("seccion", "legal");
+    return model;
+  }
 }

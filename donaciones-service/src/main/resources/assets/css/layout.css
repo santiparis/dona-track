@@ -7,6 +7,39 @@
     gap: 24px;
 }
 
+/* Contenido de lectura más angosto que el resto (ej: legal) */
+.angosto {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Título de la pantalla con su subtítulo */
+.encabezado {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Índice de links a las secciones de la página */
+.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.toc a {
+    padding: 8px 12px;
+    border: 1px solid var(--color-borde);
+    border-radius: 6px;
+    background: var(--color-superficie);
+    text-decoration: none;
+    font-size: 14px;
+}
+
 .seccion {
     display: flex;
     flex-direction: column;

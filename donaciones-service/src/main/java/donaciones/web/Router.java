@@ -9,5 +9,6 @@ public class Router {
     PublicoController publicoController = new PublicoController();
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
+    app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
   }
 }
