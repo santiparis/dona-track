@@ -87,6 +87,31 @@ form.card {
     flex: 0 1 240px;
 }
 
+/* Campos de a cuatro por fila (ej: cada bien de una donación) */
+.f4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+/* Campo que ocupa toda la fila de la grilla */
+.fila-completa {
+    grid-column: 1 / -1;
+}
+
+/* Resultado de una búsqueda dentro de un formulario (ej: donante encontrado) */
+.encontrado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-borde-input);
+    border-radius: 6px;
+    background: var(--color-fondo);
+}
+
 /* Checkbox con forma de pastilla (ej: subcategorías en los filtros) */
 .check {
     flex-direction: row;

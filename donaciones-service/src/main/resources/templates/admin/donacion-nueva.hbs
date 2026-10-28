@@ -1,0 +1,79 @@
+{{#partial "contenido"}}
+    <h1>Registrar donación</h1>
+
+    {{!-- Paso 1 en su propio form (GET): los forms no se pueden anidar --}}
+    <section class="card">
+        <h2>1. Donante</h2>
+        <form class="buscador" action="/admin/donaciones/nueva" method="get">
+            <label class="buscador-texto">Buscar por documento o correo<input name="donante" type="search" value="{{busqueda}}" required></label>
+            <button class="btn2" type="submit">Buscar</button>
+        </form>
+        {{#if donante}}
+            <div class="encontrado">
+                <span><strong>{{donante.nombre}}</strong> · {{donante.documento}} · {{donante.email}}</span>
+            </div>
+        {{else if busqueda}}
+            <div class="encontrado">
+                <span>No hay un donante con ese documento o correo.</span>
+                <a href="/admin/donantes/nuevo">Registrar donante</a>
+            </div>
+        {{/if}}
+    </section>
+
+    {{#if donante}}
+        <form class="card" action="/admin/donaciones" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="donante" value="{{donante.id}}">
+
+            <h2>2. Descripción general</h2>
+            <label>Descripción<input name="descripcion" placeholder="Ej: mobiliario de oficina usado"></label>
+
+            <h2>3. Bienes</h2>
+            {{#each filas}}
+                <fieldset>
+                    <legend>Bien {{numero}}</legend>
+                    <div class="f4">
+                        <label>Subcategoría
+                            <select name="bienes[{{indice}}].subcategoria">
+                                <option value="">Elegí una</option>
+                                {{#each ../categorias}}
+                                    <optgroup label="{{texto}}">
+                                        {{#each subcategorias}}
+                                            <option value="{{valor}}">{{texto}}</option>
+                                        {{/each}}
+                                    </optgroup>
+                                {{/each}}
+                            </select>
+                        </label>
+                        <label>Cantidad<input name="bienes[{{indice}}].cantidad" type="number" min="1"></label>
+                        <label>Unidad<input name="bienes[{{indice}}].unidad" placeholder="unidades, kg…"></label>
+                        <label>Estado
+                            <select name="bienes[{{indice}}].estado">
+                                <option value="">No aplica</option>
+                                <option value="NUEVO">Nuevo</option>
+                                <option value="USADO">Usado</option>
+                            </select>
+                            <span class="hint">Mobiliario y vestimenta</span>
+                        </label>
+                    </div>
+                    <div class="f4">
+                        <label class="fila-completa">Descripción<input name="bienes[{{indice}}].descripcion"></label>
+                        <label>Vencimiento<input name="bienes[{{indice}}].vencimiento" type="date"><span class="hint">Solo perecederos</span></label>
+                        <label>Foto (opcional)<input name="bienes[{{indice}}].foto" type="file" accept="image/*"></label>
+                    </div>
+                </fieldset>
+            {{/each}}
+            <div class="row">
+                <a class="btn2" href="/admin/donaciones/nueva?donante={{busqueda}}&filas={{masFilas}}">+ Agregar bien</a>
+                <p class="hint">Agregá las filas antes de completarlas: al agregar una se recarga la página. Las filas vacías se ignoran.</p>
+            </div>
+
+            <p class="aviso">Al guardar se genera una donación por cada subcategoría (y por fecha de vencimiento en perecederos). Todas quedan “En depósito”.</p>
+            <div class="row acciones">
+                <a class="btn2" href="/admin/donaciones">Cancelar</a>
+                <button class="btn cta" type="submit">Registrar donación</button>
+            </div>
+        </form>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

@@ -166,6 +166,20 @@ public class DatosMock {
     );
   }
 
+  // Subcategorías agrupadas por categoría, para los <select> con <optgroup>
+  public static List<Map<String, Object>> categoriasConSubcategorias() {
+    return categorias().stream()
+        .map(c -> Map.of("texto", c.get("texto"), "subcategorias", subcategorias(c.get("valor"))))
+        .toList();
+  }
+
+  public static List<Map<String, String>> donantes() {
+    return List.of(
+        Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),
+        Map.of("id", "2", "nombre", "Ana Pérez", "documento", "12345678", "email", "ana@mail.com")
+    );
+  }
+
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
         Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",

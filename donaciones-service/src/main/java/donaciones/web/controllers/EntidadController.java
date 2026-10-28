@@ -34,9 +34,7 @@ public class EntidadController {
     model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), enEdicion.getOrDefault("tipo", "EXTRAORDINARIA")));
 
     // Subcategorías agrupadas por categoría para el <select> con <optgroup>
-    model.put("categorias", DatosMock.categorias().stream()
-        .map(c -> Map.of("texto", c.get("texto"), "subcategorias", DatosMock.subcategorias(c.get("valor"))))
-        .toList());   // MOCK
+    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
     return model;
   }
 
