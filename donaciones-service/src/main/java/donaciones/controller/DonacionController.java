@@ -22,15 +22,21 @@ import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.RegistroCambioEstadoDTO;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
+import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 public class DonacionController {
   private static final Logger logger = LoggerFactory.getLogger(DonacionController.class);
@@ -401,5 +407,174 @@ public class DonacionController {
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }
+  }
+
+  public Map<String, Object> donacionNueva(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Registrar donación");
+    model.put("rol", "admin");
+    model.put("seccion", "donacion-nueva");
+    model.put("usuario", DatosMock.admin());   // MOCK
+
+    // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
+    model.put("busqueda", busqueda);
+    // Persona donante = personasRepository.buscarPorDocumentoOEmail(busqueda);
+    DatosMock.donantes().stream()
+        .filter(d -> d.get("documento").equals(busqueda) || d.get("email").equals(busqueda))
+        .findFirst()
+        .ifPresent(d -> model.put("donante", d));   // MOCK
+
+    // Paso 3: una fila por bien; "+ Agregar bien" recarga con ?filas=N+1 (sin JavaScript)
+    int cantidadFilas = ctx.queryParamAsClass("filas", Integer.class).getOrDefault(3);
+    model.put("filas", IntStream.rangeClosed(1, cantidadFilas)
+        .mapToObj(numero -> Map.of("indice", numero - 1, "numero", numero))
+        .toList());
+    model.put("masFilas", cantidadFilas + 1);
+    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    return model;
+  }
+
+  public void registrarDonacion(Context ctx) {
+    // Sin persistencia todavía: acá se arma la donación con sus bienes (bienes[i].subcategoria, cantidad, ...),
+    // se segmenta por subcategoría y vencimiento, y las donaciones resultantes quedan En depósito
+    ctx.redirect("/admin/donaciones");
+  }
+
+  public Map<String, Object> deposito(Context ctx) {
+    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA|PROXIMA
+    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones en depósito");
+    model.put("rol", "admin");
+    model.put("seccion", "deposito");
+    model.put("usuario", DatosMock.admin());   // MOCK
+
+    // List<Donacion> enDeposito = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO).toList();
+    List<Map<String, String>> enDeposito = DatosMock.donacionesEnDeposito();   // MOCK
+    model.put("donaciones", enDeposito.stream()
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
+        .filter(d -> vence.isEmpty() || vence.equals(d.get("vencimiento")))
+        .toList());   // MOCK
+    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("categoriaElegida", categoria);
+    model.put("venceElegido", vence);
+
+    // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
+    String idVencida = ctx.queryParam("vencida");
+    enDeposito.stream()
+        .filter(d -> d.get("id").equals(idVencida))
+        .findFirst()
+        .ifPresent(d -> model.put("marcadaVencida", d));   // MOCK
+    return model;
+  }
+
+  public void marcarVencida(Context ctx) {
+    // Sin persistencia todavía: acá la donación ctx.pathParam("id") pasa a Vencida (cambio manual, queda en el historial)
+    ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
+  }
+
+  public Map<String, Object> misDonaciones(Context ctx) {
+    // Los filtros viajan en la URL: ?estado=...&categoria=...&subcategoria=...&subcategoria=...
+    String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
+    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    List<String> subcategorias = ctx.queryParams("subcategoria");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Mis donaciones");
+    model.put("rol", "donante");
+    model.put("seccion", "donaciones");
+    model.put("usuario", DatosMock.donante());   // MOCK
+
+    // List<Donacion> donaciones = donacionesRepository.buscarPorDonante(idDonante, estado, categoria, subcategorias);
+    List<Map<String, String>> donaciones = DatosMock.donacionesDelDonante().stream()
+        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
+        .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.get("subcategoria")))
+        .toList();   // MOCK
+    model.put("donaciones", donaciones);
+    model.put("total", donaciones.size());
+
+    model.put("estados", DatosMock.estados());   // MOCK
+    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("estadoElegido", estado);
+    model.put("categoriaElegida", categoria);
+    // Las subcategorías se muestran recién cuando se eligió una categoría
+    model.put("subcategorias", DatosMock.subcategorias(categoria).stream()
+        .map(s -> Map.of("valor", s.get("valor"), "texto", s.get("texto"), "elegida", subcategorias.contains(s.get("valor"))))
+        .toList());   // MOCK
+
+    // ?historial={id} muestra los cambios de estado de esa donación
+    String idHistorial = ctx.queryParam("historial");
+    DatosMock.donacionesDelDonante().stream()
+        .filter(d -> d.get("id").equals(idHistorial))
+        .findFirst()
+        .ifPresent(d -> model.put("historial", Map.of(
+            "bien", d.get("bien"),
+            "cantidad", d.get("cantidad"),
+            // donacion.getHistorialEstados()
+            "cambios", DatosMock.historialDeEstados())));   // MOCK
+
+    return model;
+  }
+
+  public Map<String, Object> asignadasAEntidad(Context ctx) {
+    // El filtro viaja en la URL: ?estado=...
+    String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones asignadas");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+    model.put("usuario", DatosMock.entidad());   // MOCK
+
+    // List<Donacion> donaciones = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEntidadBeneficiaria() == entidad).toList();
+    model.put("donaciones", DatosMock.donacionesAsignadas().stream()
+        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
+        .toList());   // MOCK
+    model.put("estadoElegido", estado);
+    // A la entidad solo le llegan donaciones ya asignadas: no tiene sentido filtrar por En depósito ni Vencida
+    model.put("estados", DatosMock.estados().stream()
+        .filter(e -> !List.of("EN_DEPOSITO", "VENCIDA").contains(e.get("valor")))
+        .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> recepcion(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Confirmar recepción");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+    model.put("usuario", DatosMock.entidad());   // MOCK
+
+    // Donacion donacion = donacionesRepository.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", DatosMock.donacionesAsignadas().stream()
+        .filter(d -> d.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new));   // MOCK
+    return model;
+  }
+
+  public void confirmarRecepcion(Context ctx) {
+    // Sin persistencia todavía: acá la donación pasa a Entregada y se guardan las fotos de ctx.uploadedFiles("fotos")
+    ctx.redirect("/entidad/donaciones");
+  }
+
+  public void informarNoRecibida(Context ctx) {
+    // Sin persistencia todavía: acá la entrega se marca No recibida con el motivo, para que la revise la administración
+    ctx.redirect("/entidad/donaciones");
+  }
+
+  public Map<String, Object> entregadas() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones entregadas");
+    model.put("seccion", "entregadas");
+    // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
+    model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    return model;
   }
 }
