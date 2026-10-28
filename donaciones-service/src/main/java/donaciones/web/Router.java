@@ -43,15 +43,15 @@ public class Router {
     app.post("/usuarios", sesionController::registrar);
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
-    app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", perfilDonanteController.entidades(ctx)));
+    app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", perfilDonanteController.notificaciones()));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", perfilDonanteController.seguimiento()));
 
-    app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadController.necesidades(ctx)));
-    app.post("/entidad/necesidades", entidadController::crearNecesidad);
-    app.post("/entidad/necesidades/{id}", entidadController::modificarNecesidad);
-    app.post("/entidad/necesidades/{id}/eliminar", entidadController::eliminarNecesidad);
+    app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
+    app.post("/entidad/necesidades", entidadesController::registrarNecesidad);
+    app.post("/entidad/necesidades/{id}", entidadesController::modificarNecesidad);
+    app.post("/entidad/necesidades/{id}/eliminar", entidadesController::eliminarNecesidad);
     app.get("/entidad/donaciones", ctx -> ctx.render("entidad/donaciones", donacionController.asignadasAEntidad(ctx)));
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", donacionController.recepcion(ctx)));
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
