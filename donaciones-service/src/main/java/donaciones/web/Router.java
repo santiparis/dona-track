@@ -10,5 +10,6 @@ public class Router {
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
+    app.get("/donaciones-entregadas", ctx -> ctx.render("publico/entregadas", publicoController.entregadas()));
   }
 }

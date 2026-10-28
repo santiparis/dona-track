@@ -65,7 +65,19 @@ p {
     align-items: center;
 }
 
-/* Botones: .btn principal, .btn2 secundario y .cta solo para la acción principal de la pantalla */
+/* Etiqueta chica (ej: estado de una donación) */
+.chip {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Botones:.btn principal, .btn2 secundario y .cta solo para la acción principal de la pantalla */
 .btn,
 .btn2 {
     display: inline-flex;

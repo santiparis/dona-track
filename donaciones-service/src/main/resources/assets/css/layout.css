@@ -92,6 +92,52 @@
     padding: 16px;
 }
 
+/* Placeholder de foto dentro de una tarjeta */
+.ph.foto {
+    height: 140px;
+}
+
+/* Mapa placeholder con la tarjeta de detalle flotando arriba a la derecha */
+.mapa {
+    position: relative;
+}
+
+.mapa > .ph {
+    height: 420px;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mapa > .ph .muted {
+    font-weight: 400;
+}
+
+.mapa-detalle {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 260px;
+    box-shadow: 0 4px 12px var(--color-sombra);
+}
+
+.mapa-detalle .foto {
+    height: 110px;
+}
+
+/* En pantallas chicas la tarjeta tapaba el mapa: pasa abajo */
+@media (max-width: 600px) {
+    .mapa {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .mapa-detalle {
+        position: static;
+        width: auto;
+    }
+}
+
 .num {
     width: 32px;
     height: 32px;
