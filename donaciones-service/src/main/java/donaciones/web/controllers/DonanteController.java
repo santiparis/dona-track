@@ -20,7 +20,7 @@ public class DonanteController {
     model.put("titulo", "Mis donaciones");
     model.put("rol", "donante");
     model.put("seccion", "donaciones");
-    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("usuario", DatosMock.donante());   // MOCK
 
     // List<Donacion> donaciones = repositorioDonaciones.buscarPorDonante(idDonante, estado, categoria, subcategorias);
     List<Map<String, String>> donaciones = DatosMock.donacionesDelDonante().stream()
@@ -63,7 +63,7 @@ public class DonanteController {
     model.put("titulo", "Entidades beneficiarias");
     model.put("rol", "donante");
     model.put("seccion", "entidades");
-    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("usuario", DatosMock.donante());   // MOCK
 
     // List<EntidadBeneficiaria> entidades = entidadRepo.buscar(busqueda, subcategoria);
     model.put("entidades", DatosMock.entidadesConNecesidades().stream()
@@ -85,7 +85,7 @@ public class DonanteController {
     model.put("titulo", "Incentivos");
     model.put("rol", "donante");
     model.put("seccion", "incentivos");
-    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("usuario", DatosMock.donante());   // MOCK
     // Sin dominio de incentivos todavía: en esta entrega es solo la vista
     model.put("incentivos", DatosMock.incentivos());   // MOCK
     return model;
@@ -96,7 +96,7 @@ public class DonanteController {
     model.put("titulo", "Notificaciones");
     model.put("rol", "donante");
     model.put("seccion", "notificaciones");
-    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("usuario", DatosMock.donante());   // MOCK
     model.put("medioPreferido", "correo");   // MOCK
     // List<Notificacion> notificaciones = notificacionRepository.obtenerTodas().stream().filter(n -> n.getReceptorId().equals(idDonante)).toList();
     model.put("notificaciones", DatosMock.notificacionesDelDonante());   // MOCK
@@ -108,7 +108,7 @@ public class DonanteController {
     model.put("titulo", "Seguimiento de entregas");
     model.put("rol", "donante");
     model.put("seccion", "seguimiento");
-    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("usuario", DatosMock.donante());   // MOCK
     // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDonacionesDe(idDonante).execute().body();
     model.put("camiones", DatosMock.camionesEnRuta());   // MOCK

@@ -1,0 +1,46 @@
+{{!-- Un solo header para todos los perfiles. Sin sesión todavía: el controller indica el rol de la pantalla
+      y, si hay alguien logueado, lo pasa en "usuario" (nombre y notificaciones sin leer). --}}
+<header class="hdr">
+    <a class="logo" href="{{#if (eq rol "donante")}}/donante/donaciones{{else if (eq rol "entidad")}}/entidad/necesidades{{else}}/{{/if}}">
+        <span class="logo-box"></span>DonaTrack
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+        {{#if (eq rol "donante")}}
+            <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/donante/donaciones">Mis donaciones</a>
+            <a {{#if (eq seccion "entidades")}}class="on"{{/if}} href="/donante/entidades">Entidades</a>
+            <a {{#if (eq seccion "incentivos")}}class="on"{{/if}} href="/donante/incentivos">Incentivos</a>
+            <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/donante/seguimiento">Seguimiento</a>
+            <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/donante/notificaciones">Notificaciones
+                {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
+            </a>
+        {{else if (eq rol "entidad")}}
+            <a {{#if (eq seccion "necesidades")}}class="on"{{/if}} href="/entidad/necesidades">Necesidades</a>
+            <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/entidad/donaciones">Donaciones asignadas</a>
+            <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/entidad/seguimiento">Seguimiento</a>
+            <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/entidad/notificaciones">Notificaciones
+                {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
+            </a>
+        {{else}}
+            <a {{#if (eq seccion "inicio")}}class="on"{{/if}} href="/">Inicio</a>
+            <a {{#if (eq seccion "entregadas")}}class="on"{{/if}} href="/donaciones-entregadas">Donaciones entregadas</a>
+            <a {{#if (eq seccion "legal")}}class="on"{{/if}} href="/legal">Legal</a>
+        {{/if}}
+    </nav>
+
+    {{#if usuario}}
+        <div class="user">
+            <span>{{usuario.nombre}}</span>
+            <a href="/">Cerrar sesión</a>
+        </div>
+    {{else}}
+        <div class="row">
+            {{#unless (eq seccion "login")}}
+                <a class="btn2" href="/login">Iniciar sesión</a>
+            {{/unless}}
+            {{#unless (eq seccion "registro")}}
+                <a class="btn" href="/usuarios/nuevo">Registrarme</a>
+            {{/unless}}
+        </div>
+    {{/if}}
+</header>

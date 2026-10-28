@@ -30,8 +30,8 @@ public class Router {
     app.get("/donante/seguimiento", ctx -> ctx.render("donante/seguimiento", donanteController.seguimiento()));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadController.necesidades(ctx)));
-    app.post("/entidad/necesidades", entidadController::guardarNecesidad);
-    app.post("/entidad/necesidades/{id}", entidadController::guardarNecesidad);
+    app.post("/entidad/necesidades", entidadController::crearNecesidad);
+    app.post("/entidad/necesidades/{id}", entidadController::modificarNecesidad);
     app.post("/entidad/necesidades/{id}/eliminar", entidadController::eliminarNecesidad);
   }
 }

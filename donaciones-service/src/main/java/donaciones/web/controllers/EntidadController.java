@@ -15,7 +15,7 @@ public class EntidadController {
     model.put("titulo", "Necesidades");
     model.put("rol", "entidad");
     model.put("seccion", "necesidades");
-    model.put("entidad", DatosMock.entidad());   // MOCK
+    model.put("usuario", DatosMock.entidad());   // MOCK
 
     // List<Necesidad> necesidades = entidadRepo.buscarPorId(idEntidad).orElseThrow().getNecesidades();
     List<Map<String, String>> necesidades = DatosMock.necesidadesDeLaEntidad();   // MOCK
@@ -39,8 +39,13 @@ public class EntidadController {
     return model;
   }
 
-  public void guardarNecesidad(Context ctx) {
-    // Sin persistencia todavía: acá va el alta (POST /entidad/necesidades) o la modificación (POST /entidad/necesidades/{id})
+  public void crearNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  public void modificarNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá se busca la necesidad ctx.pathParam("id") y se actualiza con los datos del form
     ctx.redirect("/entidad/necesidades");
   }
 
