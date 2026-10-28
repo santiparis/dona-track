@@ -41,7 +41,7 @@ public class DatosMock {
     );
   }
 
-  public static List<Map<String, Object>> estados() {
+  public static List<Map<String, String>> estados() {
     return List.of(
         Map.of("valor", "EN_DEPOSITO", "texto", "En depósito"),
         Map.of("valor", "ASIGNADA", "texto", "Asignación realizada"),
@@ -137,6 +137,19 @@ public class DatosMock {
         Map.of("id", "3", "subcategoria", "LECHE", "subcategoriaTexto", "Leche", "descripcion", "Desayuno escolar",
             "tipo", "RECURRENTE", "tipoTexto", "Recurrente · mensual", "periodo", "MENSUAL",
             "cantidad", "50", "avance", "40 / 50", "porcentaje", "80")
+    );
+  }
+
+  public static List<Map<String, String>> donacionesAsignadas() {
+    return List.of(
+        Map.of("id", "12", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
+            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "actualizado", "Hoy 08:30"),
+        Map.of("id", "13", "bien", "Mesas · usada", "cantidad", "1 unidad", "donante", "Arcos Plateados S.A.",
+            "estado", "LISTA_PARA_ENTREGAR", "estadoTexto", "Lista para entregar", "actualizado", "Ayer 03:00"),
+        Map.of("id", "7", "bien", "Bancos · nuevos", "cantidad", "10 unidades", "donante", "Ana Pérez",
+            "estado", "ENTREGADA", "estadoTexto", "Entregada", "actualizado", "02/09/2026"),
+        Map.of("id", "5", "bien", "Bancos · usados", "cantidad", "4 unidades", "donante", "Ana Pérez",
+            "estado", "ENTREGA_FALLIDA", "estadoTexto", "Entrega fallida", "actualizado", "28/08/2026")
     );
   }
 

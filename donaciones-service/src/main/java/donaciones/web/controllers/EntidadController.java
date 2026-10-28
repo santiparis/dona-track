@@ -39,6 +39,28 @@ public class EntidadController {
     return model;
   }
 
+  public Map<String, Object> donaciones(Context ctx) {
+    // El filtro viaja en la URL: ?estado=...
+    String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones asignadas");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+    model.put("usuario", DatosMock.entidad());   // MOCK
+
+    // List<Donacion> donaciones = donacionRepository.obtenerTodas().stream().filter(d -> d.getEntidadBeneficiaria() == entidad).toList();
+    model.put("donaciones", DatosMock.donacionesAsignadas().stream()
+        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
+        .toList());   // MOCK
+    model.put("estadoElegido", estado);
+    // A la entidad solo le llegan donaciones ya asignadas: no tiene sentido filtrar por En depósito ni Vencida
+    model.put("estados", DatosMock.estados().stream()
+        .filter(e -> !List.of("EN_DEPOSITO", "VENCIDA").contains(e.get("valor")))
+        .toList());   // MOCK
+    return model;
+  }
+
   public void crearNecesidad(Context ctx) {
     // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
     ctx.redirect("/entidad/necesidades");
