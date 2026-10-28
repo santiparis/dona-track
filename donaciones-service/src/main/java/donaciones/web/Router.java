@@ -44,7 +44,7 @@ public class Router {
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", perfilDonanteController.entidades(ctx)));
-    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", perfilDonanteController.incentivos()));
+    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", perfilDonanteController.notificaciones()));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", perfilDonanteController.seguimiento()));
 
@@ -59,8 +59,8 @@ public class Router {
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", entidadController.notificaciones()));
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", entidadController.seguimiento()));
 
-    app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", adminController.donanteNuevo(ctx)));
-    app.post("/admin/donantes", adminController::registrarDonante);
+    app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
+    app.post("/admin/donantes", donanteController::registrarDonante);
     app.get("/admin/donaciones/nueva", ctx -> ctx.render("admin/donacion-nueva", donacionController.donacionNueva(ctx)));
     app.post("/admin/donaciones", donacionController::registrarDonacion);
     app.get("/admin/donaciones", ctx -> ctx.render("admin/deposito", donacionController.deposito(ctx)));
@@ -73,8 +73,8 @@ public class Router {
     app.post("/admin/camiones", adminController::crearCamion);
     app.post("/admin/camiones/{id}", adminController::modificarCamion);
     app.post("/admin/camiones/{id}/eliminar", adminController::eliminarCamion);
-    app.get("/admin/importacion", ctx -> ctx.render("admin/importacion", adminController.importacion(ctx)));
-    app.post("/admin/importacion", adminController::importar);
+    app.get("/admin/importacion", ctx -> ctx.render("admin/importacion", donanteController.importacion(ctx)));
+    app.post("/admin/importacion", donanteController::importar);
 
     // API REST
 

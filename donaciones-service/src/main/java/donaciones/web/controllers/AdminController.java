@@ -6,30 +6,8 @@ import io.javalin.http.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class AdminController {
-
-  public Map<String, Object> donanteNuevo(Context ctx) {
-    Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Registrar donante");
-    model.put("rol", "admin");
-    model.put("seccion", "donante-nuevo");
-    model.put("usuario", DatosMock.admin());   // MOCK
-    // La pestaña viaja en la URL: /admin/donantes/nuevo?tipo=HUMANA|JURIDICA
-    model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), "HUMANA"));
-    return model;
-  }
-
-  public void registrarDonante(Context ctx) {
-    // Sin persistencia todavía: acá se da de alta la persona y se le manda el mail de bienvenida
-    // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
-    if ("donacion".equals(ctx.formParam("siguiente"))) {
-      ctx.redirect("/admin/donaciones/nueva");
-    } else {
-      ctx.redirect("/admin/donantes/nuevo");
-    }
-  }
 
   public Map<String, Object> camiones(Context ctx) {
     Map<String, Object> model = new HashMap<>();
@@ -65,24 +43,5 @@ public class AdminController {
   public void eliminarCamion(Context ctx) {
     // Sin conexión todavía: acá va logisticaAPICalls.eliminarCamion(id) contra DELETE /api/camiones/{id}
     ctx.redirect("/admin/camiones");
-  }
-
-  public Map<String, Object> importacion(Context ctx) {
-    Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Importar donantes");
-    model.put("rol", "admin");
-    model.put("seccion", "importacion");
-    model.put("usuario", DatosMock.admin());   // MOCK
-    // Después de importar se vuelve con ?importado para mostrar el resultado
-    if (ctx.queryParam("importado") != null) {
-      model.put("resultado", DatosMock.resultadoImportacion());   // MOCK
-    }
-    return model;
-  }
-
-  public void importar(Context ctx) {
-    // Sin conexión todavía: acá se guarda ctx.uploadedFile("archivo") en un archivo temporal y se llama al importador ya hecho
-    // new ImportadorPersonas(repositorioPersonas).importarPersonasDesdeCSV(pathTemporal);
-    ctx.redirect("/admin/importacion?importado");
   }
 }
