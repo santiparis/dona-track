@@ -111,6 +111,8 @@ public class DonanteController {
     model.put("rol", "donante");
     model.put("seccion", "seguimiento");
     model.put("usuario", DatosMock.donante());   // MOCK
+    model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
+    model.put("textoMapa", "Un marcador por camión y los destinos de tus donaciones");
     // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDonacionesDe(idDonante).execute().body();
     model.put("camiones", DatosMock.camionesEnRuta());   // MOCK

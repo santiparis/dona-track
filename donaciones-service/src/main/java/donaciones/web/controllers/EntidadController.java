@@ -103,6 +103,23 @@ public class EntidadController {
     return model;
   }
 
+  public Map<String, Object> seguimiento() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Seguimiento de entregas");
+    model.put("rol", "entidad");
+    model.put("seccion", "seguimiento");
+    Map<String, Object> entidad = DatosMock.entidad();   // MOCK
+    model.put("usuario", entidad);
+    model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
+    model.put("textoMapa", "Un marcador por camión y la ubicación de tu entidad");
+    // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
+    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDestino(idEntidad).execute().body();
+    model.put("camiones", DatosMock.camionesEnRuta().stream()
+        .filter(c -> c.get("destino").equals(entidad.get("nombre")))
+        .toList());   // MOCK
+    return model;
+  }
+
   public void crearNecesidad(Context ctx) {
     // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
     ctx.redirect("/entidad/necesidades");

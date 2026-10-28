@@ -1,16 +1,18 @@
+{{!-- Seguimiento compartido por donante y entidad: los textos los pone el controller
+      y dos columnas de la tabla cambian según el rol --}}
 {{#partial "contenido"}}
     <div class="encabezado-con-accion">
         <div class="encabezado">
             <h1>Seguimiento de entregas</h1>
-            <p class="muted">Camiones que hoy llevan donaciones tuyas.</p>
+            <p class="muted">{{subtitulo}}</p>
         </div>
-        <a class="btn2" href="/donante/seguimiento">Actualizar</a>
+        <a class="btn2" href="/{{rol}}/seguimiento">Actualizar</a>
     </div>
 
     <div class="mapa">
         <div class="ph">
             <span>Mapa en tiempo real — próxima iteración</span>
-            <span class="muted">Un marcador por camión y los destinos de tus donaciones</span>
+            <span class="muted">{{textoMapa}}</span>
         </div>
     </div>
 
@@ -20,8 +22,13 @@
                 <thead>
                     <tr>
                         <th scope="col">Camión</th>
-                        <th scope="col">Tu donación</th>
-                        <th scope="col">Destino</th>
+                        {{#if (eq rol "entidad")}}
+                            <th scope="col">Trae</th>
+                            <th scope="col">Paradas antes que vos</th>
+                        {{else}}
+                            <th scope="col">Tu donación</th>
+                            <th scope="col">Destino</th>
+                        {{/if}}
                         <th scope="col">Ubicación</th>
                         <th scope="col">Velocidad</th>
                         <th scope="col">Última actualización</th>
@@ -31,8 +38,13 @@
                     {{#each camiones}}
                         <tr>
                             <td>{{patente}}</td>
-                            <td>{{donacion}}</td>
-                            <td>{{destino}}</td>
+                            {{#if (eq ../rol "entidad")}}
+                                <td>{{trae}}</td>
+                                <td>{{paradasAntes}}</td>
+                            {{else}}
+                                <td>{{donacion}}</td>
+                                <td>{{destino}}</td>
+                            {{/if}}
                             <td>{{ubicacion}}</td>
                             <td>{{velocidad}}</td>
                             <td>{{actualizacion}}</td>
@@ -42,7 +54,7 @@
             </table>
         </div>
     {{else}}
-        <p class="muted">No hay entregas activas de tus donaciones en este momento.</p>
+        <p class="muted">No hay entregas en camino en este momento.</p>
     {{/if}}
 {{/partial}}
 
