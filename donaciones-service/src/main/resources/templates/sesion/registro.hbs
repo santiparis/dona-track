@@ -1,0 +1,100 @@
+{{#partial "contenido"}}
+    <div class="angosto">
+        <div class="encabezado">
+            <h1>Crear cuenta</h1>
+            <p class="muted">¿Ya tenés cuenta? <a href="/login">Iniciá sesión</a></p>
+        </div>
+
+        <nav class="tabs" aria-label="Tipo de cuenta">
+            <a class="tab {{#if (eq tipo "HUMANA")}}on{{/if}}" href="/usuarios/nuevo?tipo=HUMANA">Persona humana</a>
+            <a class="tab {{#if (eq tipo "JURIDICA")}}on{{/if}}" href="/usuarios/nuevo?tipo=JURIDICA">Persona jurídica</a>
+            <a class="tab {{#if (eq tipo "ENTIDAD")}}on{{/if}}" href="/usuarios/nuevo?tipo=ENTIDAD">Entidad beneficiaria</a>
+        </nav>
+
+        <form class="card" action="/usuarios" method="post">
+            <input type="hidden" name="tipo" value="{{tipo}}">
+
+            {{#if (eq tipo "HUMANA")}}
+                <div class="bloque">
+                    <h2>Persona humana donante</h2>
+                    <div class="f2">
+                        <label>Nombre<input name="nombre" required></label>
+                        <label>Apellido<input name="apellido" required></label>
+                        <label>Tipo de documento<select name="tipoDoc"><option value="DNI">DNI</option></select></label>
+                        <label>Número de documento<input name="documento" required></label>
+                        <label>Edad<input name="edad" type="number" min="0"></label>
+                        <label>Género
+                            <select name="genero">
+                                <option value="FEMENINO">Femenino</option>
+                                <option value="MASCULINO">Masculino</option>
+                                <option value="NO_BINARIO">No binario</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label>Dirección<input name="direccion"></label>
+                </div>
+            {{/if}}
+
+            {{#if (eq tipo "JURIDICA")}}
+                <div class="bloque">
+                    <h2>Persona jurídica donante</h2>
+                    <label>Razón social<input name="razonSocial" required></label>
+                    <div class="f2">
+                        <label>Tipo
+                            <select name="tipoJuridica">
+                                <option value="GUBERNAMENTAL">Gubernamental</option>
+                                <option value="ONG">ONG</option>
+                                <option value="EMPRESA">Empresa</option>
+                                <option value="INSTITUCION">Institución</option>
+                            </select>
+                        </label>
+                        <label>Rubro<input name="rubro"></label>
+                        <label>CUIT<input name="documento" placeholder="30-12345678-9"></label>
+                    </div>
+                    <p class="hint">Las personas representantes habilitadas se agregan después, desde la cuenta.</p>
+                </div>
+            {{/if}}
+
+            {{#if (eq tipo "ENTIDAD")}}
+                <div class="bloque">
+                    <h2>Entidad beneficiaria</h2>
+                    <label>Razón social<input name="razonSocial" required></label>
+                    <label>Dirección completa<input name="direccion" required></label>
+                    <label>Teléfono<input name="telefono" type="tel"></label>
+                    <label>Correos de representantes<textarea name="correos"></textarea><span class="hint">Uno por línea.</span></label>
+                </div>
+            {{else}}
+                <fieldset>
+                    <legend>Medios de contacto</legend>
+                    <div class="f2">
+                        <label>Correo electrónico<input name="email" type="email" required></label>
+                        <label>Teléfono (opcional)<input name="telefono" type="tel"></label>
+                        <label>WhatsApp (opcional)<input name="whatsapp" type="tel"></label>
+                    </div>
+                    <p class="subtitulo">¿Por dónde preferís recibir notificaciones?</p>
+                    <div class="row">
+                        <label class="radio"><input type="radio" name="medio" value="EMAIL" checked>Correo</label>
+                        <label class="radio"><input type="radio" name="medio" value="SMS">SMS</label>
+                        <label class="radio"><input type="radio" name="medio" value="WHATSAPP">WhatsApp</label>
+                    </div>
+                </fieldset>
+            {{/if}}
+
+            <fieldset>
+                <legend>Acceso</legend>
+                <div class="f2">
+                    <label>Contraseña<input name="password" type="password" required></label>
+                    <label>Repetir contraseña<input name="password2" type="password" required></label>
+                </div>
+            </fieldset>
+
+            <label class="radio"><input type="checkbox" name="acepta" required>Acepto los <a href="/legal">términos y la política de privacidad</a></label>
+            <div class="row acciones">
+                <a class="btn2" href="/">Cancelar</a>
+                <button class="btn cta" type="submit">Crear cuenta</button>
+            </div>
+        </form>
+    </div>
+{{/partial}}
+
+{{> layout}}

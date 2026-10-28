@@ -9,6 +9,8 @@
         {{#unless (eq seccion "login")}}
             <a class="btn2" href="/login">Iniciar sesión</a>
         {{/unless}}
-        <a class="btn" href="/registro">Registrarme</a>
+        {{#unless (eq seccion "registro")}}
+            <a class="btn" href="/usuarios/nuevo">Registrarme</a>
+        {{/unless}}
     </div>
 </header>

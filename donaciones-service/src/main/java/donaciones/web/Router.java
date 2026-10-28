@@ -16,5 +16,7 @@ public class Router {
 
     app.get("/login", ctx -> ctx.render("sesion/login", sesionController.login()));
     app.post("/login", sesionController::ingresar);
+    app.get("/usuarios/nuevo", ctx -> ctx.render("sesion/registro", sesionController.registro(ctx)));
+    app.post("/usuarios", sesionController::registrar);
   }
 }

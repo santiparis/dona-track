@@ -18,7 +18,9 @@ label {
     font-weight: 600;
 }
 
-input {
+input,
+select,
+textarea {
     min-height: 44px;
     box-sizing: border-box;
     border: 1px solid var(--color-borde-input);
@@ -30,9 +32,112 @@ input {
     color: var(--color-texto);
 }
 
-input:focus {
+textarea {
+    padding: 10px 12px;
+    min-height: 88px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
     outline: 2px solid var(--color-principal);
     outline-offset: 1px;
+}
+
+/* Formulario dentro de una tarjeta: más aire entre campos */
+form.card {
+    padding: 24px;
+    gap: 16px;
+}
+
+/* Grupo de campos que se muestra u oculta junto (ej: datos de persona humana) */
+.bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Campos de a dos por fila; en pantallas chicas quedan de a uno */
+.f2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+fieldset {
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+legend {
+    font-weight: 700;
+    padding: 0 6px;
+}
+
+.subtitulo {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Texto de ayuda debajo de un campo */
+.hint {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-texto-suave);
+}
+
+/* Radio o checkbox con su texto al lado */
+.radio {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    min-height: 44px;
+}
+
+.radio input {
+    min-height: auto;
+    width: 18px;
+    height: 18px;
+}
+
+/* Botones del final del formulario, alineados a la derecha */
+.acciones {
+    justify-content: flex-end;
+}
+
+/* Pestañas hechas con links: la elegida lleva .on */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--color-neutro);
+}
+
+.tab {
+    flex: 1 1 160px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-texto);
+}
+
+.tab.on {
+    background: var(--color-superficie);
+    color: var(--color-principal-oscuro);
+    box-shadow: 0 1px 3px var(--color-sombra);
 }
 
 button.btn {
