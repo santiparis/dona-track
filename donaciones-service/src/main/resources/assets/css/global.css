@@ -111,6 +111,17 @@ p {
     color: var(--color-entregada-texto);
 }
 
+/* Estados de un camión (la clase es el nombre del estado, igual que en las donaciones) */
+.chip.DISPONIBLE {
+    background: var(--color-entregada-fondo);
+    color: var(--color-entregada-texto);
+}
+
+.chip.EN_RUTA {
+    background: var(--color-traslado-fondo);
+    color: var(--color-traslado-texto);
+}
+
 /* Algo logrado que no es un estado de donación (ej: misión cumplida, insignia obtenida) */
 .chip.ok {
     background: var(--color-entregada-fondo);

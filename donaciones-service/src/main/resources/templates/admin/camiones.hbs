@@ -1,0 +1,63 @@
+{{#partial "contenido"}}
+    <h1>Camiones</h1>
+
+    {{!-- Con camion.id el formulario edita ese camión; sin id, da de alta uno nuevo --}}
+    <form class="card" action="/admin/camiones{{#if camion.id}}/{{camion.id}}{{/if}}" method="post">
+        <h2>{{#if camion.id}}Editar camión {{camion.patente}}{{else}}Agregar camión{{/if}}</h2>
+        <div class="f4 alineado-abajo">
+            <label>Patente<input name="patente" placeholder="AB123CD" value="{{camion.patente}}" required></label>
+            <label>Volumen (m³)<input name="volumen" type="number" step="0.1" min="0" value="{{camion.volumen}}" required></label>
+            <label>Altura (m)<input name="altura" type="number" step="0.1" min="0" value="{{camion.altura}}" required></label>
+            <label>Carga máx. (kg)<input name="cargaMax" type="number" min="0" value="{{camion.cargaMax}}" required></label>
+        </div>
+        <div class="row acciones">
+            {{#if camion.id}}<a class="btn2" href="/admin/camiones">Cancelar</a>{{/if}}
+            <button class="btn cta" type="submit">{{#if camion.id}}Guardar cambios{{else}}Agregar{{/if}}</button>
+        </div>
+    </form>
+
+    {{#if camiones}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Patente</th>
+                        <th scope="col">Volumen</th>
+                        <th scope="col">Altura</th>
+                        <th scope="col">Carga máx.</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each camiones}}
+                        <tr>
+                            <td>{{patente}}</td>
+                            <td>{{volumen}} m³</td>
+                            <td>{{altura}} m</td>
+                            <td>{{cargaMax}} kg</td>
+                            <td><span class="chip {{estado}}">{{estadoTexto}}</span></td>
+                            <td>
+                                <div class="acciones-tabla">
+                                    <a class="btn2 chico" href="/admin/camiones?editar={{id}}">Editar</a>
+                                    {{!-- Un camión en ruta no se puede eliminar --}}
+                                    {{#if (eq estado "EN_RUTA")}}
+                                        <button class="btn2 chico" type="button" disabled title="No se puede eliminar un camión en ruta">Eliminar</button>
+                                    {{else}}
+                                        <form action="/admin/camiones/{{id}}/eliminar" method="post">
+                                            <button class="btn2 chico" type="submit">Eliminar</button>
+                                        </form>
+                                    {{/if}}
+                                </div>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <p class="muted">Todavía no hay camiones cargados.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

@@ -94,6 +94,11 @@ form.card {
     gap: 14px;
 }
 
+/* Grilla con los campos alineados por abajo (las etiquetas de distinto largo no los desalinean) */
+.alineado-abajo {
+    align-items: end;
+}
+
 /* Campo que ocupa toda la fila de la grilla */
 .fila-completa {
     grid-column: 1 / -1;
@@ -244,6 +249,11 @@ fieldset.sin-borde legend {
 button.btn,
 button.btn2 {
     cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .centrado {

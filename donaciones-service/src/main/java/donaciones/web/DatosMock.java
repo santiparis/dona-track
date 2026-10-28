@@ -234,6 +234,17 @@ public class DatosMock {
     };
   }
 
+  public static List<Map<String, String>> camiones() {
+    return List.of(
+        Map.of("id", "1", "patente", "AB123CD", "volumen", "18", "altura", "3.2", "cargaMax", "3500",
+            "estado", "EN_RUTA", "estadoTexto", "En ruta"),
+        Map.of("id", "2", "patente", "AE456FG", "volumen", "12", "altura", "2.8", "cargaMax", "2000",
+            "estado", "DISPONIBLE", "estadoTexto", "Disponible"),
+        Map.of("id", "3", "patente", "AC789HI", "volumen", "25", "altura", "3.8", "cargaMax", "6000",
+            "estado", "NO_DISPONIBLE", "estadoTexto", "No disponible")
+    );
+  }
+
   public static List<Map<String, String>> donantes() {
     return List.of(
         Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),
