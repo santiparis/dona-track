@@ -50,5 +50,7 @@ public class Router {
     app.post("/admin/donaciones/{id}/vencida", adminController::marcarVencida);
     app.get("/admin/asignaciones", ctx -> ctx.render("admin/asignaciones", adminController.asignaciones(ctx)));
     app.post("/admin/asignaciones/ejecutar", adminController::ejecutarAlgoritmos);
+    app.get("/admin/asignaciones/{id}", ctx -> ctx.render("admin/asignacion", adminController.asignacion(ctx)));
+    app.post("/admin/asignaciones/{id}", adminController::confirmarDestino);
   }
 }

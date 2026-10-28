@@ -12,6 +12,9 @@
     {{#if ejecutado}}
         <p class="aviso" role="status">Se ejecutaron los algoritmos de asignación sobre las donaciones en depósito.</p>
     {{/if}}
+    {{#if asignada}}
+        <p class="aviso" role="status">Se confirmó el destino de la donación #{{asignada}}.</p>
+    {{/if}}
 
     {{#if sugerencias}}
         <div class="tbl">

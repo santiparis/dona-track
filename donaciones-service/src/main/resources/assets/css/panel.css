@@ -132,6 +132,64 @@ th {
     color: var(--color-acento-hover);
 }
 
+/* Opción elegible con radio; la elegida se resalta con :has() (sin JavaScript) */
+.opcion {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 14px;
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.opcion:has(input:checked) {
+    border: 2px solid var(--color-principal);
+    background: var(--color-principal-suave);
+}
+
+.opcion input {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    min-height: auto;
+}
+
+.opcion-texto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.opcion .muted {
+    font-size: 14px;
+}
+
+/* Dos columnas que pasan a una en pantallas chicas (ej: un ranking por algoritmo) */
+.dos-columnas {
+    display: grid;
+    /* min() evita que en un celular la columna de 300px se salga de la tarjeta */
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 16px;
+}
+
+details summary {
+    min-height: 32px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ranking {
+    margin: 0;
+    padding-left: 24px;
+}
+
+.ranking li {
+    border-bottom: 1px solid var(--color-neutro);
+}
+
 /* Contador de resultados, empujado a la derecha */
 .total {
     margin-left: auto;

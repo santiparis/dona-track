@@ -2,6 +2,7 @@ package donaciones.web.controllers;
 
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;
 
 import java.util.HashMap;
 import java.util.List;
@@ -102,9 +103,35 @@ public class AdminController {
     model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
     // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
     model.put("sugerencias", DatosMock.sugerencias());   // MOCK
-    // Después de ejecutar los algoritmos se vuelve con ?ejecutado para mostrar el aviso
+    // Después de ejecutar los algoritmos se vuelve con ?ejecutado, y después de confirmar un destino con ?asignada={id}
     model.put("ejecutado", ctx.queryParam("ejecutado") != null);
+    model.put("asignada", ctx.queryParam("asignada"));
     return model;
+  }
+
+  public Map<String, Object> asignacion(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Elegir entidad final");
+    model.put("rol", "admin");
+    model.put("seccion", "asignaciones");
+    model.put("usuario", DatosMock.admin());   // MOCK
+
+    // SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", DatosMock.sugerencias().stream()
+        .filter(s -> s.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new));   // MOCK
+    // sugerencia.getEntidadesPorAlgoritmo() y sugerencia.getCoincidencias()
+    model.putAll(DatosMock.rankingsDeSugerencia(id));   // MOCK
+    return model;
+  }
+
+  public void confirmarDestino(Context ctx) {
+    // Sin conexión todavía: acá se hace lo mismo que PATCH /api/sugerencias/{id}/asignaciones con ctx.formParam("entidad")
+    // (validar que la entidad esté en algún ranking, asignar la donación y notificar)
+    ctx.redirect("/admin/asignaciones?asignada=" + ctx.pathParam("id"));
   }
 
   public void ejecutarAlgoritmos(Context ctx) {
