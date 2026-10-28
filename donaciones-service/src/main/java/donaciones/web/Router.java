@@ -65,10 +65,10 @@ public class Router {
     app.post("/admin/donaciones", adminController::registrarDonacion);
     app.get("/admin/donaciones", ctx -> ctx.render("admin/deposito", adminController.deposito(ctx)));
     app.post("/admin/donaciones/{id}/vencida", adminController::marcarVencida);
-    app.get("/admin/asignaciones", ctx -> ctx.render("admin/asignaciones", adminController.asignaciones(ctx)));
-    app.post("/admin/asignaciones/ejecutar", adminController::ejecutarAlgoritmos);
-    app.get("/admin/asignaciones/{id}", ctx -> ctx.render("admin/asignacion", adminController.asignacion(ctx)));
-    app.post("/admin/asignaciones/{id}", adminController::confirmarDestino);
+    app.get("/admin/asignaciones", ctx -> ctx.render("admin/asignaciones", asignacionesController.asignaciones(ctx)));
+    app.post("/admin/asignaciones/ejecutar", asignacionesController::ejecutarAlgoritmosAhora);
+    app.get("/admin/asignaciones/{id}", ctx -> ctx.render("admin/asignacion", asignacionesController.asignacion(ctx)));
+    app.post("/admin/asignaciones/{id}", asignacionesController::confirmarDestino);
     app.get("/admin/camiones", ctx -> ctx.render("admin/camiones", adminController.camiones(ctx)));
     app.post("/admin/camiones", adminController::crearCamion);
     app.post("/admin/camiones/{id}", adminController::modificarCamion);
