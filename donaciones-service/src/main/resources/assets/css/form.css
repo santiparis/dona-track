@@ -188,8 +188,8 @@ fieldset.sin-borde legend {
     height: 18px;
 }
 
-/* Recuadro punteado para subir archivos */
-.carga-fotos {
+/* Recuadro punteado para subir archivos (fotos, CSV) */
+.carga-archivo {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -201,11 +201,11 @@ fieldset.sin-borde legend {
     text-align: center;
 }
 
-.carga-fotos label {
+.carga-archivo label {
     align-items: center;
 }
 
-.carga-fotos input[type="file"] {
+.carga-archivo input[type="file"] {
     min-height: auto;
     border: none;
     padding: 0;

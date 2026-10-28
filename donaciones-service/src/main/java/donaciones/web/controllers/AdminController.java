@@ -170,6 +170,25 @@ public class AdminController {
     ctx.redirect("/admin/camiones");
   }
 
+  public Map<String, Object> importacion(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Importar donantes");
+    model.put("rol", "admin");
+    model.put("seccion", "importacion");
+    model.put("usuario", DatosMock.admin());   // MOCK
+    // Después de importar se vuelve con ?importado para mostrar el resultado
+    if (ctx.queryParam("importado") != null) {
+      model.put("resultado", DatosMock.resultadoImportacion());   // MOCK
+    }
+    return model;
+  }
+
+  public void importar(Context ctx) {
+    // Sin conexión todavía: acá se guarda ctx.uploadedFile("archivo") en un archivo temporal y se llama al importador ya hecho
+    // new ImportadorPersonas(repositorioPersonas).importarPersonasDesdeCSV(pathTemporal);
+    ctx.redirect("/admin/importacion?importado");
+  }
+
   public void ejecutarAlgoritmos(Context ctx) {
     // Sin conexión todavía: acá se corre lo mismo que POST /api/sugerencias (limpiar sugerencias y procesar las donaciones en depósito)
     ctx.redirect("/admin/asignaciones?ejecutado");
