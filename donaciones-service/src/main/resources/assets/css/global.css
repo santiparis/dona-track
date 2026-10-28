@@ -1,0 +1,106 @@
+/* Paleta provisoria: para cambiarla se tocan solo estas variables */
+:root {
+    --color-principal: #1D4ED8;
+    --color-principal-hover: #1E40AF;
+    --color-principal-oscuro: #1E3A8A;
+    --color-principal-claro: #DBEAFE;
+    --color-principal-borde: #93C5FD;
+    --color-acento: #C2410C;
+    --color-acento-hover: #9A3412;
+
+    --color-texto: #1F2937;
+    --color-texto-suave: #4B5563;
+    --color-texto-invertido: #FFFFFF;
+    --color-fondo: #F3F4F6;
+    --color-superficie: #FFFFFF;
+    --color-borde: #D1D5DB;
+    --color-sombra: rgba(29, 78, 216, 0.25);
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--color-texto);
+    background: var(--color-fondo);
+}
+
+a {
+    color: var(--color-principal);
+}
+
+a:hover {
+    color: var(--color-principal-oscuro);
+}
+
+h1 {
+    font-size: 28px;
+    margin: 0;
+    color: var(--color-principal-oscuro);
+}
+
+h2 {
+    font-size: 20px;
+    margin: 0;
+    color: var(--color-principal-oscuro);
+}
+
+h3 {
+    font-size: 17px;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.muted {
+    color: var(--color-texto-suave);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Botones: .btn principal, .btn2 secundario y .cta solo para la acción principal de la pantalla */
+.btn,
+.btn2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.btn {
+    background: var(--color-principal);
+    color: var(--color-texto-invertido);
+    border: none;
+}
+
+.btn:hover {
+    background: var(--color-principal-hover);
+    color: var(--color-texto-invertido);
+}
+
+.btn2 {
+    background: var(--color-superficie);
+    color: var(--color-principal);
+    border: 1px solid var(--color-principal);
+}
+
+.cta {
+    background: var(--color-acento);
+}
+
+.cta:hover {
+    background: var(--color-acento-hover);
+}

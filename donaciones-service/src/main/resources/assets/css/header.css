@@ -1,0 +1,72 @@
+.hdr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 24px;
+    background: var(--color-principal);
+    box-shadow: 0 4px 16px var(--color-sombra);
+}
+
+.hdr a {
+    color: var(--color-texto-invertido);
+}
+
+.hdr a:hover {
+    color: var(--color-texto-invertido);
+    text-decoration: underline;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.logo-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--color-superficie);
+}
+
+.nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav a {
+    padding: 10px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.nav a.on {
+    background: var(--color-principal-oscuro);
+    font-weight: 600;
+}
+
+/* Sobre el header azul los botones se invierten */
+.hdr .btn {
+    background: var(--color-superficie);
+    color: var(--color-principal);
+}
+
+.hdr .btn:hover {
+    background: var(--color-principal-claro);
+    color: var(--color-principal-oscuro);
+    text-decoration: none;
+}
+
+.hdr .btn2 {
+    background: transparent;
+    color: var(--color-texto-invertido);
+    border-color: var(--color-texto-invertido);
+}

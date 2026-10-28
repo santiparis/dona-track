@@ -12,7 +12,10 @@ import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.web.Router;
+import donaciones.web.templates.JavalinHandlebars;
 import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import donaciones.controller.*;
 
 import java.util.List;
@@ -43,7 +46,16 @@ public class Main {
         donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
 
-    Javalin app = Javalin.create().start(8081);
+    Javalin app = Javalin.create(config -> {
+      config.fileRenderer(new JavalinHandlebars());
+      config.staticFiles.add(staticFiles -> {
+        staticFiles.hostedPath = "/assets";
+        staticFiles.directory = "/assets";
+        staticFiles.location = Location.CLASSPATH;
+      });
+    }).start(8081);
+
+    new Router().configure(app);
 
     // CRUD Donaciones
     app.get("/api/donaciones", controller::listar);

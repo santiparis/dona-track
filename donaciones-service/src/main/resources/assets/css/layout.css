@@ -1,0 +1,128 @@
+.wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-top: 3px solid var(--color-principal);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Tarjeta horizontal: texto a la izquierda, botón a la derecha */
+.card.banner {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.banner-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Recuadro que ocupa el lugar de una imagen o un mapa todavía no implementado */
+.ph {
+    background: var(--color-principal-claro);
+    border: 2px dashed var(--color-principal-borde);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-principal-oscuro);
+    font-weight: 600;
+    text-align: center;
+    padding: 16px;
+}
+
+.num {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--color-principal);
+    color: var(--color-texto-invertido);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* Bloque destacado de la home */
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: center;
+    padding: 40px;
+    background: var(--color-principal);
+    border-radius: 12px;
+    color: var(--color-texto-invertido);
+}
+
+.hero-texto {
+    flex: 1 1 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    line-height: 1.15;
+    color: var(--color-texto-invertido);
+}
+
+.hero .muted {
+    font-size: 18px;
+    color: var(--color-principal-claro);
+}
+
+.hero .btn2 {
+    background: transparent;
+    color: var(--color-texto-invertido);
+    border-color: var(--color-texto-invertido);
+}
+
+.hero .ph {
+    flex: 1 1 380px;
+    height: 300px;
+    background: var(--color-principal-hover);
+    border-color: var(--color-principal-borde);
+    color: var(--color-principal-claro);
+}
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+    color: var(--color-texto-suave);
+    font-size: 14px;
+    border-top: 1px solid var(--color-borde);
+    background: var(--color-superficie);
+}

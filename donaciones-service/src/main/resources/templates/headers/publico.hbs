@@ -1,0 +1,12 @@
+<header class="hdr">
+    <a class="logo" href="/"><span class="logo-box"></span>DonaTrack</a>
+    <nav class="nav" aria-label="Principal">
+        <a {{#if (eq seccion "inicio")}}class="on"{{/if}} href="/">Inicio</a>
+        <a {{#if (eq seccion "entregadas")}}class="on"{{/if}} href="/donaciones-entregadas">Donaciones entregadas</a>
+        <a {{#if (eq seccion "legal")}}class="on"{{/if}} href="/legal">Legal</a>
+    </nav>
+    <div class="row">
+        <a class="btn2" href="/login">Iniciar sesión</a>
+        <a class="btn" href="/registro">Registrarme</a>
+    </div>
+</header>
