@@ -2,6 +2,7 @@ package donaciones.web.controllers;
 
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,33 @@ public class EntidadController {
         .filter(e -> !List.of("EN_DEPOSITO", "VENCIDA").contains(e.get("valor")))
         .toList());   // MOCK
     return model;
+  }
+
+  public Map<String, Object> recepcion(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Confirmar recepción");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+    model.put("usuario", DatosMock.entidad());   // MOCK
+
+    // Donacion donacion = donacionRepository.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", DatosMock.donacionesAsignadas().stream()
+        .filter(d -> d.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new));   // MOCK
+    return model;
+  }
+
+  public void confirmarRecepcion(Context ctx) {
+    // Sin persistencia todavía: acá la donación pasa a Entregada y se guardan las fotos de ctx.uploadedFiles("fotos")
+    ctx.redirect("/entidad/donaciones");
+  }
+
+  public void informarNoRecibida(Context ctx) {
+    // Sin persistencia todavía: acá la entrega se marca No recibida con el motivo, para que la revise la administración
+    ctx.redirect("/entidad/donaciones");
   }
 
   public void crearNecesidad(Context ctx) {

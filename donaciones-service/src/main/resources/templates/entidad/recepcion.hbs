@@ -1,0 +1,46 @@
+{{#partial "contenido"}}
+    <div class="angosto">
+        <nav class="migas" aria-label="Ruta de navegación">
+            <a href="/entidad/donaciones">Donaciones asignadas</a> / Confirmar recepción
+        </nav>
+        <h1>Confirmar recepción</h1>
+
+        {{#with donacion}}
+            <section class="card">
+                <div class="f2">
+                    <div class="dato"><span class="muted">Bien</span><span>{{bien}}</span></div>
+                    <div class="dato"><span class="muted">Cantidad</span><span>{{cantidad}}</span></div>
+                    <div class="dato"><span class="muted">Donante</span><span>{{donante}}</span></div>
+                    <div class="dato"><span class="muted">Camión</span><span>{{camion}}</span></div>
+                </div>
+            </section>
+
+            {{!-- multipart para poder mandar las fotos junto con el formulario --}}
+            <form class="card" action="/entidad/donaciones/{{id}}/recepcion" method="post" enctype="multipart/form-data">
+                <h2>¿Recibiste la donación?</h2>
+                <div class="carga-fotos">
+                    <label class="subtitulo">Subí fotos de lo que recibiste
+                        <input type="file" name="fotos" accept="image/*" multiple required>
+                    </label>
+                    <p class="hint">JPG o PNG. Al menos una foto.</p>
+                </div>
+                <label>Comentario (opcional)<textarea name="comentario"></textarea></label>
+                <div class="row acciones">
+                    <a class="btn2" href="/entidad/donaciones">Cancelar</a>
+                    <button class="btn cta" type="submit">Confirmar recepción</button>
+                </div>
+            </form>
+
+            <form class="card" action="/entidad/donaciones/{{id}}/no-recibida" method="post">
+                <h2>No la recibí</h2>
+                <p class="muted">Avisamos a la administración para que revise la entrega.</p>
+                <label>Motivo<textarea name="motivo" placeholder="Ej: no pasó ningún camión" required></textarea></label>
+                <div class="row acciones">
+                    <button class="btn2" type="submit">Informar entrega no recibida</button>
+                </div>
+            </form>
+        {{/with}}
+    </div>
+{{/partial}}
+
+{{> layout}}

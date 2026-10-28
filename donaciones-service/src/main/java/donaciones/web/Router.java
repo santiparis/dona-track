@@ -34,5 +34,8 @@ public class Router {
     app.post("/entidad/necesidades/{id}", entidadController::modificarNecesidad);
     app.post("/entidad/necesidades/{id}/eliminar", entidadController::eliminarNecesidad);
     app.get("/entidad/donaciones", ctx -> ctx.render("entidad/donaciones", entidadController.donaciones(ctx)));
+    app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", entidadController.recepcion(ctx)));
+    app.post("/entidad/donaciones/{id}/recepcion", entidadController::confirmarRecepcion);
+    app.post("/entidad/donaciones/{id}/no-recibida", entidadController::informarNoRecibida);
   }
 }

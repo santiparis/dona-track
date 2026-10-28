@@ -48,6 +48,22 @@ th {
     width: 120px;
 }
 
+/* Ruta de navegación arriba del título (ej: Donaciones asignadas / Confirmar recepción) */
+.migas {
+    font-size: 14px;
+}
+
+/* Dato de solo lectura: etiqueta chica arriba y valor abajo */
+.dato {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dato .muted {
+    font-size: 13px;
+}
+
 /* Contador de resultados, empujado a la derecha */
 .total {
     margin-left: auto;

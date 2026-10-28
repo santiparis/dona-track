@@ -143,13 +143,13 @@ public class DatosMock {
   public static List<Map<String, String>> donacionesAsignadas() {
     return List.of(
         Map.of("id", "12", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
-            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "actualizado", "Hoy 08:30"),
+            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "actualizado", "Hoy 08:30", "camion", "AB123CD"),
         Map.of("id", "13", "bien", "Mesas · usada", "cantidad", "1 unidad", "donante", "Arcos Plateados S.A.",
-            "estado", "LISTA_PARA_ENTREGAR", "estadoTexto", "Lista para entregar", "actualizado", "Ayer 03:00"),
+            "estado", "LISTA_PARA_ENTREGAR", "estadoTexto", "Lista para entregar", "actualizado", "Ayer 03:00", "camion", "AE456FG"),
         Map.of("id", "7", "bien", "Bancos · nuevos", "cantidad", "10 unidades", "donante", "Ana Pérez",
-            "estado", "ENTREGADA", "estadoTexto", "Entregada", "actualizado", "02/09/2026"),
+            "estado", "ENTREGADA", "estadoTexto", "Entregada", "actualizado", "02/09/2026", "camion", "AB123CD"),
         Map.of("id", "5", "bien", "Bancos · usados", "cantidad", "4 unidades", "donante", "Ana Pérez",
-            "estado", "ENTREGA_FALLIDA", "estadoTexto", "Entrega fallida", "actualizado", "28/08/2026")
+            "estado", "ENTREGA_FALLIDA", "estadoTexto", "Entrega fallida", "actualizado", "28/08/2026", "camion", "AE456FG")
     );
   }
 
