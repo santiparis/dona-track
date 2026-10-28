@@ -35,6 +35,15 @@ body {
     gap: 8px;
 }
 
+/* Título de la pantalla con un botón a la derecha (ej: Actualizar) */
+.encabezado-con-accion {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
 .seccion {
     display: flex;
     flex-direction: column;

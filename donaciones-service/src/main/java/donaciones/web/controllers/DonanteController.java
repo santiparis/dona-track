@@ -102,4 +102,16 @@ public class DonanteController {
     model.put("notificaciones", DatosMock.notificacionesDelDonante());   // MOCK
     return model;
   }
+
+  public Map<String, Object> seguimiento() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Seguimiento de entregas");
+    model.put("rol", "donante");
+    model.put("seccion", "seguimiento");
+    model.put("donante", DatosMock.donante());   // MOCK
+    // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
+    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDonacionesDe(idDonante).execute().body();
+    model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
+    return model;
+  }
 }
