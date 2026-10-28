@@ -1,0 +1,24 @@
+{{#partial "contenido"}}
+    <h1>Registrar donante</h1>
+
+    <nav class="tabs" aria-label="Tipo de persona">
+        <a class="tab {{#if (eq tipo "HUMANA")}}on{{/if}}" href="/admin/donantes/nuevo?tipo=HUMANA">Persona humana</a>
+        <a class="tab {{#if (eq tipo "JURIDICA")}}on{{/if}}" href="/admin/donantes/nuevo?tipo=JURIDICA">Persona jurídica</a>
+    </nav>
+
+    <form class="card" action="/admin/donantes" method="post">
+        <input type="hidden" name="tipo" value="{{tipo}}">
+
+        {{> form-donante}}
+
+        <p class="aviso">Al guardar se le envía un mail de bienvenida para su primer acceso.</p>
+        {{!-- Los dos botones mandan el mismo form: "siguiente" indica a dónde ir después de guardar --}}
+        <div class="row acciones">
+            <a class="btn2" href="/admin/donaciones">Cancelar</a>
+            <button class="btn cta" type="submit">Registrar donante</button>
+            <button class="btn" type="submit" name="siguiente" value="donacion">Registrar y cargar donación</button>
+        </div>
+    </form>
+{{/partial}}
+
+{{> layout}}

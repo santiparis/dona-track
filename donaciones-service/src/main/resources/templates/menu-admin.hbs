@@ -1,0 +1,12 @@
+{{!-- Menú lateral de las pantallas del admin: lo incluye el layout cuando rol es "admin" --}}
+<nav class="menu-lateral" aria-label="Administración">
+    <p>Donantes</p>
+    <a {{#if (eq seccion "donante-nuevo")}}class="on"{{/if}} href="/admin/donantes/nuevo">Registrar donante</a>
+    <a {{#if (eq seccion "importacion")}}class="on"{{/if}} href="/admin/importacion">Importar CSV</a>
+    <p>Donaciones</p>
+    <a {{#if (eq seccion "donacion-nueva")}}class="on"{{/if}} href="/admin/donaciones/nueva">Registrar donación</a>
+    <a {{#if (eq seccion "deposito")}}class="on"{{/if}} href="/admin/donaciones">En depósito</a>
+    <a {{#if (eq seccion "asignaciones")}}class="on"{{/if}} href="/admin/asignaciones">Asignaciones</a>
+    <p>Logística</p>
+    <a {{#if (eq seccion "camiones")}}class="on"{{/if}} href="/admin/camiones">Camiones</a>
+</nav>

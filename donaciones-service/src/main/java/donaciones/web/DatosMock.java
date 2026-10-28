@@ -131,6 +131,10 @@ public class DatosMock {
     );
   }
 
+  public static Map<String, Object> admin() {
+    return Map.of("nombre", "admin@donatrack", "notificacionesSinLeer", 0);
+  }
+
   public static Map<String, Object> entidad() {
     return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1);
   }

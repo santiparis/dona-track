@@ -1,5 +1,6 @@
 package donaciones.web;
 
+import donaciones.web.controllers.AdminController;
 import donaciones.web.controllers.DonanteController;
 import donaciones.web.controllers.EntidadController;
 import donaciones.web.controllers.PublicoController;
@@ -13,6 +14,7 @@ public class Router {
     SesionController sesionController = new SesionController();
     DonanteController donanteController = new DonanteController();
     EntidadController entidadController = new EntidadController();
+    AdminController adminController = new AdminController();
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
@@ -39,5 +41,8 @@ public class Router {
     app.post("/entidad/donaciones/{id}/no-recibida", entidadController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", entidadController.notificaciones()));
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", entidadController.seguimiento()));
+
+    app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", adminController.donanteNuevo(ctx)));
+    app.post("/admin/donantes", adminController::registrarDonante);
   }
 }

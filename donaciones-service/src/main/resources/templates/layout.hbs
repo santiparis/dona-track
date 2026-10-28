@@ -15,8 +15,19 @@
 {{> header}}
 
 <main class="wrap">
-    {{#block "contenido"}}
-    {{/block}}
+    {{#if (eq rol "admin")}}
+        {{!-- El admin tiene un menú lateral en vez del nav del header --}}
+        <div class="admin">
+            {{> menu-admin}}
+            <div class="admin-contenido">
+                {{#block "contenido"}}
+                {{/block}}
+            </div>
+        </div>
+    {{else}}
+        {{#block "contenido"}}
+        {{/block}}
+    {{/if}}
 </main>
 
 <footer class="foot">
