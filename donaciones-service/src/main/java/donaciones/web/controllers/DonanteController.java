@@ -97,9 +97,11 @@ public class DonanteController {
     model.put("rol", "donante");
     model.put("seccion", "notificaciones");
     model.put("usuario", DatosMock.donante());   // MOCK
-    model.put("medioPreferido", "correo");   // MOCK
+    model.put("aviso", "También te llegan por tu medio preferido: correo.");   // MOCK
     // List<Notificacion> notificaciones = notificacionRepository.obtenerTodas().stream().filter(n -> n.getReceptorId().equals(idDonante)).toList();
-    model.put("notificaciones", DatosMock.notificacionesDelDonante());   // MOCK
+    model.put("notificaciones", DatosMock.notificaciones().stream()
+        .filter(n -> "donante".equals(n.get("destinatario")))
+        .toList());   // MOCK
     return model;
   }
 

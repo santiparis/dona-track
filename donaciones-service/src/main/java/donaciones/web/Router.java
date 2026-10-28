@@ -26,7 +26,7 @@ public class Router {
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donanteController.donaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", donanteController.entidades(ctx)));
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
-    app.get("/donante/notificaciones", ctx -> ctx.render("donante/notificaciones", donanteController.notificaciones()));
+    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", donanteController.notificaciones()));
     app.get("/donante/seguimiento", ctx -> ctx.render("donante/seguimiento", donanteController.seguimiento()));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadController.necesidades(ctx)));
@@ -37,5 +37,6 @@ public class Router {
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", entidadController.recepcion(ctx)));
     app.post("/entidad/donaciones/{id}/recepcion", entidadController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", entidadController::informarNoRecibida);
+    app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", entidadController.notificaciones()));
   }
 }
