@@ -111,6 +111,12 @@ p {
     color: var(--color-entregada-texto);
 }
 
+/* Algo logrado que no es un estado de donación (ej: misión cumplida, insignia obtenida) */
+.chip.ok {
+    background: var(--color-entregada-fondo);
+    color: var(--color-entregada-texto);
+}
+
 .chip.ENTREGA_FALLIDA {
     background: var(--color-acento-hover);
     color: var(--color-texto-invertido);

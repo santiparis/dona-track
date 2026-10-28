@@ -79,4 +79,15 @@ public class DonanteController {
         .toList());   // MOCK
     return model;
   }
+
+  public Map<String, Object> incentivos() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Incentivos");
+    model.put("rol", "donante");
+    model.put("seccion", "incentivos");
+    model.put("donante", DatosMock.donante());   // MOCK
+    // Sin dominio de incentivos todavía: en esta entrega es solo la vista
+    model.put("incentivos", DatosMock.incentivos());   // MOCK
+    return model;
+  }
 }

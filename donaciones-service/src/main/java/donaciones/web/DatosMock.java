@@ -77,6 +77,27 @@ public class DatosMock {
     };
   }
 
+  // Los textos entre corchetes quedan como en el boceto: el dominio de incentivos todavía no está definido
+  public static Map<String, Object> incentivos() {
+    return Map.of(
+        "categoria", Map.of("nombre", "[CATEGORÍA ACTUAL]", "porcentaje", "70",
+            "faltan", "Te faltan [N] donaciones para llegar a [PRÓXIMA CATEGORÍA]"),
+        "resumenMisiones", "2 en curso · 1 cumplida",
+        "misiones", List.of(
+            Map.of("titulo", "[Misión] Doná alimentos 3 meses seguidos", "cumplida", false,
+                "porcentaje", "66", "detalle", "2 de 3 · Recompensa: insignia [NOMBRE]"),
+            Map.of("titulo", "[Misión] Doná a 3 entidades distintas", "cumplida", false,
+                "porcentaje", "33", "detalle", "1 de 3"),
+            Map.of("titulo", "[Misión] Primera donación", "cumplida", true,
+                "porcentaje", "100", "detalle", "Cumplida el 02/09/2026")),
+        "insignias", List.of(
+            Map.of("nombre", "[Insignia 1]", "obtenida", true),
+            Map.of("nombre", "[Insignia 2]", "obtenida", true),
+            Map.of("nombre", "[Insignia 3]", "obtenida", false),
+            Map.of("nombre", "[Insignia 4]", "obtenida", false))
+    );
+  }
+
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
         Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
