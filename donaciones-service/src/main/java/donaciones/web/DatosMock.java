@@ -53,7 +53,7 @@ public class DatosMock {
     );
   }
 
-  public static List<Map<String, Object>> categorias() {
+  public static List<Map<String, String>> categorias() {
     return List.of(
         Map.of("valor", "ALIMENTOS", "texto", "Alimentos"),
         Map.of("valor", "MUEBLES", "texto", "Muebles"),
@@ -75,5 +75,24 @@ public class DatosMock {
           Map.of("valor", "CALZADO", "texto", "Calzado"));
       default -> List.of();
     };
+  }
+
+  public static List<Map<String, Object>> entidadesConNecesidades() {
+    return List.of(
+        Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+            "necesidades", List.of(
+                Map.of("subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "tipo", "Extraordinaria",
+                    "porcentaje", "33", "detalle", "10 de 30 unidades · Reposición tras inundación"),
+                Map.of("subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "tipo", "Extraordinaria",
+                    "porcentaje", "20", "detalle", "6 de 30 unidades"))),
+        Map.of("nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+            "necesidades", List.of(
+                Map.of("subcategoria", "FIDEOS", "subcategoriaTexto", "Fideos", "tipo", "Recurrente · semanal",
+                    "porcentaje", "60", "detalle", "60 de 100 paquetes esta semana"))),
+        Map.of("nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+            "necesidades", List.of(
+                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
+                    "porcentaje", "0", "detalle", "0 de 5 unidades")))
+    );
   }
 }

@@ -71,6 +71,22 @@ form.card {
     gap: 16px;
 }
 
+/* Fila de búsqueda: el texto se estira y el botón queda alineado abajo */
+.buscador {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.buscador-texto {
+    flex: 1 1 280px;
+}
+
+.buscador-filtro {
+    flex: 0 1 240px;
+}
+
 /* Checkbox con forma de pastilla (ej: subcategorías en los filtros) */
 .check {
     flex-direction: row;

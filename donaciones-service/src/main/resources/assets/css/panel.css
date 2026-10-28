@@ -41,6 +41,39 @@ th {
     margin-left: auto;
 }
 
+/* Necesidad de una entidad, con su barra de avance */
+.necesidad {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-neutro);
+}
+
+.necesidad-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.necesidad .muted {
+    font-size: 14px;
+}
+
+.bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--color-neutro);
+    overflow: hidden;
+}
+
+.bar span {
+    display: block;
+    height: 8px;
+    background: var(--color-principal);
+}
+
 /* Lista de cambios de estado de una donación */
 .historial {
     margin: 0;

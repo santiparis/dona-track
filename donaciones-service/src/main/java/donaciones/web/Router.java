@@ -22,5 +22,6 @@ public class Router {
     app.post("/usuarios", sesionController::registrar);
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donanteController.donaciones(ctx)));
+    app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", donanteController.entidades(ctx)));
   }
 }

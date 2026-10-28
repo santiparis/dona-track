@@ -1,0 +1,45 @@
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Entidades beneficiarias</h1>
+        <p class="muted">Conocé a las organizaciones registradas y qué necesitan hoy.</p>
+    </div>
+
+    <form class="buscador" action="/donante/entidades" method="get">
+        <label class="buscador-texto">Buscar por nombre<input name="q" type="search" placeholder="Ej: comedor" value="{{busqueda}}"></label>
+        <label class="buscador-filtro">Necesitan
+            <select name="subcategoria">
+                <option value="">Cualquier bien</option>
+                {{#each subcategorias}}
+                    <option value="{{valor}}" {{#if (eq valor ../subcategoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                {{/each}}
+            </select>
+        </label>
+        <button class="btn" type="submit">Buscar</button>
+    </form>
+
+    {{#if entidades}}
+        <div class="cols">
+            {{#each entidades}}
+                <article class="card">
+                    <h2>{{nombre}}</h2>
+                    <p class="muted">{{direccion}} · {{telefono}}</p>
+                    {{#each necesidades}}
+                        <div class="necesidad">
+                            <div class="necesidad-titulo">
+                                <span>{{subcategoriaTexto}}</span>
+                                <span class="chip">{{tipo}}</span>
+                            </div>
+                            {{!-- El ancho de la barra depende del dato: único estilo inline --}}
+                            <div class="bar" role="img" aria-label="{{detalle}}"><span style="width: {{porcentaje}}%"></span></div>
+                            <p class="muted">{{detalle}}</p>
+                        </div>
+                    {{/each}}
+                </article>
+            {{/each}}
+        </div>
+    {{else}}
+        <p class="muted">No hay entidades que coincidan con la búsqueda.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}
