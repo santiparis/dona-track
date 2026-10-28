@@ -45,6 +45,8 @@ public class Main {
     AsignacionesController asignacionesController = new AsignacionesController(
         donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
+    CamionesController camionesController = new CamionesController(logisticaAPICalls);
+
 
     Javalin app = Javalin.create(config -> {
       config.fileRenderer(new JavalinHandlebars());
@@ -55,6 +57,6 @@ public class Main {
       });
     }).start(8081);
 
-    new Router(controller, donanteController, entidadesController, asignacionesController).configure(app);
+    new Router(controller, donanteController, entidadesController, asignacionesController, camionesController).configure(app);
   }
 }

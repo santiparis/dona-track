@@ -1,10 +1,10 @@
 package donaciones.web;
 
 import donaciones.controller.AsignacionesController;
+import donaciones.controller.CamionesController;
 import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
-import donaciones.web.controllers.AdminController;
 import donaciones.web.controllers.EntidadController;
 import donaciones.web.controllers.PublicoController;
 import donaciones.web.controllers.SesionController;
@@ -16,13 +16,16 @@ public class Router {
   private final DonanteController donanteController;
   private final EntidadesBeneficiariasController entidadesController;
   private final AsignacionesController asignacionesController;
+  private final CamionesController camionesController;
 
   public Router(DonacionController donacionController, DonanteController donanteController,
-                EntidadesBeneficiariasController entidadesController, AsignacionesController asignacionesController) {
+                EntidadesBeneficiariasController entidadesController, AsignacionesController asignacionesController,
+                CamionesController camionesController) {
     this.donacionController = donacionController;
     this.donanteController = donanteController;
     this.entidadesController = entidadesController;
     this.asignacionesController = asignacionesController;
+    this.camionesController = camionesController;
   }
 
   public void configure(Javalin app) {
@@ -31,7 +34,6 @@ public class Router {
     // Hasta mover sus métodos conviven dos DonanteController: el de la API (campo) y este, por perfil
     donaciones.web.controllers.DonanteController perfilDonanteController = new donaciones.web.controllers.DonanteController();
     EntidadController entidadController = new EntidadController();
-    AdminController adminController = new AdminController();
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
@@ -46,7 +48,7 @@ public class Router {
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", perfilDonanteController.notificaciones()));
-    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", perfilDonanteController.seguimiento()));
+    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
     app.post("/entidad/necesidades", entidadesController::registrarNecesidad);
@@ -57,7 +59,7 @@ public class Router {
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", entidadController.notificaciones()));
-    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", entidadController.seguimiento()));
+    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad()));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
     app.post("/admin/donantes", donanteController::registrarDonante);
@@ -69,10 +71,10 @@ public class Router {
     app.post("/admin/asignaciones/ejecutar", asignacionesController::ejecutarAlgoritmosAhora);
     app.get("/admin/asignaciones/{id}", ctx -> ctx.render("admin/asignacion", asignacionesController.asignacion(ctx)));
     app.post("/admin/asignaciones/{id}", asignacionesController::confirmarDestino);
-    app.get("/admin/camiones", ctx -> ctx.render("admin/camiones", adminController.camiones(ctx)));
-    app.post("/admin/camiones", adminController::crearCamion);
-    app.post("/admin/camiones/{id}", adminController::modificarCamion);
-    app.post("/admin/camiones/{id}/eliminar", adminController::eliminarCamion);
+    app.get("/admin/camiones", ctx -> ctx.render("admin/camiones", camionesController.camiones(ctx)));
+    app.post("/admin/camiones", camionesController::crearCamion);
+    app.post("/admin/camiones/{id}", camionesController::modificarCamion);
+    app.post("/admin/camiones/{id}/eliminar", camionesController::eliminarCamion);
     app.get("/admin/importacion", ctx -> ctx.render("admin/importacion", donanteController.importacion(ctx)));
     app.post("/admin/importacion", donanteController::importar);
 
