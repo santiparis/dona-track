@@ -1,0 +1,44 @@
+/* Formulario corto centrado (ej: login) */
+.form-chico {
+    width: 100%;
+    max-width: 420px;
+    margin: 16px auto;
+}
+
+.form-chico .card {
+    padding: 28px;
+    gap: 16px;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+input {
+    min-height: 44px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-borde-input);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    font-weight: 400;
+    background: var(--color-superficie);
+    color: var(--color-texto);
+}
+
+input:focus {
+    outline: 2px solid var(--color-principal);
+    outline-offset: 1px;
+}
+
+button.btn {
+    cursor: pointer;
+}
+
+.centrado {
+    text-align: center;
+}

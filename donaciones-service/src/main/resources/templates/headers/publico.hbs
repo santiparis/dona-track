@@ -6,7 +6,9 @@
         <a {{#if (eq seccion "legal")}}class="on"{{/if}} href="/legal">Legal</a>
     </nav>
     <div class="row">
-        <a class="btn2" href="/login">Iniciar sesión</a>
+        {{#unless (eq seccion "login")}}
+            <a class="btn2" href="/login">Iniciar sesión</a>
+        {{/unless}}
         <a class="btn" href="/registro">Registrarme</a>
     </div>
 </header>
