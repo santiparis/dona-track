@@ -173,6 +173,22 @@ public class DatosMock {
         .toList();
   }
 
+  // vencimiento: VENCIDA | PROXIMA (vence esta semana) | LEJANA | NO_APLICA (no es perecedera)
+  public static List<Map<String, String>> donacionesEnDeposito() {
+    return List.of(
+        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ALIMENTOS"),
+        Map.of("id", "22", "bien", "Leche", "cantidad", "30 litros", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "vence", "26/10/2026", "vencimiento", "VENCIDA", "categoria", "ALIMENTOS"),
+        Map.of("id", "23", "bien", "Leche", "cantidad", "20 litros", "donante", "Ana Pérez",
+            "ingreso", "26/10/2026", "vence", "01/01/2027", "vencimiento", "LEJANA", "categoria", "ALIMENTOS"),
+        Map.of("id", "25", "bien", "Tomate", "cantidad", "50 tetra-packs", "donante", "Pastas del Sur",
+            "ingreso", "27/10/2026", "vence", "01/11/2026", "vencimiento", "PROXIMA", "categoria", "ALIMENTOS"),
+        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
+            "ingreso", "27/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ROPA")
+    );
+  }
+
   public static List<Map<String, String>> donantes() {
     return List.of(
         Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),

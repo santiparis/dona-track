@@ -4,6 +4,7 @@ import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -55,6 +56,41 @@ public class AdminController {
     model.put("masFilas", cantidadFilas + 1);
     model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
     return model;
+  }
+
+  public Map<String, Object> deposito(Context ctx) {
+    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA|PROXIMA
+    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones en depósito");
+    model.put("rol", "admin");
+    model.put("seccion", "deposito");
+    model.put("usuario", DatosMock.admin());   // MOCK
+
+    // List<Donacion> enDeposito = donacionRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO).toList();
+    List<Map<String, String>> enDeposito = DatosMock.donacionesEnDeposito();   // MOCK
+    model.put("donaciones", enDeposito.stream()
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
+        .filter(d -> vence.isEmpty() || vence.equals(d.get("vencimiento")))
+        .toList());   // MOCK
+    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("categoriaElegida", categoria);
+    model.put("venceElegido", vence);
+
+    // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
+    String idVencida = ctx.queryParam("vencida");
+    enDeposito.stream()
+        .filter(d -> d.get("id").equals(idVencida))
+        .findFirst()
+        .ifPresent(d -> model.put("marcadaVencida", d));   // MOCK
+    return model;
+  }
+
+  public void marcarVencida(Context ctx) {
+    // Sin persistencia todavía: acá la donación ctx.pathParam("id") pasa a Vencida (cambio manual, queda en el historial)
+    ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
   }
 
   public void registrarDonacion(Context ctx) {

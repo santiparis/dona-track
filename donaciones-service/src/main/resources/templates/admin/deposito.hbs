@@ -1,0 +1,79 @@
+{{#partial "contenido"}}
+    <div class="encabezado-con-accion">
+        <h1>Donaciones en depósito</h1>
+        <a class="btn cta" href="/admin/donaciones/nueva">Registrar donación</a>
+    </div>
+
+    {{#if marcadaVencida}}
+        <p class="aviso" role="status">La donación #{{marcadaVencida.id}} ({{marcadaVencida.bien}} · {{marcadaVencida.cantidad}}) se marcó como vencida.</p>
+    {{/if}}
+
+    <form class="buscador" action="/admin/donaciones" method="get">
+        <label class="buscador-filtro">Categoría
+            <select name="categoria">
+                <option value="">Todas</option>
+                {{#each categorias}}
+                    <option value="{{valor}}" {{#if (eq valor ../categoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                {{/each}}
+            </select>
+        </label>
+        <label class="buscador-filtro">Vencimiento
+            <select name="vence">
+                <option value="">Cualquiera</option>
+                <option value="VENCIDA" {{#if (eq venceElegido "VENCIDA")}}selected{{/if}}>Vencidas</option>
+                <option value="PROXIMA" {{#if (eq venceElegido "PROXIMA")}}selected{{/if}}>Vencen esta semana</option>
+            </select>
+        </label>
+        <button class="btn" type="submit">Filtrar</button>
+    </form>
+
+    {{#if donaciones}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Bien</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Donante</th>
+                        <th scope="col">Ingreso</th>
+                        <th scope="col">Vence</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each donaciones}}
+                        <tr>
+                            <td>{{id}}</td>
+                            <td>{{bien}}</td>
+                            <td>{{cantidad}}</td>
+                            <td>{{donante}}</td>
+                            <td>{{ingreso}}</td>
+                            <td>
+                                {{#if (eq vencimiento "VENCIDA")}}
+                                    <span class="vencida">{{vence}} · vencida</span>
+                                {{else}}
+                                    {{vence}}
+                                {{/if}}
+                            </td>
+                            {{!-- Solo las perecederas se pueden marcar como vencidas --}}
+                            <td>
+                                {{#if (eq vencimiento "NO_APLICA")}}
+                                    <span class="muted">—</span>
+                                {{else}}
+                                    <form action="/admin/donaciones/{{id}}/vencida" method="post">
+                                        <button class="btn2 chico" type="submit">Marcar vencida</button>
+                                    </form>
+                                {{/if}}
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <p class="muted">No hay donaciones en depósito con esos filtros.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

@@ -126,6 +126,12 @@ th {
     font-size: 13px;
 }
 
+/* Fecha de vencimiento ya pasada */
+.vencida {
+    font-weight: 700;
+    color: var(--color-acento-hover);
+}
+
 /* Contador de resultados, empujado a la derecha */
 .total {
     margin-left: auto;
