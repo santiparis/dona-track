@@ -154,6 +154,13 @@ p {
     border: 1px solid var(--color-principal);
 }
 
+/* Botón más bajo, para acciones dentro de una tabla */
+.btn2.chico {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 14px;
+}
+
 .cta {
     background: var(--color-acento);
 }

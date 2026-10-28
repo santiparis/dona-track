@@ -33,7 +33,19 @@ th {
 .acciones-tabla {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 12px;
+}
+
+/* Barra de avance chica con el número al lado, dentro de una tabla */
+.avance {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.avance .bar {
+    width: 120px;
 }
 
 /* Contador de resultados, empujado a la derecha */

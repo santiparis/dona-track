@@ -122,6 +122,24 @@ public class DatosMock {
     );
   }
 
+  public static Map<String, Object> entidad() {
+    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1);
+  }
+
+  public static List<Map<String, String>> necesidadesDeLaEntidad() {
+    return List.of(
+        Map.of("id", "1", "subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "descripcion", "Reposición tras inundación",
+            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
+            "cantidad", "30", "avance", "10 / 30", "porcentaje", "33"),
+        Map.of("id", "2", "subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "descripcion", "Reposición tras inundación",
+            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
+            "cantidad", "30", "avance", "6 / 30", "porcentaje", "20"),
+        Map.of("id", "3", "subcategoria", "LECHE", "subcategoriaTexto", "Leche", "descripcion", "Desayuno escolar",
+            "tipo", "RECURRENTE", "tipoTexto", "Recurrente · mensual", "periodo", "MENSUAL",
+            "cantidad", "50", "avance", "40 / 50", "porcentaje", "80")
+    );
+  }
+
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
         Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",

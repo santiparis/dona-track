@@ -1,6 +1,7 @@
 package donaciones.web;
 
 import donaciones.web.controllers.DonanteController;
+import donaciones.web.controllers.EntidadController;
 import donaciones.web.controllers.PublicoController;
 import donaciones.web.controllers.SesionController;
 import io.javalin.Javalin;
@@ -11,6 +12,7 @@ public class Router {
     PublicoController publicoController = new PublicoController();
     SesionController sesionController = new SesionController();
     DonanteController donanteController = new DonanteController();
+    EntidadController entidadController = new EntidadController();
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
@@ -26,5 +28,10 @@ public class Router {
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
     app.get("/donante/notificaciones", ctx -> ctx.render("donante/notificaciones", donanteController.notificaciones()));
     app.get("/donante/seguimiento", ctx -> ctx.render("donante/seguimiento", donanteController.seguimiento()));
+
+    app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadController.necesidades(ctx)));
+    app.post("/entidad/necesidades", entidadController::guardarNecesidad);
+    app.post("/entidad/necesidades/{id}", entidadController::guardarNecesidad);
+    app.post("/entidad/necesidades/{id}/eliminar", entidadController::eliminarNecesidad);
   }
 }

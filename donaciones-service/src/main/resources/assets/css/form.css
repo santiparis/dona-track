@@ -192,7 +192,8 @@ fieldset.sin-borde legend {
     box-shadow: 0 1px 3px var(--color-sombra);
 }
 
-button.btn {
+button.btn,
+button.btn2 {
     cursor: pointer;
 }
 

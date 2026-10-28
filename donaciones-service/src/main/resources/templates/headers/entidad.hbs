@@ -1,0 +1,15 @@
+<header class="hdr">
+    <a class="logo" href="/entidad/necesidades"><span class="logo-box"></span>DonaTrack</a>
+    <nav class="nav" aria-label="Entidad">
+        <a {{#if (eq seccion "necesidades")}}class="on"{{/if}} href="/entidad/necesidades">Necesidades</a>
+        <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/entidad/donaciones">Donaciones asignadas</a>
+        <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/entidad/seguimiento">Seguimiento</a>
+        <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/entidad/notificaciones">Notificaciones
+            {{#if entidad.notificacionesSinLeer}}<span class="badge" aria-label="{{entidad.notificacionesSinLeer}} sin leer">{{entidad.notificacionesSinLeer}}</span>{{/if}}
+        </a>
+    </nav>
+    <div class="user">
+        <span>{{entidad.nombre}}</span>
+        <a href="/">Cerrar sesión</a>
+    </div>
+</header>

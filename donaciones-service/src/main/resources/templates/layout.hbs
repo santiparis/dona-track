@@ -14,6 +14,8 @@
 
 {{#if (eq rol "donante")}}
     {{> headers/donante}}
+{{else if (eq rol "entidad")}}
+    {{> headers/entidad}}
 {{else}}
     {{> headers/publico}}
 {{/if}}
