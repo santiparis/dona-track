@@ -1,4 +1,4 @@
-package donaciones.web.controllers;
+package donaciones.controller;
 
 import java.util.HashMap;
 import java.util.Map;

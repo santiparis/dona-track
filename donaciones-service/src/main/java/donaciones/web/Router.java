@@ -5,9 +5,9 @@ import donaciones.controller.CamionesController;
 import donaciones.controller.DonacionController;
 import donaciones.controller.DonanteController;
 import donaciones.controller.EntidadesBeneficiariasController;
-import donaciones.web.controllers.EntidadController;
-import donaciones.web.controllers.PublicoController;
-import donaciones.web.controllers.SesionController;
+import donaciones.controller.NotificacionesController;
+import donaciones.controller.PublicoController;
+import donaciones.controller.SesionController;
 import io.javalin.Javalin;
 
 public class Router {
@@ -17,23 +17,25 @@ public class Router {
   private final EntidadesBeneficiariasController entidadesController;
   private final AsignacionesController asignacionesController;
   private final CamionesController camionesController;
+  private final NotificacionesController notificacionesController;
+  private final PublicoController publicoController;
+  private final SesionController sesionController;
 
   public Router(DonacionController donacionController, DonanteController donanteController,
                 EntidadesBeneficiariasController entidadesController, AsignacionesController asignacionesController,
-                CamionesController camionesController) {
+                CamionesController camionesController, NotificacionesController notificacionesController,
+                PublicoController publicoController, SesionController sesionController) {
     this.donacionController = donacionController;
     this.donanteController = donanteController;
     this.entidadesController = entidadesController;
     this.asignacionesController = asignacionesController;
     this.camionesController = camionesController;
+    this.notificacionesController = notificacionesController;
+    this.publicoController = publicoController;
+    this.sesionController = sesionController;
   }
 
   public void configure(Javalin app) {
-    PublicoController publicoController = new PublicoController();
-    SesionController sesionController = new SesionController();
-    // Hasta mover sus métodos conviven dos DonanteController: el de la API (campo) y este, por perfil
-    donaciones.web.controllers.DonanteController perfilDonanteController = new donaciones.web.controllers.DonanteController();
-    EntidadController entidadController = new EntidadController();
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
@@ -47,7 +49,7 @@ public class Router {
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
-    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", perfilDonanteController.notificaciones()));
+    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante()));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
@@ -58,7 +60,7 @@ public class Router {
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", donacionController.recepcion(ctx)));
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
-    app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", entidadController.notificaciones()));
+    app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad()));
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad()));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));

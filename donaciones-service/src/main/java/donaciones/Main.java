@@ -31,7 +31,8 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    Notificador notificador = new Notificador(new NotificacionRepository());
+    NotificacionRepository notificacionRepository = new NotificacionRepository();
+    Notificador notificador = new Notificador(notificacionRepository);
 
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteController donanteController = new DonanteController(personasRepository);
@@ -46,6 +47,9 @@ public class Main {
         donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
     CamionesController camionesController = new CamionesController(logisticaAPICalls);
+    NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
+    PublicoController publicoController = new PublicoController();
+    SesionController sesionController = new SesionController();
 
 
     Javalin app = Javalin.create(config -> {
@@ -57,6 +61,7 @@ public class Main {
       });
     }).start(8081);
 
-    new Router(controller, donanteController, entidadesController, asignacionesController, camionesController).configure(app);
+    new Router(controller, donanteController, entidadesController, asignacionesController, camionesController,
+        notificacionesController, publicoController, sesionController).configure(app);
   }
 }
