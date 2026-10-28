@@ -98,6 +98,21 @@ public class DatosMock {
     );
   }
 
+  public static List<Map<String, Object>> notificacionesDelDonante() {
+    return List.of(
+        Map.of("tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
+            "mensaje", "Tu donación de 6 sillas fue asignada a Escuela Rural N°10.",
+            "link", "/donante/donaciones", "linkTexto", "Ver donación"),
+        Map.of("tipo", "Misión cumplida", "fecha", "Ayer 18:20", "leida", false,
+            "mensaje", "Cumpliste la misión [Primera donación].",
+            "link", "/donante/incentivos", "linkTexto", "Ver incentivos"),
+        Map.of("tipo", "Subiste de categoría", "fecha", "15/10/2026", "leida", true,
+            "mensaje", "Ahora sos [CATEGORÍA]."),
+        Map.of("tipo", "Entrega recibida", "fecha", "02/09/2026", "leida", true,
+            "mensaje", "Escuela Rural N°10 recibió tus 10 bancos. Camión AB123CD, 02/09/2026 11:40.")
+    );
+  }
+
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
         Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",

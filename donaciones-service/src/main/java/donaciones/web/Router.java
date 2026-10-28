@@ -24,5 +24,6 @@ public class Router {
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donanteController.donaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", donanteController.entidades(ctx)));
     app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
+    app.get("/donante/notificaciones", ctx -> ctx.render("donante/notificaciones", donanteController.notificaciones()));
   }
 }

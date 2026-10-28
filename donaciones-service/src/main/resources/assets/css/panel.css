@@ -135,6 +135,58 @@ th {
     background: var(--color-principal);
 }
 
+/* Bandeja de notificaciones: las no leídas llevan fondo y punto lleno */
+.bandeja {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+}
+
+.notificacion {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-neutro);
+    align-items: flex-start;
+}
+
+.notificacion:last-child {
+    border-bottom: none;
+}
+
+.notificacion.nueva {
+    background: var(--color-principal-suave);
+}
+
+.notificacion-texto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notificacion-texto .muted,
+.notificacion-texto a {
+    font-size: 14px;
+}
+
+.punto {
+    flex: 0 0 10px;
+    width: 10px;
+    height: 10px;
+    margin-top: 7px;
+    border-radius: 999px;
+    background: var(--color-principal);
+}
+
+.punto.leido {
+    box-sizing: border-box;
+    border: 2px solid var(--color-borde);
+    background: transparent;
+}
+
 /* Lista de cambios de estado de una donación */
 .historial {
     margin: 0;

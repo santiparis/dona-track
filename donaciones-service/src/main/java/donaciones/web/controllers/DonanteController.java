@@ -90,4 +90,16 @@ public class DonanteController {
     model.put("incentivos", DatosMock.incentivos());   // MOCK
     return model;
   }
+
+  public Map<String, Object> notificaciones() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Notificaciones");
+    model.put("rol", "donante");
+    model.put("seccion", "notificaciones");
+    model.put("donante", DatosMock.donante());   // MOCK
+    model.put("medioPreferido", "correo");   // MOCK
+    // List<Notificacion> notificaciones = notificacionRepository.obtenerTodas().stream().filter(n -> n.getReceptorId().equals(idDonante)).toList();
+    model.put("notificaciones", DatosMock.notificacionesDelDonante());   // MOCK
+    return model;
+  }
 }
