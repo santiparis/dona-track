@@ -1,7 +1,7 @@
 {{#partial "contenido"}}
     <div class="encabezado-con-accion">
         <h1>Donaciones en depósito</h1>
-        <a class="btn cta" href="/admin/donaciones/nueva">Registrar donación</a>
+        <a class="btn" href="/admin/donaciones/nueva">Registrar donación</a>
     </div>
 
     {{#if marcadaVencida}}
@@ -24,7 +24,7 @@
                 <option value="PROXIMA" {{#if (eq venceElegido "PROXIMA")}}selected{{/if}}>Vencen esta semana</option>
             </select>
         </label>
-        <button class="btn" type="submit">Filtrar</button>
+        <button class="btn2" type="submit">Filtrar</button>
     </form>
 
     {{#if donaciones}}
@@ -62,7 +62,7 @@
                                     <span class="muted">—</span>
                                 {{else}}
                                     <form action="/admin/donaciones/{{id}}/vencida" method="post">
-                                        <button class="btn2 chico" type="submit">Marcar vencida</button>
+                                        <button class="btn2 chico peligro" type="submit">Marcar vencida</button>
                                     </form>
                                 {{/if}}
                             </td>

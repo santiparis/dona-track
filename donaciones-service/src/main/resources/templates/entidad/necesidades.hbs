@@ -47,10 +47,12 @@
         </div>
         <div class="row acciones">
             {{#if necesidad.id}}<a class="btn2" href="/entidad/necesidades">Cancelar</a>{{/if}}
-            <button class="btn cta" type="submit">Guardar necesidad</button>
+            <button class="btn" type="submit">Guardar necesidad</button>
         </div>
     </form>
 
+    {{!-- Mientras se edita una necesidad la tabla no se muestra, así queda claro qué se está editando --}}
+    {{#unless necesidad.id}}
     {{#if necesidades}}
         <div class="tbl">
             <table>
@@ -79,7 +81,7 @@
                                 <div class="acciones-tabla">
                                     <a class="btn2 chico" href="/entidad/necesidades?editar={{id}}">Editar</a>
                                     <form action="/entidad/necesidades/{{id}}/eliminar" method="post">
-                                        <button class="btn2 chico" type="submit">Eliminar</button>
+                                        <button class="btn2 chico peligro" type="submit">Eliminar</button>
                                     </form>
                                 </div>
                             </td>
@@ -91,6 +93,7 @@
     {{else}}
         <p class="muted">Todavía no registraste necesidades.</p>
     {{/if}}
+    {{/unless}}
 {{/partial}}
 
 {{> layout}}

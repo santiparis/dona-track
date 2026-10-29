@@ -39,10 +39,10 @@
                             {{!-- Sin coincidencias se elige desde los rankings de cada algoritmo --}}
                             {{#if (eq coincidencias "0")}}
                                 <td><span class="chip">{{resultado}}</span></td>
-                                <td><a class="btn chico" href="/admin/asignaciones/{{id}}">Ver rankings</a></td>
+                                <td><a class="btn2 chico" href="/admin/asignaciones/{{id}}">Ver rankings</a></td>
                             {{else}}
                                 <td><span class="chip ok">{{resultado}}</span></td>
-                                <td><a class="btn chico" href="/admin/asignaciones/{{id}}">Elegir entidad</a></td>
+                                <td><a class="btn2 chico" href="/admin/asignaciones/{{id}}">Elegir entidad</a></td>
                             {{/if}}
                         </tr>
                     {{/each}}

@@ -1,39 +1,18 @@
 /* Pantallas con sesión (donante, entidad, admin) */
-
 /* Admin: menú lateral a la izquierda y contenido a la derecha; en pantallas chicas el menú queda arriba */
-.admin {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 24px;
-}
+.admin { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px; }
+.admin-contenido { flex: 999 1 560px; min-width: 0; gap: 20px; }
 
-.admin-contenido {
-    flex: 999 1 560px;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+.menu-lateral { flex: 1 1 220px; gap: 4px; padding: 12px; }
 
-.menu-lateral {
-    flex: 1 1 220px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px;
-    background: var(--color-principal-suave);
-    border: 1px solid var(--color-principal-claro);
-    border-radius: 8px;
-}
-
+/* Título de cada grupo del menú: más grande y en marino para que no se confunda con los items */
 .menu-lateral p {
-    margin: 10px 10px 4px;
-    font-size: 12px;
+    margin: 14px 10px 6px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--color-texto-suave);
+    color: var(--color-principal-oscuro);
 }
 
 .menu-lateral a {
@@ -47,10 +26,20 @@
     color: var(--color-texto);
 }
 
-.menu-lateral a.on {
+.menu-lateral a:hover { background: var(--color-fondo); }
+
+/* Opción activa: fondo celeste claro y barra a la izquierda */
+.menu-lateral a[aria-current="page"] {
     background: var(--color-principal-claro);
     color: var(--color-principal-oscuro);
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 var(--color-principal);
+}
+
+/* Texto secundario más chico dentro de tarjetas y listas */
+.opcion .muted, .necesidad .muted, .titulo-con-chip .muted, .categoria-texto .muted, .mision .muted,
+.notificacion-texto .muted, .notificacion-texto a {
+    font-size: 14px;
 }
 
 /* Mensaje informativo dentro de un formulario */
@@ -63,27 +52,10 @@
 }
 
 /* La tabla scrollea de costado en pantallas chicas en vez de romper el ancho */
-.tbl {
-    overflow-x: auto;
-    background: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 8px;
-}
+.tbl { overflow-x: auto; }
 
-table {
-    width: 100%;
-    min-width: 760px;
-    border-collapse: collapse;
-    font-size: 15px;
-}
-
-th,
-td {
-    text-align: left;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--color-neutro);
-    vertical-align: middle;
-}
+table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--color-neutro); vertical-align: middle; }
 
 th {
     background: var(--color-principal-suave);
@@ -92,45 +64,21 @@ th {
     font-weight: 700;
 }
 
-.acciones-tabla {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-}
+.acciones-tabla { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 
 /* Barra de avance chica con el número al lado, dentro de una tabla */
-.avance {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.avance .bar {
-    width: 120px;
-}
+.avance { display: flex; align-items: center; gap: 8px; }
+.avance .bar { width: 120px; }
 
 /* Ruta de navegación arriba del título (ej: Donaciones asignadas / Confirmar recepción) */
-.migas {
-    font-size: 14px;
-}
+.migas { font-size: 14px; }
 
 /* Dato de solo lectura: etiqueta chica arriba y valor abajo */
-.dato {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.dato .muted {
-    font-size: 13px;
-}
+.dato { gap: 2px; }
+.dato .muted { font-size: 13px; }
 
 /* Fecha de vencimiento ya pasada */
-.vencida {
-    font-weight: 700;
-    color: var(--color-acento-hover);
-}
+.vencida { font-weight: 700; color: var(--color-error-texto); }
 
 /* Opción elegible con radio; la elegida se resalta con :has() (sin JavaScript) */
 .opcion {
@@ -145,119 +93,28 @@ th {
     cursor: pointer;
 }
 
-.opcion:has(input:checked) {
-    border: 2px solid var(--color-principal);
-    background: var(--color-principal-suave);
-}
-
-.opcion input {
-    flex: 0 0 18px;
-    width: 18px;
-    height: 18px;
-    min-height: auto;
-}
-
-.opcion-texto {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.opcion .muted {
-    font-size: 14px;
-}
-
-/* Dos columnas que pasan a una en pantallas chicas (ej: un ranking por algoritmo) */
-.dos-columnas {
-    display: grid;
-    /* min() evita que en un celular la columna de 300px se salga de la tarjeta */
-    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    gap: 16px;
-}
-
-details summary {
-    min-height: 32px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.ranking {
-    margin: 0;
-    padding-left: 24px;
-}
-
-.ranking li {
-    border-bottom: 1px solid var(--color-neutro);
-}
-
-/* Números destacados (ej: resultado de una importación) */
-.estadisticas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-}
-
-.estadistica {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 14px;
-    border: 1px solid var(--color-borde);
-    border-radius: 8px;
-}
-
-.estadistica strong {
-    font-size: 24px;
-}
-
-code {
-    font-family: ui-monospace, Consolas, monospace;
-    font-size: 13px;
-}
+.opcion:has(input:checked) { border: 2px solid var(--color-principal); background: var(--color-principal-suave); }
+.opcion input { flex: 0 0 18px; width: 18px; height: 18px; min-height: auto; }
+.opcion-texto { flex: 1; }
+details summary { min-height: 32px; font-weight: 700; cursor: pointer; }
+.ranking { margin: 0; padding-left: 24px; }
+.ranking li { border-bottom: 1px solid var(--color-neutro); }
+.estadistica { gap: 4px; padding: 14px; border: 1px solid var(--color-borde); border-radius: 8px; }
+.estadistica strong { font-size: 24px; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 
 /* Contador de resultados, empujado a la derecha */
-.total {
-    margin-left: auto;
-}
+.total { margin-left: auto; }
 
 /* Necesidad de una entidad, con su barra de avance */
-.necesidad {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding-top: 10px;
-    border-top: 1px solid var(--color-neutro);
-}
-
-.necesidad .muted {
-    font-size: 14px;
-}
+.necesidad { gap: 6px; padding-top: 10px; border-top: 1px solid var(--color-neutro); }
 
 /* Título a la izquierda y chip (o dato corto) a la derecha */
-.titulo-con-chip {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.titulo-con-chip .muted {
-    font-size: 14px;
-}
+.titulo-con-chip { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
 /* Incentivos: medalla redonda, gris punteada si está bloqueada */
-.medalla {
-    width: 64px;
-    height: 64px;
-    flex-shrink: 0;
-    border-radius: 999px;
-    background: var(--color-principal);
-}
-
-.medalla.grande {
-    width: 88px;
-    height: 88px;
-}
+.medalla { width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: var(--color-principal); }
+.medalla.grande { width: 88px; height: 88px; }
 
 .medalla.bloqueada {
     box-sizing: border-box;
@@ -265,64 +122,15 @@ code {
     background: var(--color-superficie);
 }
 
-.categoria-actual {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 24px;
-}
+.categoria-actual { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 24px; }
+.categoria-texto { flex: 1 1 320px; gap: 8px; }
+.mision { gap: 8px; padding-top: 14px; border-top: 1px solid var(--color-neutro); }
+.insignia { align-items: center; text-align: center; }
+.insignia .chip { align-self: center; }
+.bar { height: 8px; border-radius: 999px; background: var(--color-neutro); overflow: hidden; }
+.bar span { display: block; height: 8px; background: var(--color-principal); }
 
-.categoria-texto {
-    flex: 1 1 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.categoria-texto .muted,
-.mision .muted {
-    font-size: 14px;
-}
-
-.mision {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 14px;
-    border-top: 1px solid var(--color-neutro);
-}
-
-.insignia {
-    align-items: center;
-    text-align: center;
-}
-
-.insignia .chip {
-    align-self: center;
-}
-
-.bar {
-    height: 8px;
-    border-radius: 999px;
-    background: var(--color-neutro);
-    overflow: hidden;
-}
-
-.bar span {
-    display: block;
-    height: 8px;
-    background: var(--color-principal);
-}
-
-/* Bandeja de notificaciones: las no leídas llevan fondo y punto lleno */
-.bandeja {
-    display: flex;
-    flex-direction: column;
-    background: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: 8px;
-}
-
+/* Bandeja de notificaciones (superficie en layout.css): las no leídas llevan fondo y punto lleno */
 .notificacion {
     display: flex;
     gap: 16px;
@@ -331,25 +139,9 @@ code {
     align-items: flex-start;
 }
 
-.notificacion:last-child {
-    border-bottom: none;
-}
-
-.notificacion.nueva {
-    background: var(--color-principal-suave);
-}
-
-.notificacion-texto {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.notificacion-texto .muted,
-.notificacion-texto a {
-    font-size: 14px;
-}
+.notificacion:last-child { border-bottom: none; }
+.notificacion.nueva { background: var(--color-principal-suave); }
+.notificacion-texto { flex: 1; gap: 4px; }
 
 .punto {
     flex: 0 0 10px;
@@ -360,17 +152,7 @@ code {
     background: var(--color-principal);
 }
 
-.punto.leido {
-    box-sizing: border-box;
-    border: 2px solid var(--color-borde);
-    background: transparent;
-}
+.punto.leido { box-sizing: border-box; border: 2px solid var(--color-borde); background: transparent; }
 
 /* Lista de cambios de estado de una donación */
-.historial {
-    margin: 0;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+.historial { margin: 0; padding-left: 20px; gap: 6px; }

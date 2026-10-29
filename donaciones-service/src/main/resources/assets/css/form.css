@@ -1,30 +1,13 @@
 /* Formulario corto centrado (ej: login) */
-.form-chico {
-    width: 100%;
-    max-width: 420px;
-    margin: 16px auto;
-}
+.form-chico { width: 100%; max-width: 420px; margin: 16px auto; }
+.form-chico .card { padding: 28px; gap: 16px; }
+label { gap: 6px; font-size: 14px; font-weight: 600; }
 
-.form-chico .card {
-    padding: 28px;
-    gap: 16px;
-}
-
-label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-input,
-select,
-textarea {
+input, select, textarea {
     min-height: 44px;
     box-sizing: border-box;
     border: 1px solid var(--color-borde-input);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 0 12px;
     font: inherit;
     font-weight: 400;
@@ -32,77 +15,25 @@ textarea {
     color: var(--color-texto);
 }
 
-textarea {
-    padding: 10px 12px;
-    min-height: 88px;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: 2px solid var(--color-principal);
-    outline-offset: 1px;
-}
+textarea { padding: 10px 12px; min-height: 88px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--color-principal); outline-offset: 1px; }
 
 /* Formulario dentro de una tarjeta: más aire entre campos */
-form.card {
-    padding: 24px;
-    gap: 16px;
-}
+form.card { padding: 24px; gap: 16px; }
 
 /* Grupo de campos que se muestra u oculta junto (ej: datos de persona humana) */
-.bloque {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* Campos de a dos por fila; en pantallas chicas quedan de a uno */
-.f2 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-}
-
-/* Campos de a tres por fila (ej: filtros) */
-.f3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-}
+.bloque { gap: 16px; }
 
 /* Fila de búsqueda: el texto se estira y el botón queda alineado abajo */
-.buscador {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: flex-end;
-}
-
-.buscador-texto {
-    flex: 1 1 280px;
-}
-
-.buscador-filtro {
-    flex: 0 1 240px;
-}
-
-/* Campos de a cuatro por fila (ej: cada bien de una donación) */
-.f4 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 14px;
-}
+.buscador { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.buscador-texto { flex: 1 1 280px; }
+.buscador-filtro { flex: 0 1 240px; }
 
 /* Grilla con los campos alineados por abajo (las etiquetas de distinto largo no los desalinean) */
-.alineado-abajo {
-    align-items: end;
-}
+.alineado-abajo { align-items: end; }
 
 /* Campo que ocupa toda la fila de la grilla */
-.fila-completa {
-    grid-column: 1 / -1;
-}
+.fila-completa { grid-column: 1 / -1; }
 
 /* Resultado de una búsqueda dentro de un formulario (ej: donante encontrado) */
 .encontrado {
@@ -124,74 +55,40 @@ form.card {
     gap: 8px;
     min-height: 36px;
     padding: 0 12px;
-    border: 1px solid var(--color-borde);
+    border: 1px solid var(--color-borde-input);
     border-radius: 999px;
     font-weight: 400;
 }
 
-.check input {
-    min-height: auto;
-    width: 16px;
-    height: 16px;
-}
-
-fieldset {
-    border: 1px solid var(--color-borde);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-legend {
-    font-weight: 700;
-    padding: 0 6px;
-}
-
-/* Grupo de campos sin recuadro */
-fieldset.sin-borde {
-    border: none;
-    padding: 0;
-}
-
-fieldset.sin-borde legend {
-    padding: 0;
-    margin-bottom: 8px;
-}
-
-.subtitulo {
-    font-size: 14px;
+/* La pastilla marcada se resalta sola con :has() (sin JavaScript) */
+.check:has(input:checked) {
+    background: var(--color-principal-claro);
+    border-color: var(--color-principal);
+    color: var(--color-principal-oscuro);
     font-weight: 600;
 }
 
+.check input { min-height: auto; width: 16px; height: 16px; }
+
+/* Checkbox y radio con el color de la paleta */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--color-principal); }
+fieldset { border: 1px solid var(--color-borde); border-radius: 8px; padding: 16px; margin: 0; gap: 12px; }
+legend { font-weight: 700; padding: 0 6px; }
+
+/* Grupo de campos sin recuadro */
+fieldset.sin-borde { border: none; padding: 0; }
+fieldset.sin-borde legend { padding: 0; margin-bottom: 8px; }
+.subtitulo { font-size: 14px; font-weight: 600; }
+
 /* Texto de ayuda debajo de un campo */
-.hint {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-texto-suave);
-}
+.hint { font-size: 13px; font-weight: 400; color: var(--color-texto-suave); }
 
 /* Radio o checkbox con su texto al lado */
-.radio {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    font-weight: 400;
-    min-height: 44px;
-}
-
-.radio input {
-    min-height: auto;
-    width: 18px;
-    height: 18px;
-}
+.radio { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; min-height: 44px; }
+.radio input { min-height: auto; width: 18px; height: 18px; }
 
 /* Recuadro punteado para subir archivos (fotos, CSV) */
 .carga-archivo {
-    display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 10px;
     padding: 24px;
@@ -201,21 +98,11 @@ fieldset.sin-borde legend {
     text-align: center;
 }
 
-.carga-archivo label {
-    align-items: center;
-}
-
-.carga-archivo input[type="file"] {
-    min-height: auto;
-    border: none;
-    padding: 0;
-    background: transparent;
-}
+.carga-archivo label { align-items: center; }
+.carga-archivo input[type="file"] { min-height: auto; border: none; padding: 0; background: transparent; }
 
 /* Botones del final del formulario, alineados a la derecha */
-.acciones {
-    justify-content: flex-end;
-}
+.acciones { justify-content: flex-end; }
 
 /* Pestañas hechas con links: la elegida lleva .on */
 .tabs {
@@ -223,8 +110,9 @@ fieldset.sin-borde legend {
     flex-wrap: wrap;
     gap: 4px;
     padding: 4px;
-    border-radius: 8px;
-    background: var(--color-neutro);
+    border-radius: 10px;
+    background: var(--color-fondo);
+    border: 1px solid var(--color-borde);
 }
 
 .tab {
@@ -237,25 +125,16 @@ fieldset.sin-borde legend {
     text-decoration: none;
     font-size: 15px;
     font-weight: 600;
-    color: var(--color-texto);
+    color: var(--color-texto-suave);
 }
 
+/* Pestaña elegida: blanca con barra celeste abajo, igual que la opción activa del nav */
 .tab.on {
     background: var(--color-superficie);
     color: var(--color-principal-oscuro);
-    box-shadow: 0 1px 3px var(--color-sombra);
+    box-shadow: inset 0 -3px 0 var(--color-principal);
 }
 
-button.btn,
-button.btn2 {
-    cursor: pointer;
-}
-
-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.centrado {
-    text-align: center;
-}
+button.btn, button.btn2 { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.centrado { text-align: center; }

@@ -5,35 +5,23 @@
         <span class="logo-box"></span>DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
     </a>
 
+    {{!-- Cada rol tiene sus links en su propio partial (nav-*.hbs) --}}
     <nav class="nav" aria-label="Principal">
         {{#if (eq rol "donante")}}
-            <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/donante/donaciones">Mis donaciones</a>
-            <a {{#if (eq seccion "entidades")}}class="on"{{/if}} href="/donante/entidades">Entidades</a>
-            <a {{#if (eq seccion "incentivos")}}class="on"{{/if}} href="/donante/incentivos">Incentivos</a>
-            <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/donante/seguimiento">Seguimiento</a>
-            <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/donante/notificaciones">Notificaciones
-                {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
-            </a>
+            {{> nav-donante}}
         {{else if (eq rol "entidad")}}
-            <a {{#if (eq seccion "necesidades")}}class="on"{{/if}} href="/entidad/necesidades">Necesidades</a>
-            <a {{#if (eq seccion "donaciones")}}class="on"{{/if}} href="/entidad/donaciones">Donaciones asignadas</a>
-            <a {{#if (eq seccion "seguimiento")}}class="on"{{/if}} href="/entidad/seguimiento">Seguimiento</a>
-            <a {{#if (eq seccion "notificaciones")}}class="on"{{/if}} href="/entidad/notificaciones">Notificaciones
-                {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
-            </a>
+            {{> nav-entidad}}
         {{else if (eq rol "admin")}}
             {{!-- El admin navega con el menú lateral (menu-admin.hbs) --}}
         {{else}}
-            <a {{#if (eq seccion "inicio")}}class="on"{{/if}} href="/">Inicio</a>
-            <a {{#if (eq seccion "entregadas")}}class="on"{{/if}} href="/donaciones-entregadas">Donaciones entregadas</a>
-            <a {{#if (eq seccion "legal")}}class="on"{{/if}} href="/legal">Legal</a>
+            {{> nav-publico}}
         {{/if}}
     </nav>
 
     {{#if usuario}}
         <div class="user">
             <span>{{usuario.nombre}}</span>
-            <a href="/">Cerrar sesión</a>
+            <a class="btn2 chico" href="/">Cerrar sesión</a>
         </div>
     {{else}}
         <div class="row">

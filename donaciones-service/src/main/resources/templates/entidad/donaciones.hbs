@@ -37,9 +37,9 @@
                             {{!-- La acción depende del estado: solo lo que está en traslado se puede confirmar --}}
                             <td>
                                 {{#if (eq estado "EN_TRASLADO")}}
-                                    <a class="btn cta chico" href="/entidad/donaciones/{{id}}/recepcion">Confirmar recepción</a>
+                                    <a class="btn chico" href="/entidad/donaciones/{{id}}/recepcion">Confirmar recepción</a>
                                 {{else if (eq estado "LISTA_PARA_ENTREGAR")}}
-                                    <a href="/entidad/seguimiento">Ver seguimiento</a>
+                                    <a class="btn2 chico" href="/entidad/seguimiento">Ver seguimiento</a>
                                 {{else if (eq estado "ENTREGA_FALLIDA")}}
                                     <span class="muted">Vuelve al depósito</span>
                                 {{/if}}

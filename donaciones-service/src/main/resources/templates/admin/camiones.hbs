@@ -12,10 +12,12 @@
         </div>
         <div class="row acciones">
             {{#if camion.id}}<a class="btn2" href="/admin/camiones">Cancelar</a>{{/if}}
-            <button class="btn cta" type="submit">{{#if camion.id}}Guardar cambios{{else}}Agregar{{/if}}</button>
+            <button class="btn" type="submit">{{#if camion.id}}Guardar cambios{{else}}Agregar{{/if}}</button>
         </div>
     </form>
 
+    {{!-- Mientras se edita un camión la tabla no se muestra, así queda claro qué se está editando --}}
+    {{#unless camion.id}}
     {{#if camiones}}
         <div class="tbl">
             <table>
@@ -42,10 +44,10 @@
                                     <a class="btn2 chico" href="/admin/camiones?editar={{id}}">Editar</a>
                                     {{!-- Un camión en ruta no se puede eliminar --}}
                                     {{#if (eq estado "EN_RUTA")}}
-                                        <button class="btn2 chico" type="button" disabled title="No se puede eliminar un camión en ruta">Eliminar</button>
+                                        <button class="btn2 chico peligro" type="button" disabled title="No se puede eliminar un camión en ruta">Eliminar</button>
                                     {{else}}
                                         <form action="/admin/camiones/{{id}}/eliminar" method="post">
-                                            <button class="btn2 chico" type="submit">Eliminar</button>
+                                            <button class="btn2 chico peligro" type="submit">Eliminar</button>
                                         </form>
                                     {{/if}}
                                 </div>
@@ -58,6 +60,7 @@
     {{else}}
         <p class="muted">Todavía no hay camiones cargados.</p>
     {{/if}}
+    {{/unless}}
 {{/partial}}
 
 {{> layout}}

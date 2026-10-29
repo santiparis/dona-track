@@ -1,0 +1,7 @@
+{{!-- Links del header de la entidad beneficiaria. Notificaciones va aparte porque lleva el contador de no leídas --}}
+{{> nav-link href="/entidad/necesidades" clave="necesidades" texto="Necesidades"}}
+{{> nav-link href="/entidad/donaciones" clave="donaciones" texto="Donaciones asignadas"}}
+{{> nav-link href="/entidad/seguimiento" clave="seguimiento" texto="Seguimiento"}}
+<a href="/entidad/notificaciones" {{#if (eq seccion "notificaciones")}}aria-current="page"{{/if}}>Notificaciones
+    {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
+</a>
