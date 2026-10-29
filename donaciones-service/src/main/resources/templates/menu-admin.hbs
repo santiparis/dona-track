@@ -1,0 +1,12 @@
+{{!-- Menú lateral de las pantallas del admin: lo incluye el layout cuando rol es "admin" --}}
+<nav class="menu-lateral" aria-label="Administración">
+    <p>Donantes</p>
+    {{> nav-link href="/admin/donantes/nuevo" clave="donante-nuevo" texto="Registrar donante"}}
+    {{> nav-link href="/admin/importacion" clave="importacion" texto="Importar CSV"}}
+    <p>Donaciones</p>
+    {{> nav-link href="/admin/donaciones/nueva" clave="donacion-nueva" texto="Registrar donación"}}
+    {{> nav-link href="/admin/donaciones" clave="deposito" texto="En depósito"}}
+    {{> nav-link href="/admin/asignaciones" clave="asignaciones" texto="Asignaciones"}}
+    <p>Logística</p>
+    {{> nav-link href="/admin/camiones" clave="camiones" texto="Camiones"}}
+</nav>

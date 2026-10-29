@@ -12,7 +12,10 @@ import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.web.Router;
+import donaciones.web.templates.JavalinHandlebars;
 import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import donaciones.controller.*;
 
 import java.util.List;
@@ -28,7 +31,8 @@ public class Main {
     RetrofitConfig retrofitConfig = new RetrofitConfig();
     LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
 
-    Notificador notificador = new Notificador(new NotificacionRepository());
+    NotificacionRepository notificacionRepository = new NotificacionRepository();
+    Notificador notificador = new Notificador(notificacionRepository);
 
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
     DonanteController donanteController = new DonanteController(personasRepository);
@@ -42,44 +46,22 @@ public class Main {
     AsignacionesController asignacionesController = new AsignacionesController(
         donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
 
+    CamionesController camionesController = new CamionesController(logisticaAPICalls);
+    NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
+    PublicoController publicoController = new PublicoController();
+    SesionController sesionController = new SesionController();
 
-    Javalin app = Javalin.create().start(8081);
 
-    // CRUD Donaciones
-    app.get("/api/donaciones", controller::listar);
-    app.get("/api/donaciones/{id}", controller::obtener);
-    app.post("/api/donaciones", controller::crear);
-    app.put("/api/donaciones/{id}", controller::actualizar);
-    app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-    app.delete("/api/donaciones/{id}", controller::eliminar);
+    Javalin app = Javalin.create(config -> {
+      config.fileRenderer(new JavalinHandlebars());
+      config.staticFiles.add(staticFiles -> {
+        staticFiles.hostedPath = "/assets";
+        staticFiles.directory = "/assets";
+        staticFiles.location = Location.CLASSPATH;
+      });
+    }).start(8081);
 
-    // CRUD Donantes
-    app.get("/api/donantes", donanteController::listar);
-    app.get("/api/donantes/{id}", donanteController::obtener);
-    app.post("/api/donantes", donanteController::crear);
-    app.put("/api/donantes/{id}", donanteController::actualizar);
-    app.patch("/api/donantes/{id}", donanteController::actualizarParcial);
-    app.delete("/api/donantes/{id}", donanteController::eliminar);
-
-    // CRUD Entidades beneficiarias
-    app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
-    app.get("/api/entidades-beneficiarias/{id}", entidadesController::getEntidadBeneficiaria);
-    app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
-    app.put("/api/entidades-beneficiarias/{id}", entidadesController::putEntidadBeneficiaria);
-    app.patch("/api/entidades-beneficiarias/{id}", entidadesController::patchEntidadBeneficiaria);
-    app.delete("/api/entidades-beneficiarias/{id}", entidadesController::deleteEntidadBeneficiaria);
-
-    // CRUD Necesidades
-    app.get("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::getNecesidades);
-    app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
-    app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
-    app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
-    app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
-
-    app.get("/api/sugerencias", asignacionesController::getSugerencias);
-    app.post("/api/sugerencias", asignacionesController::ejecutarAlgoritmos);
-    app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
-    app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
-    app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
+    new Router(controller, donanteController, entidadesController, asignacionesController, camionesController,
+        notificacionesController, publicoController, sesionController).configure(app);
   }
 }

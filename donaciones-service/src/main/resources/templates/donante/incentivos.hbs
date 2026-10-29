@@ -1,0 +1,52 @@
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Incentivos</h1>
+        <p class="muted">Solo para personas humanas donantes.</p>
+    </div>
+
+    {{#with incentivos}}
+        <section class="card categoria-actual">
+            <div class="medalla grande"></div>
+            <div class="categoria-texto">
+                <p class="muted">Tu categoría</p>
+                <h2>{{categoria.nombre}}</h2>
+                <div class="bar" role="img" aria-label="Progreso a la próxima categoría: {{categoria.porcentaje}}%"><span style="width: {{categoria.porcentaje}}%"></span></div>
+                <p class="muted">{{categoria.faltan}}</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="titulo-con-chip">
+                <h2>Misiones</h2>
+                <span class="muted">{{resumenMisiones}}</span>
+            </div>
+            {{#each misiones}}
+                <div class="mision">
+                    <div class="titulo-con-chip">
+                        <h3>{{titulo}}</h3>
+                        {{#if cumplida}}<span class="chip ok">Cumplida</span>{{else}}<span class="chip">En curso</span>{{/if}}
+                    </div>
+                    {{#unless cumplida}}
+                        <div class="bar" role="img" aria-label="{{detalle}}"><span style="width: {{porcentaje}}%"></span></div>
+                    {{/unless}}
+                    <p class="muted">{{detalle}}</p>
+                </div>
+            {{/each}}
+        </section>
+
+        <section class="seccion">
+            <h2>Insignias</h2>
+            <div class="cols">
+                {{#each insignias}}
+                    <div class="card insignia">
+                        <div class="medalla {{#unless obtenida}}bloqueada{{/unless}}"></div>
+                        <h3>{{nombre}}</h3>
+                        {{#if obtenida}}<span class="chip ok">Obtenida</span>{{else}}<span class="chip">Bloqueada</span>{{/if}}
+                    </div>
+                {{/each}}
+            </div>
+        </section>
+    {{/with}}
+{{/partial}}
+
+{{> layout}}

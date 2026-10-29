@@ -5,6 +5,7 @@ import donaciones.dto.EntidadBeneficiariaDTO;
 import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class EntidadesBeneficiariasController {
   private static final Logger logger = LoggerFactory.getLogger(EntidadesBeneficiariasController.class);
@@ -220,5 +222,73 @@ public class EntidadesBeneficiariasController {
   private Periodo parsearPeriodo(String periodo) {
     try { return Periodo.valueOf(periodo.toUpperCase()); }
     catch (IllegalArgumentException e) { throw new IllegalArgumentException("Periodo incorrecto", e); }
+  }
+
+  public Map<String, Object> entidades(Context ctx) {
+    // La búsqueda viaja en la URL: ?q=...&subcategoria=...
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("q"), "");
+    String subcategoria = Objects.requireNonNullElse(ctx.queryParam("subcategoria"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Entidades beneficiarias");
+    model.put("rol", "donante");
+    model.put("seccion", "entidades");
+    model.put("usuario", DatosMock.donante());   // MOCK
+
+    // List<EntidadBeneficiaria> entidades = entidadRepo.buscar(busqueda, subcategoria);
+    model.put("entidades", DatosMock.entidadesConNecesidades().stream()
+        .filter(e -> ((String) e.get("nombre")).toLowerCase().contains(busqueda.toLowerCase()))
+        .filter(e -> subcategoria.isEmpty() || ((List<?>) e.get("necesidades")).stream()
+            .anyMatch(n -> subcategoria.equals(((Map<?, ?>) n).get("subcategoria"))))
+        .toList());   // MOCK
+    model.put("busqueda", busqueda);
+    model.put("subcategoriaElegida", subcategoria);
+    // Todas las subcategorías, de todas las categorías
+    model.put("subcategorias", DatosMock.categorias().stream()
+        .flatMap(c -> DatosMock.subcategorias(c.get("valor")).stream())
+        .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> necesidades(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Necesidades");
+    model.put("rol", "entidad");
+    model.put("seccion", "necesidades");
+    model.put("usuario", DatosMock.entidad());   // MOCK
+
+    // List<Necesidad> necesidades = entidadRepo.buscarPorId(idEntidad).orElseThrow().getNecesidades();
+    List<Map<String, String>> necesidades = DatosMock.necesidadesDeLaEntidad();   // MOCK
+    model.put("necesidades", necesidades);
+
+    // ?editar={id} carga esa necesidad en el formulario; si no, el formulario queda vacío para dar de alta
+    String idEditar = ctx.queryParam("editar");
+    Map<String, String> enEdicion = necesidades.stream()
+        .filter(n -> n.get("id").equals(idEditar))
+        .findFirst()
+        .orElse(Map.of());
+    model.put("necesidad", enEdicion);
+
+    // La pestaña viaja en la URL (?tipo=EXTRAORDINARIA|RECURRENTE); al editar arranca en el tipo de la necesidad
+    model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), enEdicion.getOrDefault("tipo", "EXTRAORDINARIA")));
+
+    // Subcategorías agrupadas por categoría para el <select> con <optgroup>
+    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    return model;
+  }
+
+  public void registrarNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  public void modificarNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá se busca la necesidad ctx.pathParam("id") y se actualiza con los datos del form
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  public void eliminarNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá va la baja de la necesidad ctx.pathParam("id")
+    ctx.redirect("/entidad/necesidades");
   }
 }

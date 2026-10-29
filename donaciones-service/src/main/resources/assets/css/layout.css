@@ -1,0 +1,128 @@
+/* Footer siempre abajo: el body ocupa al menos toda la ventana
+   y el contenido crece para llenar el espacio que sobra */
+body { min-height: 100vh; }
+
+.wrap {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 1168px; /* 1120px de contenido + 24px de padding por lado */
+    margin: 0 auto;
+    padding: 32px 24px;
+    gap: 24px;
+}
+
+/* Título de la pantalla con su subtítulo */
+.encabezado { gap: 8px; }
+
+/* Título de la pantalla con un botón a la derecha (ej: Actualizar) */
+.encabezado-con-accion {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.seccion { gap: 16px; }
+
+/* Grillas que pasan a menos columnas en pantallas chicas: cada una define el ancho mínimo de sus columnas.
+   min() evita que una columna ancha se salga de la pantalla en un celular */
+.cols, .f2, .f3, .f4, .dos-columnas, .estadisticas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--min-columna), 100%), 1fr));
+    gap: 16px;
+}
+.cols { --min-columna: 240px; }
+.f2 { --min-columna: 220px; } /* campos de a dos */
+.f3 { --min-columna: 200px; } /* campos de a tres (ej: filtros) */
+.f4 { --min-columna: 160px; gap: 14px; } /* campos de a cuatro (ej: cada bien de una donación) */
+.dos-columnas { --min-columna: 300px; } /* ej: un ranking por algoritmo */
+.estadisticas { --min-columna: 150px; gap: 12px; } /* números destacados (ej: resultado de la importación) */
+
+/* Superficies blancas con borde: tarjetas, tablas, bandeja de notificaciones y menú lateral */
+.card, .tbl, .bandeja, .menu-lateral { background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 10px; }
+.card, .tbl, .bandeja { box-shadow: 0 1px 3px var(--color-sombra); }
+.card { padding: 20px; gap: 10px; }
+
+/* Tarjeta horizontal: texto a la izquierda, botón a la derecha */
+.card.banner { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.banner-texto { gap: 6px; }
+
+/* Recuadro que ocupa el lugar de una imagen o un mapa todavía no implementado */
+.ph {
+    background: var(--color-principal-claro);
+    border: 2px dashed var(--color-principal-borde);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-principal-oscuro);
+    font-weight: 600;
+    text-align: center;
+    padding: 16px;
+}
+
+/* Placeholder de foto dentro de una tarjeta */
+.ph.foto { height: 140px; }
+
+/* Mapa placeholder con la tarjeta de detalle flotando arriba a la derecha */
+.mapa { position: relative; }
+.mapa > .ph { height: 420px; flex-direction: column; gap: 6px; }
+.mapa > .ph .muted { font-weight: 400; }
+.mapa-detalle { position: absolute; top: 24px; right: 24px; width: 260px; box-shadow: 0 4px 12px var(--color-sombra); }
+.mapa-detalle .foto { height: 110px; }
+
+/* En pantallas chicas la tarjeta tapaba el mapa: pasa abajo */
+@media (max-width: 600px) {
+    .mapa {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .mapa-detalle {
+        position: static;
+        width: auto;
+    }
+}
+
+.num {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--color-principal-claro);
+    color: var(--color-principal-oscuro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* Bloque destacado de la home: celeste claro con texto marino */
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: center;
+    padding: 40px;
+    background: var(--color-principal-claro);
+    border-radius: 14px;
+}
+
+.hero-texto { flex: 1 1 420px; gap: 16px; }
+.hero h1 { font-size: 40px; line-height: 1.15; }
+.hero .muted { font-size: 18px; }
+.hero .ph { flex: 1 1 380px; height: 300px; background: var(--color-superficie); }
+
+.foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+    color: var(--color-texto-suave);
+    font-size: 14px;
+    border-top: 1px solid var(--color-borde);
+    background: var(--color-superficie);
+}

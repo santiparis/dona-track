@@ -1,0 +1,111 @@
+/* Paleta celeste: para cambiarla se tocan solo estas variables */
+:root {
+    --color-principal: #0369A1;
+    --color-principal-hover: #075985;
+    --color-principal-oscuro: #0C2868;
+    --color-principal-claro: #E0F2FE;
+    --color-principal-borde: #7DD3FC;
+    --color-principal-suave: #F0F9FF;
+    --color-seleccion: #BAE6FD;
+    --color-acento: #AB1D22;
+
+    --color-texto: #1F2937;
+    --color-texto-suave: #4B5563;
+    --color-texto-invertido: #FFFFFF;
+    --color-fondo: #F0F7FB;
+    --color-neutro: #EEF2F6;
+    --color-superficie: #FFFFFF;
+    --color-borde: #D6E4EE;
+    --color-borde-input: #6B7280;
+    --color-sombra: rgba(12, 40, 104, 0.08);
+
+    /* Estados: amarillo en curso, verde terminó bien, rojo hubo un problema */
+    --color-curso-fondo: #FEF3C7;
+    --color-curso-texto: #854D0E;
+    --color-ok-fondo: #DCFCE7;
+    --color-ok-texto: #166534;
+    --color-error-fondo: #FEE2E2;
+    --color-error-texto: #991B1B;
+}
+
+/* Texto seleccionado y foco con la paleta, en vez del azul del sistema */
+::selection { background: var(--color-seleccion); color: var(--color-principal-oscuro); }
+:focus-visible { outline: 2px solid var(--color-principal); outline-offset: 2px; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--color-texto);
+    background: var(--color-fondo);
+}
+
+a { color: var(--color-principal); }
+a:hover { color: var(--color-principal-oscuro); }
+h1 { font-size: 28px; margin: 0; color: var(--color-principal-oscuro); }
+h2 { font-size: 20px; margin: 0; color: var(--color-principal-oscuro); }
+h3 { font-size: 17px; margin: 0; color: var(--color-principal-oscuro); }
+p { margin: 0; line-height: 1.5; }
+.muted { color: var(--color-texto-suave); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+/* Contenedores que apilan su contenido en columna; cada uno define después su separación (gap) */
+label, .bloque, fieldset, .carga-archivo, body, .wrap, .encabezado, .seccion, .card, .banner-texto,
+.hero-texto, .admin-contenido, .menu-lateral, .dato, .opcion-texto, .estadistica, .necesidad,
+.categoria-texto, .mision, .bandeja, .notificacion-texto, .historial {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Etiqueta chica (ej: estado de una donación) */
+.chip {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--color-neutro);
+    color: var(--color-texto);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* La clase es el nombre del estado (EstadoDonacion o estado del camión).
+   EN_DEPOSITO queda con el gris de base; .ok es algo logrado que no es un estado (ej: misión cumplida). */
+.chip.ASIGNADA, .chip.LISTA_PARA_ENTREGAR, .chip.EN_TRASLADO, .chip.EN_RUTA {
+    background: var(--color-curso-fondo);
+    color: var(--color-curso-texto);
+}
+
+.chip.ENTREGADA, .chip.DISPONIBLE, .chip.ok { background: var(--color-ok-fondo); color: var(--color-ok-texto); }
+.chip.ENTREGA_FALLIDA, .chip.VENCIDA { background: var(--color-error-fondo); color: var(--color-error-texto); }
+
+/* Botones: .btn la acción principal (una por pantalla), .btn2 las secundarias
+   y .peligro las que borran o descartan */
+.btn, .btn2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.btn {
+    background: var(--color-principal);
+    color: var(--color-texto-invertido);
+    border: 1px solid var(--color-principal);
+}
+
+.btn:hover { background: var(--color-principal-hover); color: var(--color-texto-invertido); }
+.btn2 { background: var(--color-superficie); color: var(--color-principal); border: 1px solid var(--color-principal); }
+.btn2:hover { background: var(--color-principal-claro); color: var(--color-principal-oscuro); }
+.btn2.peligro { color: var(--color-error-texto); border-color: var(--color-error-texto); }
+.btn2.peligro:hover { background: var(--color-error-fondo); }
+
+/* Botón más bajo, para acciones dentro de una tabla */
+.btn.chico, .btn2.chico { white-space: nowrap; min-height: 36px; padding: 0 12px; font-size: 14px; }

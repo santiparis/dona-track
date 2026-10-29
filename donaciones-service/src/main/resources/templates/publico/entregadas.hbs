@@ -1,0 +1,38 @@
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Donaciones entregadas</h1>
+        <p class="muted">Tocá un marcador del mapa para ver el detalle de la entrega.</p>
+    </div>
+
+    <div class="mapa">
+        <div class="ph">
+            <span>Mapa interactivo — próxima iteración</span>
+            <span class="muted">Un marcador por entidad que recibió donaciones</span>
+        </div>
+        {{#with entregas.[0]}}
+            <div class="card mapa-detalle">
+                <span class="chip">Detalle al tocar un marcador</span>
+                <div class="ph foto">Foto de la entrega</div>
+                <h3>{{entidad}}</h3>
+                <p class="muted">{{bien}} · {{cantidad}}</p>
+                <p class="muted">Entregada el {{fecha}}</p>
+            </div>
+        {{/with}}
+    </div>
+
+    <section class="seccion">
+        <h2>Últimas entregas</h2>
+        <div class="cols">
+            {{#each entregas}}
+                <article class="card">
+                    <div class="ph foto">Foto</div>
+                    <h3>{{entidad}}</h3>
+                    <p class="muted">{{bien}} · {{cantidad}}</p>
+                    <p class="muted">{{fecha}}</p>
+                </article>
+            {{/each}}
+        </div>
+    </section>
+{{/partial}}
+
+{{> layout}}

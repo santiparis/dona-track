@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonaTrack — {{titulo}}</title>
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/css/layout.css">
+    <link rel="stylesheet" href="/assets/css/form.css">
+    <link rel="stylesheet" href="/assets/css/panel.css">
+</head>
+<body>
+
+{{> header}}
+
+<main class="wrap">
+    {{#if (eq rol "admin")}}
+        {{!-- El admin tiene un menú lateral en vez del nav del header --}}
+        <div class="admin">
+            {{> menu-admin}}
+            <div class="admin-contenido">
+                {{#block "contenido"}}
+                {{/block}}
+            </div>
+        </div>
+    {{else}}
+        {{#block "contenido"}}
+        {{/block}}
+    {{/if}}
+</main>
+
+<footer class="foot">
+    <span>DonaTrack</span>
+    <a href="/legal">Términos y privacidad</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+/* Header blanco: el color queda en la franja de arriba, el logo y la opción activa */
+.hdr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 68px;
+    padding: 0 24px;
+    background: var(--color-superficie);
+    border-top: 4px solid var(--color-principal);
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+    text-decoration: none;
+    color: var(--color-principal-oscuro);
+}
+
+.logo-box { width: 36px; height: 36px; border-radius: 8px; background: var(--color-principal); }
+.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+
+.nav a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    text-decoration: none;
+    font-size: 15px;
+    color: var(--color-texto);
+}
+
+.nav a:hover { background: var(--color-fondo); color: var(--color-principal-oscuro); }
+
+/* Opción activa: texto marino en negrita y barra celeste abajo */
+.nav a[aria-current="page"] {
+    font-weight: 700;
+    color: var(--color-principal-oscuro);
+    box-shadow: inset 0 -3px 0 var(--color-principal);
+}
+
+/* Contador de no leídas al lado de un link del nav */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: var(--color-acento);
+    color: var(--color-texto-invertido);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Nombre de quien inició sesión y el link para salir */
+.user { display: flex; align-items: center; gap: 12px; font-size: 15px; }

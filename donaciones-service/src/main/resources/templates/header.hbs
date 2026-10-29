@@ -1,0 +1,36 @@
+{{!-- Un solo header para todos los perfiles. Sin sesión todavía: el controller indica el rol de la pantalla
+      y, si hay alguien logueado, lo pasa en "usuario" (nombre y notificaciones sin leer). --}}
+<header class="hdr">
+    <a class="logo" href="{{#if (eq rol "donante")}}/donante/donaciones{{else if (eq rol "entidad")}}/entidad/necesidades{{else if (eq rol "admin")}}/admin/donaciones{{else}}/{{/if}}">
+        <span class="logo-box"></span>DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
+    </a>
+
+    {{!-- Cada rol tiene sus links en su propio partial (nav-*.hbs) --}}
+    <nav class="nav" aria-label="Principal">
+        {{#if (eq rol "donante")}}
+            {{> nav-donante}}
+        {{else if (eq rol "entidad")}}
+            {{> nav-entidad}}
+        {{else if (eq rol "admin")}}
+            {{!-- El admin navega con el menú lateral (menu-admin.hbs) --}}
+        {{else}}
+            {{> nav-publico}}
+        {{/if}}
+    </nav>
+
+    {{#if usuario}}
+        <div class="user">
+            <span>{{usuario.nombre}}</span>
+            <a class="btn2 chico" href="/">Cerrar sesión</a>
+        </div>
+    {{else}}
+        <div class="row">
+            {{#unless (eq seccion "login")}}
+                <a class="btn2" href="/login">Iniciar sesión</a>
+            {{/unless}}
+            {{#unless (eq seccion "registro")}}
+                <a class="btn" href="/usuarios/nuevo">Registrarme</a>
+            {{/unless}}
+        </div>
+    {{/if}}
+</header>

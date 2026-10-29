@@ -1,0 +1,91 @@
+{{#partial "contenido"}}
+    <h1>Mis donaciones</h1>
+
+    <form class="card" action="/donante/donaciones" method="get" aria-label="Filtros">
+        <div class="f3">
+            <label>Estado
+                <select name="estado">
+                    <option value="">Todos</option>
+                    {{#each estados}}
+                        <option value="{{valor}}" {{#if (eq valor ../estadoElegido)}}selected{{/if}}>{{texto}}</option>
+                    {{/each}}
+                </select>
+            </label>
+            <label>Categoría
+                <select name="categoria">
+                    <option value="">Todas</option>
+                    {{#each categorias}}
+                        <option value="{{valor}}" {{#if (eq valor ../categoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                    {{/each}}
+                </select>
+            </label>
+        </div>
+
+        {{#if subcategorias}}
+            <fieldset class="sin-borde">
+                <legend class="subtitulo">Subcategorías</legend>
+                <div class="row">
+                    {{#each subcategorias}}
+                        <label class="check"><input type="checkbox" name="subcategoria" value="{{valor}}" {{#if elegida}}checked{{/if}}>{{texto}}</label>
+                    {{/each}}
+                </div>
+            </fieldset>
+        {{/if}}
+
+        <div class="row">
+            <button class="btn" type="submit">Filtrar</button>
+            <a class="btn2" href="/donante/donaciones">Limpiar filtros</a>
+            <span class="muted total">{{total}} donaciones</span>
+        </div>
+    </form>
+
+    {{#if donaciones}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Bien</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Entidad asignada</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each donaciones}}
+                        <tr>
+                            <td>{{fecha}}</td>
+                            <td>{{bien}}</td>
+                            <td>{{cantidad}}</td>
+                            {{!-- La clase del chip es el nombre del estado (EstadoDonacion) --}}
+                            <td><span class="chip {{estado}}">{{estadoTexto}}</span></td>
+                            <td>{{entidad}}</td>
+                            <td>
+                                <div class="acciones-tabla">
+                                    {{#if (eq estado "EN_TRASLADO")}}<a class="btn2 chico" href="/donante/seguimiento">Seguir entrega</a>{{/if}}
+                                    <a class="btn2 chico" href="/donante/donaciones?historial={{id}}#historial">Ver historial</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <p class="muted">No hay donaciones con esos filtros.</p>
+    {{/if}}
+
+    {{#if historial}}
+        <section id="historial" class="card">
+            <p class="subtitulo">Historial — {{historial.bien}} · {{historial.cantidad}}</p>
+            <ol class="historial">
+                {{#each historial.cambios}}
+                    <li>{{fecha}} — {{descripcion}}</li>
+                {{/each}}
+            </ol>
+        </section>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

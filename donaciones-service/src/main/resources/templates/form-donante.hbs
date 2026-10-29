@@ -1,0 +1,61 @@
+{{!-- Campos de una persona donante, compartidos por el registro público y el alta que hace el admin.
+      Usa "tipo" (HUMANA | JURIDICA) y "rol" del model de la página que lo incluye. --}}
+{{#if (eq tipo "HUMANA")}}
+    <div class="bloque">
+        <h2>Persona humana donante</h2>
+        <div class="f2">
+            <label>Nombre<input name="nombre" required></label>
+            <label>Apellido<input name="apellido" required></label>
+            <label>Tipo de documento<select name="tipoDoc"><option value="DNI">DNI</option></select></label>
+            <label>Número de documento<input name="documento" required></label>
+            <label>Edad<input name="edad" type="number" min="0"></label>
+            <label>Género
+                <select name="genero">
+                    <option value="FEMENINO">Femenino</option>
+                    <option value="MASCULINO">Masculino</option>
+                    <option value="NO_BINARIO">No binario</option>
+                </select>
+            </label>
+        </div>
+        <label>Dirección<input name="direccion"></label>
+    </div>
+{{/if}}
+
+{{#if (eq tipo "JURIDICA")}}
+    <div class="bloque">
+        <h2>Persona jurídica donante</h2>
+        <label>Razón social<input name="razonSocial" required></label>
+        <div class="f2">
+            <label>Tipo
+                <select name="tipoJuridica">
+                    <option value="GUBERNAMENTAL">Gubernamental</option>
+                    <option value="ONG">ONG</option>
+                    <option value="EMPRESA">Empresa</option>
+                    <option value="INSTITUCION">Institución</option>
+                </select>
+            </label>
+            <label>Rubro<input name="rubro"></label>
+            <label>CUIT<input name="documento" placeholder="30-12345678-9"></label>
+        </div>
+        {{#if (eq rol "admin")}}
+            <label>DNI de las personas representantes habilitadas<textarea name="representantes"></textarea><span class="hint">Uno por línea.</span></label>
+        {{else}}
+            <p class="hint">Las personas representantes habilitadas se agregan después, desde la cuenta.</p>
+        {{/if}}
+    </div>
+{{/if}}
+
+<fieldset>
+    <legend>Medios de contacto</legend>
+    <div class="f2">
+        <label>Correo electrónico<input name="email" type="email" required></label>
+        <label>Teléfono (opcional)<input name="telefono" type="tel"></label>
+        <label>WhatsApp (opcional)<input name="whatsapp" type="tel"></label>
+    </div>
+    <p class="subtitulo">Medio predeterminado para las notificaciones</p>
+    <div class="row">
+        <label class="radio"><input type="radio" name="medio" value="EMAIL" checked>Correo</label>
+        <label class="radio"><input type="radio" name="medio" value="SMS">SMS</label>
+        <label class="radio"><input type="radio" name="medio" value="WHATSAPP">WhatsApp</label>
+    </div>
+</fieldset>

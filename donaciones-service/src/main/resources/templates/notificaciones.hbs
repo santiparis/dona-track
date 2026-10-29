@@ -1,0 +1,33 @@
+{{!-- Bandeja compartida por donante y entidad: el controller pasa el aviso y sus notificaciones --}}
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Notificaciones</h1>
+        <p class="muted">{{aviso}}</p>
+    </div>
+
+    {{#if notificaciones}}
+        <div class="bandeja">
+            {{#each notificaciones}}
+                <div class="notificacion {{#unless leida}}nueva{{/unless}}">
+                    {{#if leida}}
+                        <span class="punto leido" aria-label="Leída"></span>
+                    {{else}}
+                        <span class="punto" aria-label="Sin leer"></span>
+                    {{/if}}
+                    <div class="notificacion-texto">
+                        <div class="row">
+                            <span class="chip">{{tipo}}</span>
+                            <span class="muted">{{fecha}}</span>
+                        </div>
+                        <p>{{mensaje}}</p>
+                        {{#if link}}<a href="{{link}}">{{linkTexto}}</a>{{/if}}
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <p class="muted">No tenés notificaciones.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}
