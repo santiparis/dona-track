@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package logistica;
+
+option java_multiple_files = true;
+option java_package = "logistica.grpc";
+option java_outer_classname = "LogisticaProto";
+
+// Servicio expuesto por logistica-service
+// Es el equivalente a declarar los endpoints en una API REST
+service LogisticaService {
+  rpc ObtenerEstadoEnvio (EnvioRequest) returns (EnvioResponse);
+  rpc TrazarEnvio (TrazarEnvioRequest) returns (TrazarEnvioResponse);
+}
+
+// Estructura binaria para consultar un envío
+message EnvioRequest {
+  string idEnvio = 1;
+}
+
+// Respuesta con los detalles del envío
+message EnvioResponse {
+  string idEnvio = 1;
+  string estado = 2;
+  string idCamion = 3;
+  string fechaEntrega = 4;
+}
+
+// Estructura binaria para solicitar trazado de envío
+message TrazarEnvioRequest {
+  string idDonacion = 1;
+  string idEntidadOrigen = 2;
+  string idEntidadDestino = 3;
+}
+
+// Respuesta al trazar el envío
+message TrazarEnvioResponse {
+  string idEnvio = 1;
+  bool exito = 2;
+  string mensaje = 3;
+}
