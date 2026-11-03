@@ -62,7 +62,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada");
@@ -79,7 +79,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(EntidadBeneficiariaPatchDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada parcialmente");
@@ -95,8 +95,8 @@ public class EntidadesBeneficiariasController {
   public void deleteEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      buscarEntidad(id);
-      entidadesRepository.eliminarPorId(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidadesRepository.eliminar(entidad);
       ctx.result("Entidad beneficiaria eliminada correctamente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al eliminar entidad beneficiaria: {}", e.getMessage());
@@ -122,8 +122,9 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
-      entidad.registrarNecesidad(crearNecesidad(dto));
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidad.registrarNecesidad(necesidad);
       entidadesRepository.guardar(entidad);
       ctx.status(HttpStatus.CREATED).result("Necesidad guardada correctamente");
     } catch (RuntimeException e) {
@@ -137,9 +138,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada correctamente");
     } catch (RuntimeException e) {
@@ -153,9 +155,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(idEntidad);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(idEntidad);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada parcialmente");
     } catch (RuntimeException e) {
@@ -168,7 +171,7 @@ public class EntidadesBeneficiariasController {
     Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
       entidad.eliminarNecesidadPorId(idNecesidad);
       entidadesRepository.guardar(entidad);
@@ -189,6 +192,11 @@ public class EntidadesBeneficiariasController {
 
   private EntidadBeneficiaria buscarEntidad(Long id) {
     return entidadesRepository.buscarPorId(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
+  }
+
+  private EntidadBeneficiaria buscarEntidadParaActualizar(Long id) {
+    return entidadesRepository.buscarPorIdParaActualizar(id)
         .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
   }
 

@@ -8,6 +8,7 @@ import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +56,11 @@ public class NotificarPersonasInactivas {
     try {
       RepositorioPersonas repositorio = new RepositorioPersonas();
       NotificacionRepository notificacionRepository = new NotificacionRepository();
-      poblarDatosDePrueba(repositorio);
-      List<Notificacion> notificaciones = notificarInactivos(repositorio, notificacionRepository);
-      logger.info("Total de personas notificadas en la prueba: {}", notificaciones.size());
+      new TransaccionPorRequest().withTransaction(() -> {
+        poblarDatosDePrueba(repositorio);
+        List<Notificacion> notificaciones = notificarInactivos(repositorio, notificacionRepository);
+        logger.info("Total de personas notificadas en la prueba: {}", notificaciones.size());
+      });
       logger.info("Notificación de personas inactivas finalizada con éxito");
     } catch (RuntimeException e) {
       logger.error("Error al ejecutar tarea programada de notificación", e);

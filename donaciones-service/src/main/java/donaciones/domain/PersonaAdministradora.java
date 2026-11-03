@@ -5,6 +5,7 @@ import donaciones.domain.notificacion.Notificable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
+import org.hibernate.annotations.Where;
 
 
 @Entity
@@ -12,7 +13,11 @@ import javax.persistence.*;
 public class PersonaAdministradora implements Notificable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_administradora_id") private Long id;
     private String nombre;
-    @Transient private List<Contacto> contactos = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "notificable_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "tipo_notificable = 'ADMINISTRADORA'")
+    @OrderBy("id")
+    private List<Contacto> contactos = new ArrayList<>();
     @Transient private Contacto medioPredeterminado;
 
     protected PersonaAdministradora() { }
@@ -21,8 +26,12 @@ public class PersonaAdministradora implements Notificable {
         this.nombre = nombre;
         if (contactos != null) {
             this.contactos.addAll(contactos);
+            this.contactos.forEach(contacto -> contacto.identificarNotificable("ADMINISTRADORA"));
         }
-        this.medioPredeterminado = medioPredeterminado;
+        if (medioPredeterminado != null) {
+            this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
+            this.medioPredeterminado = medioPredeterminado;
+        }
     }
 
     public Long getId() { return id; }
@@ -36,14 +45,19 @@ public class PersonaAdministradora implements Notificable {
         return contactos;
     }
 
-    public void reconstruirContactos(List<Contacto> contactos) {
-        this.contactos = new ArrayList<>(contactos);
-        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
-    }
-
     @Override
     public Contacto getMedioPredeterminado() {
+        if (medioPredeterminado == null) {
+            medioPredeterminado = contactoPredeterminado();
+        }
         return medioPredeterminado;
+    }
+
+    private Contacto contactoPredeterminado() {
+        return this.contactos.stream()
+            .filter(Contacto::esMedioPredeterminado)
+            .findFirst()
+            .orElse(this.contactos.isEmpty() ? null : this.contactos.get(0));
     }
 
     // TODO: Implementar confirmación de destino final de donaciones tras la ejecución de los algoritmos de matchmaking.

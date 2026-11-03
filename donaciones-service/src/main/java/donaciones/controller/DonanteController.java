@@ -80,9 +80,10 @@ public class DonanteController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonanteRequestDTO dto = ctx.bodyAsClass(DonanteRequestDTO.class);
-      Persona existente = personasRepository.buscarPorId(id)
+      Persona nuevosDatos = crearPersona(dto);
+      Persona existente = personasRepository.buscarPorIdParaActualizar(id)
           .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
-      existente.actualizarseDesde(crearPersona(dto));
+      existente.actualizarseDesde(nuevosDatos);
       personasRepository.agregar(existente);
       ctx.result("Datos del donante actualizados");
     } catch (IllegalArgumentException e) {
@@ -98,9 +99,9 @@ public class DonanteController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonantePatchDTO dto = ctx.bodyAsClass(DonantePatchDTO.class);
-      Persona existente = personasRepository.buscarPorId(id)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
       List<Contacto> contactos = dto.contactos() == null ? null : crearContactos(dto.contactos());
+      Persona existente = personasRepository.buscarPorIdParaActualizar(id)
+          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
       existente.actualizarDatosParciales(
           dto.nombre(), dto.documento(), dto.apellido(), dto.edad(), dto.direccion(), dto.rubro(), contactos);
       personasRepository.agregar(existente);

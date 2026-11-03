@@ -21,6 +21,9 @@ public class CamionesRepositoryTest implements SimplePersistenceTest {
     repositorio = new CamionesRepository();
 
     withTransaction(() -> {
+      entityManager().createQuery("DELETE FROM DonacionEncolada").executeUpdate();
+      entityManager().createQuery("DELETE FROM Entrega").executeUpdate();
+      entityManager().createQuery("DELETE FROM Ruta").executeUpdate();
       entityManager().createQuery("DELETE FROM Camion").executeUpdate();
     });
   }

@@ -3,16 +3,18 @@ package db;
 import donaciones.domain.*;
 import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Contacto;
-import donaciones.domain.notificacion.ContactoId;
 import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
 import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.repository.DonacionRepository;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import org.hibernate.Session;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +100,24 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
+    void obtieneDonacionConLockDeEscrituraParaEvitarActualizacionesConcurrentes() {
+        EntityManager em = entityManager();
+        PersonaHumana donante = personaHumana("lock@example.org");
+        Donacion donacion = new Donacion(
+                donante,
+                new Bien(Subcategoria.FIDEOS, 1, "unidad", null, null, null, null));
+        em.persist(donante);
+        em.persist(donacion);
+        em.flush();
+        Long donacionId = donacion.getId();
+        em.clear();
+
+        Donacion bloqueada = new DonacionRepository().buscarPorIdParaActualizar(donacionId).orElseThrow();
+
+        assertEquals(LockModeType.PESSIMISTIC_WRITE, em.getLockMode(bloqueada));
+    }
+
+    @Test
     void persisteNecesidadConCantidadesDeClaveCompuestaYPoliticaDeRenovacion() {
         EntityManager em = entityManager();
         Necesidad necesidad = new Necesidad(
@@ -160,21 +180,57 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
-    void persisteContactoConLaClaveCompuestaDelDerYRecuperaSuSubtipo() {
+    void persisteMultiplesContactosConElDonanteYRecuperaElMedioPredeterminado() {
         EntityManager em = entityManager();
-        ContactoPorEmail contacto = new ContactoPorEmail("notificaciones@example.org");
-        ContactoId id = new ContactoId(99L, "PERSONA");
-        contacto.identificarNotificable(99L, "PERSONA");
+        ContactoPorEmail email = new ContactoPorEmail("notificaciones@example.org");
+        ContactoPorSMS sms = new ContactoPorSMS("+5491112345678");
+        PersonaHumana persona = new PersonaHumana(
+                "Ana", "Pérez", 30, TipoDoc.DNI, "87654321", Genero.FEMENINO,
+                "Calle 1", List.of(email, sms), sms, null);
 
-        em.persist(contacto);
+        em.persist(persona);
         em.flush();
+        Long personaId = persona.getId();
         em.clear();
 
-        Contacto recuperado = em.find(Contacto.class, id);
+        Persona recuperada = em.find(Persona.class, personaId);
 
         assertAll(
-                () -> assertInstanceOf(ContactoPorEmail.class, recuperado),
-                () -> assertEquals("notificaciones@example.org", recuperado.getValor())
+                () -> assertEquals(2, recuperada.getContactos().size()),
+                () -> assertInstanceOf(ContactoPorEmail.class, recuperada.getContactos().get(0)),
+                () -> assertEquals("notificaciones@example.org", recuperada.getContactos().get(0).getValor()),
+                () -> assertInstanceOf(ContactoPorSMS.class, recuperada.getMedioPredeterminado()),
+                () -> assertEquals("+5491112345678", recuperada.getMedioPredeterminado().getValor())
+        );
+    }
+
+    @Test
+    void aislaContactosPorTipoDeNotificableAunqueLosIdsCoincidan() {
+        EntityManager em = entityManager();
+        PersonaHumana persona = personaHumana("persona@example.org");
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(
+                "Comedor", "Calle 1", "111", List.of(),
+                List.of(new ContactoPorEmail("entidad@example.org")), null);
+        PersonaAdministradora administradora = new PersonaAdministradora(
+                "Admin", List.of(new ContactoPorEmail("admin@example.org")), null);
+
+        em.persist(persona);
+        em.persist(entidad);
+        em.persist(administradora);
+        em.flush();
+        Long personaId = persona.getId();
+        Long entidadId = entidad.getId();
+        Long administradoraId = administradora.getId();
+        em.clear();
+
+        Persona recuperadaPersona = em.find(Persona.class, personaId);
+        EntidadBeneficiaria recuperadaEntidad = em.find(EntidadBeneficiaria.class, entidadId);
+        PersonaAdministradora recuperadaAdministradora = em.find(PersonaAdministradora.class, administradoraId);
+
+        assertAll(
+                () -> assertEquals("persona@example.org", recuperadaPersona.getContactos().get(0).getValor()),
+                () -> assertEquals("entidad@example.org", recuperadaEntidad.getContactos().get(0).getValor()),
+                () -> assertEquals("admin@example.org", recuperadaAdministradora.getContactos().get(0).getValor())
         );
     }
 
@@ -204,19 +260,15 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
         }
 
         @Test
-        void reconstruyeContactosDeUnaPersonaDesdeLaClaveDelNotificable() {
-                EntityManager em = entityManager();
-                PersonaHumana persona = personaHumana("reconstruida@example.org");
-                em.persist(persona);
-                em.flush();
+        void cargaContactosDePersonaDesdeLaRelacionJPA() {
+                    EntityManager em = entityManager();
+                    PersonaHumana persona = personaHumana("reconstruida@example.org");
+                    em.persist(persona);
+                    em.flush();
+                    Long personaId = persona.getId();
+                    em.clear();
 
-                Contacto contacto = new ContactoPorEmail("reconstruida@example.org");
-                contacto.identificarNotificable(persona.getId(), "PERSONA");
-                em.persist(contacto);
-                em.flush();
-                em.clear();
-
-                Persona recuperada = new RepositorioPersonas(em).buscarPorId(persona.getId()).orElseThrow();
+                    Persona recuperada = new RepositorioPersonas().buscarPorId(personaId).orElseThrow();
 
                 assertAll(
                                 () -> assertEquals(1, recuperada.getContactos().size()),

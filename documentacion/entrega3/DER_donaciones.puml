@@ -4,22 +4,13 @@ skinparam linetype ortho
 entity Bien {
     bien_id (PK)
     ---
-    subcategoria_id (FK)
+    subcategoria_id: nvarchar(255)
     cantidad: int
     unidad: nvarchar(8)
-    estado: nvarchar(32)
+    estado: nvarchar(255)
     vencimiento: date
     descripcion: nvarchar(255)
     foto: nvarchar(255)
-}
-
-entity Subcategoria {
-    subcategoria_id (PK)
-    ---
-    nombre: nvarchar(32)
-    categoria: nvarchar(32)
-    requiere_estado: nvarchar(8)
-    requiere_vencimiento: nvarchar(8)
 }
 
 entity Necesidad {
@@ -29,19 +20,19 @@ entity Necesidad {
     descripcion: nvarchar(255)
     fecha_inicio: date
     fecha_fin: date
-    periodo: nvarchar(32)
+    periodo: nvarchar(255)
 }
 
 entity CantidadRequerida {
-    necesidad_id (FK)
-    subcategoria_id (FK)
+    necesidad_id (PK, FK)
+    subcategoria_id (PK)
     ---
     cantidad_requerida: int
 }
 
 entity CantidadSuplida {
-    necesidad_id (FK)
-    subcategoria_id (FK)
+    necesidad_id (PK, FK)
+    subcategoria_id (PK)
     ---
     cantidad_suplida: int
 }
@@ -51,16 +42,18 @@ entity EntidadBeneficiaria {
     ---
     razon_social: nvarchar(255)
     direccion: nvarchar(255)
-    telefono: nvarchar(32)
-    medio_predeterminado_id (FK)
+    telefono: nvarchar(255)
 }
 
 entity Contacto {
-    notificable_id (FK)
-    tipo_notificable: nvarchar(8) 
+    contacto_id (PK)
+    ---
+    notificable_id (FK lógica)
+    tipo_notificable: nvarchar(16)
+    medio_predeterminado: boolean
     ---
     valor: nvarchar(255)
-    tipo_contacto: nvarchar(8)
+    tipo_contacto: nvarchar(255)
 }
 
 entity Notificacion {
@@ -79,7 +72,7 @@ entity Donacion {
     donante_id (FK)
     entidad_id (FK)
     bien_id (FK)
-    donacion_estado: nvarchar(32)
+    donacion_estado: nvarchar(255)
     fecha: date
 }
 
@@ -87,28 +80,28 @@ entity RegistroCambioEstado {
     registro_id (PK)
     ---
     donacion_id (FK)
-    estado_anterior: nvarchar(32)
-    estado_nuevo: nvarchar(32)
-    fecha: date
+    estado_anterior: nvarchar(255)
+    estado_nuevo: nvarchar(255)
+    fecha: datetime
     justificacion: nvarchar(255)
 }
 
 entity Persona {
     persona_id (PK)
     ---
-    tipo_doc: nvarchar(32)
+    tipo_doc: nvarchar(255)
     documento: nvarchar(255)
     nombre: nvarchar(255)
-    medio_predeterminado_id (FK)
     usuario_id (FK)
     ultima_interaccion: datetime
     ---
     tipo: nvarchar(255)
+    razon_social: nvarchar(255)
     rubro: nvarchar(255)
     ---
     apellido: nvarchar(255)
     edad: int
-    genero: nvarchar(32)
+    genero: nvarchar(255)
     direccion: nvarchar(255)
 }
 
@@ -122,28 +115,55 @@ entity Usuario {
     usuario_id (PK)
     ---
     nombre_usuario: nvarchar(255)
-    constrasenia: nvarchar(255)
-} 
+    contrasenia: nvarchar(255)
+}
 
-Persona ||--o{ Contacto
-Persona ||--o| Usuario
-PersonaAdministradora ||--o{ Contacto
+entity CorreoRepresentante {
+    entidad_id (PK, FK)
+    correo (PK)
+}
+
+entity SugerenciaAsignacion {
+    donacion_id (PK, FK)
+}
+
+Persona ||--o{ Contacto : notificable_id + tipo_notificable
+EntidadBeneficiaria ||--o{ Contacto : notificable_id + tipo_notificable
+PersonaAdministradora ||--o{ Contacto : notificable_id + tipo_notificable
+Persona |o--o| Usuario
 Notificacion }o--|| Persona : receptor_id + tipo_receptor (lógica)
 Notificacion }o--|| EntidadBeneficiaria : receptor_id + tipo_receptor (lógica)
 Notificacion }o--|| PersonaAdministradora : receptor_id + tipo_receptor (lógica)
 
-Bien }o--|| Subcategoria
-Bien ||--|| Donacion
+Bien |o--|| Donacion
 
 CantidadRequerida }o--|| Necesidad
-CantidadRequerida }o--|| Subcategoria
 
 CantidadSuplida }o--|| Necesidad
-CantidadSuplida }o--|| Subcategoria
 
-EntidadBeneficiaria ||--o{ Necesidad
-EntidadBeneficiaria ||--o{ Contacto
+EntidadBeneficiaria |o--o{ Necesidad
 EntidadBeneficiaria |o--o{ Donacion
+EntidadBeneficiaria ||--o{ CorreoRepresentante
+Persona ||--o{ Donacion
 
 Donacion ||--o{ RegistroCambioEstado
+Persona }o--o{ Persona : representantes_habilitados (personas juridicas)
+Donacion ||--o| SugerenciaAsignacion
+SugerenciaAsignacion }o--o{ EntidadBeneficiaria : entidades_coincidentes
+
+note right of Bien
+Subcategoria, Categoria y los estados son enums persistidos como texto;
+no tienen tablas propias ni relaciones FK.
+end note
+
+note right of Contacto
+Herencia SINGLE_TABLE: tipo_contacto discrimina Email, SMS y WhatsApp.
+notificable_id + tipo_notificable identifican al propietario de forma lógica,
+sin FK física porque puede apuntar a tres tablas distintas.
+end note
+
+note right of Persona
+Herencia SINGLE_TABLE: tipo discrimina PersonaHumana y PersonaJuridica.
+Los campos de ambas subclases ocupan esta misma tabla.
+end note
 @enduml

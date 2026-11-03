@@ -49,9 +49,9 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    donacionRepository = new DonacionRepository(entityManager());
-    entidadRepository = new EntidadBeneficiariaRepository(entityManager());
-    sugerenciaRepository = new SugerenciaAsignacionRepository(entityManager());
+    donacionRepository = new DonacionRepository();
+    entidadRepository = new EntidadBeneficiariaRepository();
+    sugerenciaRepository = new SugerenciaAsignacionRepository();
     organizadorAsignaciones = new OrganizadorAsignaciones(
         List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
     );

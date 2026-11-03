@@ -2,7 +2,9 @@ package donaciones.controller;
 
 import donaciones.domain.Donacion;
 import donaciones.domain.PersonaAdministradora;
+import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificacion;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
 
 import java.time.LocalDate;
@@ -52,9 +54,25 @@ public class Notificador {
   }
 
   private void notificar(donaciones.domain.notificacion.Notificable receptor, String mensaje) {
-    Notificacion notificacion = receptor.notificar(mensaje);
-    if (notificacion != null && notificacionRepository != null) {
-      notificacionRepository.guardar(notificacion);
+    Contacto medio = receptor.getMedioPredeterminado();
+    if (medio == null && receptor.getContactos() != null && !receptor.getContactos().isEmpty()) {
+      medio = receptor.getContactos().get(0);
     }
+    if (medio == null) {
+      return;
+    }
+
+    Contacto medioNotificacion = medio;
+    Notificacion notificacion = new Notificacion(receptor, mensaje);
+    TransaccionPorRequest.despuesDelCommit(() -> {
+      if (medioNotificacion.enviar(mensaje)) {
+        notificacion.marcarComoCompletada();
+      } else {
+        notificacion.marcarComoFallida();
+      }
+      if (notificacionRepository != null) {
+        notificacionRepository.guardar(notificacion);
+      }
+    });
   }
 }

@@ -1,6 +1,7 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
@@ -40,6 +41,7 @@ public class Main {
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
 
     OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
 
@@ -59,7 +61,10 @@ public class Main {
         staticFiles.directory = "/assets";
         staticFiles.location = Location.CLASSPATH;
       });
-    }).start(8081);
+    })
+        .before(ctx -> transaccion.abrir())
+        .after(ctx -> transaccion.cerrar(ctx.statusCode()))
+        .start(8081);
 
     new Router(controller, donanteController, entidadesController, asignacionesController, camionesController,
         notificacionesController, publicoController, sesionController).configure(app);

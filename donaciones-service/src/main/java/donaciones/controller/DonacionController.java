@@ -121,7 +121,7 @@ public class DonacionController {
       DonacionPatchDTO dto = ctx.bodyAsClass(DonacionPatchDTO.class);
 
       if (dto.estado() != null) {
-        Donacion donacion = donacionesRepository.buscarPorId(id)
+        Donacion donacion = donacionesRepository.buscarPorIdParaActualizar(id)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
         this.cambiarEstado(donacion, dto);
         ctx.result("Estado de la donación actualizado");
@@ -269,15 +269,11 @@ public class DonacionController {
 
   public void crearDonacion(DonacionRequestDTO dto) {
     List<Bien> bienesDelDominio = this.crearListaBienes(dto.bienes());
+    Persona persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante())
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante()));
 
     for (Bien bien : bienesDelDominio) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
-
-      if (persona.isPresent()) {
-        this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
-      } else {
-        throw new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante());
-      }
+      this.donacionesRepository.guardar(new Donacion(persona, bien));
     }
   }
 
@@ -348,21 +344,20 @@ public class DonacionController {
   }
 
   public void actualizarDonacion(Long id, DonacionRequestDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Bien bienActualizado = null;
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      bienActualizado = this.crearListaBienes(dto.bienes()).get(0);
+    }
+
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
 
     Donacion donacionExistente = donacionOpt.get();
-    Bien bienActualizado = null;
-
-    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
-      List<Bien> bienes = this.crearListaBienes(dto.bienes());
-      bienActualizado = bienes.get(0);
-    }
 
     if (dto.idDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
+      Optional<Persona> persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante());
       if (persona.isPresent()) {
         donacionExistente.actualizarDatos(persona.get(), bienActualizado);
       } else {
@@ -374,17 +369,21 @@ public class DonacionController {
   }
 
   public void actualizarDonacionParcial(Long id, DonacionPatchDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Bien bienActualizado = null;
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      bienActualizado = this.crearListaBienes(dto.bienes()).get(0);
+    }
+
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
 
     Donacion donacionExistente = donacionOpt.get();
     Persona personaActualizada = null;
-    Bien bienActualizado = null;
 
     if (dto.idDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
+      Optional<Persona> persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante());
       if (persona.isPresent()) {
         personaActualizada = persona.get();
       } else {
@@ -392,18 +391,13 @@ public class DonacionController {
       }
     }
 
-    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
-      List<Bien> bienes = this.crearListaBienes(dto.bienes());
-      bienActualizado = bienes.get(0);
-    }
-
     donacionExistente.actualizarDatos(personaActualizada, bienActualizado);
   }
 
   public void eliminarDonacion(Long id) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isPresent()) {
-      donacionesRepository.borrarPorId(id);
+      donacionesRepository.eliminar(donacionOpt.get());
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }

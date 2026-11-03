@@ -5,6 +5,7 @@ import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.dto.AsignacionRequestDTO;
 import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
@@ -16,6 +17,9 @@ import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AsignacionesController {
+  private static final Logger logger = LoggerFactory.getLogger(AsignacionesController.class);
 
   private final DonacionRepository donacionRepository;
   private final EntidadBeneficiariaRepository entidadRepository;
@@ -107,21 +112,23 @@ public class AsignacionesController {
       throw new IllegalArgumentException("Se requiere idEntidad en el body de la request");
     }
 
-    asignar(idSugerencia, dto.idEntidad(), dto.nombreEntidadSeleccionada());
+    asignar(idSugerencia, dto.idEntidad(), dto.nombreEntidadSeleccionada(), ctx);
   }
 
   // Compartido entre PATCH /api/sugerencias/{id}/asignaciones y el form de /admin/asignaciones/{id}
-  private void asignar(Long idSugerencia, Long idEntidad, String nombreEntidad) {
-    SugerenciaAsignacion sugerencia = this.sugerenciaRepository.buscarPorID(idSugerencia).orElseThrow();
+  private void asignar(Long idSugerencia, Long idEntidad, String nombreEntidad, Context ctx) {
+    SugerenciaAsignacion sugerencia = this.sugerenciaRepository.buscarPorIDParaActualizar(idSugerencia).orElseThrow();
 
     if (!sugerencia.incluyeEntidad(idEntidad)) {
       throw new IllegalArgumentException("La entidad seleccionada no aparece en ninguna de las listas generadas por los algoritmos");
     }
 
-    EntidadBeneficiaria entidad = this.entidadRepository.buscarPorId(idEntidad)
+    EntidadBeneficiaria entidad = this.entidadRepository.buscarPorIdParaActualizar(idEntidad)
         .orElseThrow(() -> new IllegalArgumentException("No existe la entidad especificada"));
+    Donacion donacion = donacionRepository.buscarPorIdParaActualizar(sugerencia.getId())
+        .orElseThrow(() -> new IllegalArgumentException("No existe la donación"));
 
-    confirmarAsignacion(sugerencia.getDonacion(), entidad, nombreEntidad);
+    confirmarAsignacion(donacion, entidad, nombreEntidad, ctx);
 
     this.sugerenciaRepository.eliminar(sugerencia);
 
@@ -141,16 +148,36 @@ public class AsignacionesController {
         .toList();
   }
 
-  private void confirmarAsignacion(Donacion donacion, EntidadBeneficiaria entidad, String nombreEntidad) {
+  private void confirmarAsignacion(
+      Donacion donacion,
+      EntidadBeneficiaria entidad,
+      String nombreEntidad,
+      Context ctx
+  ) {
     donacion.asignarA(entidad);
     if (notificador != null) notificador.donacionAsignada(donacion);
     if (logisticaAPICalls == null) return;
 
+    DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
+        donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
+        entidad.getDireccion(), nombreEntidad == null ? entidad.getRazonSocial() : nombreEntidad);
+    TransaccionPorRequest.despuesDelCommit(() -> {
+      try {
+        enviarAsignacionALogistica(dto);
+      } catch (RuntimeException exception) {
+        logger.error("La asignación {} se guardó, pero falló su notificación a logística", donacion.getId(), exception);
+        ctx.status(HttpStatus.BAD_GATEWAY)
+            .result("La asignación se guardó, pero no se pudo informar a logística; revisar antes de reintentar");
+      }
+    });
+  }
+
+  private void enviarAsignacionALogistica(DonacionLogisticaDTO dto) {
     try {
-      DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
-          donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
-          entidad.getDireccion(), nombreEntidad == null ? entidad.getRazonSocial() : nombreEntidad);
-      logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
+      Response<String> response = logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
+      if (!response.isSuccessful()) {
+        throw new IllegalStateException("Logística respondió con HTTP " + response.code());
+      }
     } catch (Exception e) {
       throw new IllegalStateException("No se pudo informar la asignación a logística", e);
     }

@@ -24,7 +24,7 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
 
     @BeforeEach
     void setUp() {
-        repositorioPersonas = new RepositorioPersonas(entityManager());
+        repositorioPersonas = new RepositorioPersonas();
         importador = new ImportadorPersonas(repositorioPersonas);
     }
 

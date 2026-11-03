@@ -2,6 +2,7 @@ package planificacion;
 
 import donaciones.controller.AsignacionesController;
 import donaciones.controller.Notificador;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
@@ -32,16 +33,18 @@ public class ProcesarAsignaciones {
         organizadorAsignaciones
     );
 
-    controller.limpiarSugerencias(); // TODO: Cuando tengamos persistencia esto no conviene, tenemos que revisar y actualizar las sugerencias que ya existan para no saturar la DB.
-    var sugerencias = controller.procesarDonacionesEnDeposito();
+    new TransaccionPorRequest().withTransaction(() -> {
+      controller.limpiarSugerencias(); // TODO: revisar la actualización de sugerencias existentes para no saturar la DB.
+      var sugerencias = controller.procesarDonacionesEnDeposito();
 
-    System.out.println("==== Inicio de procesamiento de asignaciones ====");
-    if (sugerencias.isEmpty()) {
-      System.out.println("No hay donaciones en depósito para procesar.");
-      return;
-    }
+      System.out.println("==== Inicio de procesamiento de asignaciones ====");
+      if (sugerencias.isEmpty()) {
+        System.out.println("No hay donaciones en depósito para procesar.");
+        return;
+      }
 
-    System.out.println("Total de sugerencias guardadas: " + controller.obtenerSugerenciasGuardadas().size());
-    System.out.println("==== Fin de procesamiento de asignaciones ====");
+      System.out.println("Total de sugerencias guardadas: " + controller.obtenerSugerenciasGuardadas().size());
+      System.out.println("==== Fin de procesamiento de asignaciones ====");
+    });
   }
 }
