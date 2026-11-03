@@ -48,7 +48,6 @@ public class Router {
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
-    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante()));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
 

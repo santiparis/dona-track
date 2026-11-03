@@ -15,7 +15,7 @@ public class DatosMock {
   }
 
   public static Map<String, Object> donante() {
-    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 2);
+    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
   }
 
   public static List<Map<String, String>> donacionesDelDonante() {
@@ -77,38 +77,12 @@ public class DatosMock {
     };
   }
 
-  // Los textos entre corchetes quedan como en el boceto: el dominio de incentivos todavía no está definido
-  public static Map<String, Object> incentivos() {
-    return Map.of(
-        "categoria", Map.of("nombre", "[CATEGORÍA ACTUAL]", "porcentaje", "70",
-            "faltan", "Te faltan [N] donaciones para llegar a [PRÓXIMA CATEGORÍA]"),
-        "resumenMisiones", "2 en curso · 1 cumplida",
-        "misiones", List.of(
-            Map.of("titulo", "[Misión] Doná alimentos 3 meses seguidos", "cumplida", false,
-                "porcentaje", "66", "detalle", "2 de 3 · Recompensa: insignia [NOMBRE]"),
-            Map.of("titulo", "[Misión] Doná a 3 entidades distintas", "cumplida", false,
-                "porcentaje", "33", "detalle", "1 de 3"),
-            Map.of("titulo", "[Misión] Primera donación", "cumplida", true,
-                "porcentaje", "100", "detalle", "Cumplida el 02/09/2026")),
-        "insignias", List.of(
-            Map.of("nombre", "[Insignia 1]", "obtenida", true),
-            Map.of("nombre", "[Insignia 2]", "obtenida", true),
-            Map.of("nombre", "[Insignia 3]", "obtenida", false),
-            Map.of("nombre", "[Insignia 4]", "obtenida", false))
-    );
-  }
-
   // Todas las notificaciones juntas, como las devuelve el repositorio: cada controller filtra por destinatario
   public static List<Map<String, Object>> notificaciones() {
     return List.of(
         Map.of("destinatario", "donante", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
             "mensaje", "Tu donación de 6 sillas fue asignada a Escuela Rural N°10.",
             "link", "/donante/donaciones", "linkTexto", "Ver donación"),
-        Map.of("destinatario", "donante", "tipo", "Misión cumplida", "fecha", "Ayer 18:20", "leida", false,
-            "mensaje", "Cumpliste la misión [Primera donación].",
-            "link", "/donante/incentivos", "linkTexto", "Ver incentivos"),
-        Map.of("destinatario", "donante", "tipo", "Subiste de categoría", "fecha", "15/10/2026", "leida", true,
-            "mensaje", "Ahora sos [CATEGORÍA]."),
         Map.of("destinatario", "donante", "tipo", "Entrega recibida", "fecha", "02/09/2026", "leida", true,
             "mensaje", "Escuela Rural N°10 recibió tus 10 bancos. Camión AB123CD, 02/09/2026 11:40."),
         Map.of("destinatario", "entidad", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,

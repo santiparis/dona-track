@@ -37,7 +37,7 @@
 }
 
 /* Texto secundario más chico dentro de tarjetas y listas */
-.opcion .muted, .necesidad .muted, .titulo-con-chip .muted, .categoria-texto .muted, .mision .muted,
+.opcion .muted, .necesidad .muted, .titulo-con-chip .muted,
 .notificacion-texto .muted, .notificacion-texto a {
     font-size: 14px;
 }
@@ -112,21 +112,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 /* Título a la izquierda y chip (o dato corto) a la derecha */
 .titulo-con-chip { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
-/* Incentivos: medalla redonda, gris punteada si está bloqueada */
-.medalla { width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: var(--color-principal); }
-.medalla.grande { width: 88px; height: 88px; }
-
-.medalla.bloqueada {
-    box-sizing: border-box;
-    border: 2px dashed var(--color-borde-input);
-    background: var(--color-superficie);
-}
-
-.categoria-actual { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 24px; }
-.categoria-texto { flex: 1 1 320px; gap: 8px; }
-.mision { gap: 8px; padding-top: 14px; border-top: 1px solid var(--color-neutro); }
-.insignia { align-items: center; text-align: center; }
-.insignia .chip { align-self: center; }
 .bar { height: 8px; border-radius: 999px; background: var(--color-neutro); overflow: hidden; }
 .bar span { display: block; height: 8px; background: var(--color-principal); }
 
