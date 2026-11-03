@@ -5,11 +5,11 @@ import donaciones.controller.Notificador;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.repository.NotificacionRepository;
-import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.repository.SugerenciaAsignacionRepository;
 
 import java.util.List;
 
@@ -23,11 +23,14 @@ public class ProcesarAsignaciones {
         List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
     );
 
+    // Instanciar el cliente gRPC conectando al puerto de logistica-service (9090)
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+
     AsignacionesController controller = new AsignacionesController(
         donacionRepository,
         entidadRepository,
         sugerenciaRepository,
-        new RetrofitConfig().logisticaAPICalls(),
+        logisticaGrpcClient,
         new Notificador(new NotificacionRepository()),
         organizadorAsignaciones
     );

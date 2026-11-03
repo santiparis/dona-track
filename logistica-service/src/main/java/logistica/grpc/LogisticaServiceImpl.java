@@ -8,11 +8,10 @@ import logistica.repository.RutasRepository;
 import java.util.Optional;
 
 public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceImplBase {
-
   private final RutasRepository rutasRepository;
 
-  public LogisticaServiceImpl() {
-    this.rutasRepository = new RutasRepository();
+  public LogisticaServiceImpl(RutasRepository rutasRepo) {
+    this.rutasRepository = rutasRepo;
   }
 
   @Override

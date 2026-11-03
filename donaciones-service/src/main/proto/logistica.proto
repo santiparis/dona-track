@@ -16,6 +16,11 @@ service LogisticaService {
   rpc TrazarRuta (TrazarRutaRequest) returns (TrazarRutaResponse);
 }
 
+// Servicio que expone donaciones-service (servidor) y consume logistica-service (cliente)
+service DonacionesService {
+  rpc CambiarEstadoDonacion (CambiarEstadoRequest) returns (CambiarEstadoResponse);
+}
+
 // Estructura binaria para consultar un envío
 message RutaRequest {
   string idRuta = 1;
@@ -44,4 +49,16 @@ message TrazarRutaResponse {
   string idRuta = 1;
   bool exito = 2;
   string mensaje = 3;
+}
+
+// Mensajes para CambiarEstadoDonacion
+message CambiarEstadoRequest {
+  int64 idDonacion = 1;
+  string nuevoEstado = 2;
+  string detallesAdicionales = 3;
+}
+
+message CambiarEstadoResponse {
+  bool exito = 1;
+  string mensaje = 2;
 }

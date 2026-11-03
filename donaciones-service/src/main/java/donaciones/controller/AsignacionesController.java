@@ -6,16 +6,16 @@ import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.dto.AsignacionRequestDTO;
-import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import logistica.grpc.TrazarRutaResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,21 +28,21 @@ public class AsignacionesController {
   private final EntidadBeneficiariaRepository entidadRepository;
   private final SugerenciaAsignacionRepository sugerenciaRepository;
   private final OrganizadorAsignaciones organizadorAsignaciones;
-  private final LogisticaAPICalls logisticaAPICalls;
+  private final LogisticaGrpcClient logisticaGrpcClient;
   private final Notificador notificador;
 
   public AsignacionesController(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
       SugerenciaAsignacionRepository sugerenciaRepository,
-      LogisticaAPICalls logisticaAPICalls,
+      LogisticaGrpcClient logisticaGrpcClient,
       Notificador notificador,
       OrganizadorAsignaciones organizadorAsignaciones
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.sugerenciaRepository = sugerenciaRepository;
-    this.logisticaAPICalls = logisticaAPICalls;
+    this.logisticaGrpcClient = logisticaGrpcClient;
     this.notificador = notificador;
     this.organizadorAsignaciones = organizadorAsignaciones;
   }
@@ -124,8 +124,6 @@ public class AsignacionesController {
     confirmarAsignacion(sugerencia.getDonacion(), entidad, nombreEntidad);
 
     this.sugerenciaRepository.eliminar(sugerencia);
-
-    // TODO: Pegarle al endpoint de logistica para que guarde la donacion para futura entrega
   }
 
   /** Orquestación de caso de uso: repositorios, integración externa y respuesta HTTP pertenecen al controller MVC. */
@@ -133,10 +131,10 @@ public class AsignacionesController {
     Donacion donacion = donacionRepository.buscarPorId(donacionId)
         .orElseThrow(() -> new IllegalArgumentException("No existe la donación"));
     return organizadorAsignaciones.sugerirEntidadesPorCriterio(
-      donacion,
-      entidadRepository.obtenerTodas(),
-      criterio
-    ).stream()
+            donacion,
+            entidadRepository.obtenerTodas(),
+            criterio
+        ).stream()
         .map(entidad -> new EntidadRankingDTO(entidad.getRazonSocial()))
         .toList();
   }
@@ -144,15 +142,23 @@ public class AsignacionesController {
   private void confirmarAsignacion(Donacion donacion, EntidadBeneficiaria entidad, String nombreEntidad) {
     donacion.asignarA(entidad);
     if (notificador != null) notificador.donacionAsignada(donacion);
-    if (logisticaAPICalls == null) return;
+    if (logisticaGrpcClient == null) return;
 
     try {
-      DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
-          donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
-          entidad.getDireccion(), nombreEntidad == null ? entidad.getRazonSocial() : nombreEntidad);
-      logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
+      String origen = "DEPOSITO_CENTRAL"; // O el origen que maneje el sistema de donaciones
+      String destino = entidad.getDireccion() != null ? entidad.getDireccion() : entidad.getRazonSocial();
+
+      TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(
+          String.valueOf(donacion.getId()),
+          origen,
+          destino
+      );
+
+      if (!response.getExito()) {
+        throw new IllegalStateException("Error reportado por gRPC logística: " + response.getMensaje());
+      }
     } catch (Exception e) {
-      throw new IllegalStateException("No se pudo informar la asignación a logística", e);
+      throw new IllegalStateException("No se pudo informar la asignación a logística vía gRPC", e);
     }
   }
 
@@ -172,9 +178,7 @@ public class AsignacionesController {
     model.put("seccion", "asignaciones");
     model.put("usuario", DatosMock.admin());   // MOCK
     model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
-    // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
     model.put("sugerencias", DatosMock.sugerencias());   // MOCK
-    // Después de ejecutar los algoritmos se vuelve con ?ejecutado, y después de confirmar un destino con ?asignada={id}
     model.put("ejecutado", ctx.queryParam("ejecutado") != null);
     model.put("asignada", ctx.queryParam("asignada"));
     return model;
@@ -189,26 +193,19 @@ public class AsignacionesController {
     model.put("seccion", "asignaciones");
     model.put("usuario", DatosMock.admin());   // MOCK
 
-    // SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
     model.put("donacion", DatosMock.sugerencias().stream()
         .filter(s -> s.get("id").equals(id))
         .findFirst()
         .orElseThrow(NotFoundResponse::new));   // MOCK
-    // sugerencia.getEntidadesPorAlgoritmo() y sugerencia.getCoincidencias()
     model.putAll(DatosMock.rankingsDeSugerencia(id));   // MOCK
     return model;
   }
 
   public void confirmarDestino(Context ctx) {
-    // Sin conexión todavía: acá va lo mismo que PATCH /api/sugerencias/{id}/asignaciones
-    // asignar(Long.valueOf(ctx.pathParam("id")), Long.valueOf(ctx.formParam("entidad")), null);
     ctx.redirect("/admin/asignaciones?asignada=" + ctx.pathParam("id"));
   }
 
   public void ejecutarAlgoritmosAhora(Context ctx) {
-    // Sin conexión todavía: acá va lo mismo que POST /api/sugerencias
-    // this.limpiarSugerencias();
-    // this.procesarDonacionesEnDeposito();
     ctx.redirect("/admin/asignaciones?ejecutado");
   }
 }

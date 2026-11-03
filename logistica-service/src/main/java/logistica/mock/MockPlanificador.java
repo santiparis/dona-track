@@ -48,9 +48,9 @@ public class MockPlanificador {
         // simula el procesamiento asincronico del proveedor
         CompletableFuture.runAsync(() -> devolverRutas(request));
       });
-    }).start(9090);
+    }).start(9092); // Cambiado de 9090 a 9092 para evitar conflicto con el gRPC Server
 
-    System.out.println("mock-planificador escuchando en :9090");
+    System.out.println("mock-planificador escuchando en :9092");
   }
 
   private static void devolverRutas(PlanificacionRequest request) {

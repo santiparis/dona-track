@@ -5,19 +5,21 @@ import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.grpc.DonacionesServiceImpl;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.NotificacionRepository;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
-import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
 import donaciones.web.templates.JavalinHandlebars;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
-import donaciones.controller.*;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Main {
@@ -28,8 +30,8 @@ public class Main {
     RepositorioPersonas personasRepository = new RepositorioPersonas();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
-    RetrofitConfig retrofitConfig = new RetrofitConfig();
-    LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
+    // Cliente gRPC hacia logistica-service
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
 
     NotificacionRepository notificacionRepository = new NotificacionRepository();
     Notificador notificador = new Notificador(notificacionRepository);
@@ -40,18 +42,33 @@ public class Main {
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
-
     OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
 
     AsignacionesController asignacionesController = new AsignacionesController(
-        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
+        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaGrpcClient, notificador, organizadorAsignaciones);
 
-    CamionesController camionesController = new CamionesController(logisticaAPICalls);
+    CamionesController camionesController = new CamionesController(logisticaGrpcClient);
     NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
     PublicoController publicoController = new PublicoController();
     SesionController sesionController = new SesionController();
 
+    // Servidor gRPC propio de donaciones-service (puerto 9091)
+    try {
+      Server gRpcServer = ServerBuilder.forPort(9091)
+          .addService(new DonacionesServiceImpl())
+          .build();
+      gRpcServer.start();
+      System.out.println("Servidor gRPC escuchando en puerto 9091...");
 
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        System.out.println("Apagando servidor gRPC...");
+        gRpcServer.shutdown();
+      }));
+    } catch (IOException e) {
+      System.err.println("Error al iniciar el servidor gRPC: " + e.getMessage());
+    }
+
+    // Servidor web HTTP / Javalin (puerto 8081)
     Javalin app = Javalin.create(config -> {
       config.fileRenderer(new JavalinHandlebars());
       config.staticFiles.add(staticFiles -> {
