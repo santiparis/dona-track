@@ -18,4 +18,10 @@ public class PublicoController {
     model.put("seccion", "legal");
     return model;
   }
+
+  public Map<String, Object> noEncontrada() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Página no encontrada");
+    return model;
+  }
 }

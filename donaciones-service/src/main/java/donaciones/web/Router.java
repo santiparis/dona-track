@@ -40,6 +40,7 @@ public class Router {
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
     app.get("/donaciones-entregadas", ctx -> ctx.render("publico/entregadas", donacionController.entregadas()));
+    app.error(404, "html", ctx -> ctx.render("publico/404", publicoController.noEncontrada()));
 
     app.get("/login", ctx -> ctx.render("sesion/login", sesionController.login()));
     app.post("/login", sesionController::ingresar);

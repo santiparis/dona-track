@@ -26,6 +26,17 @@ body { min-height: 100vh; }
 
 .seccion { gap: 16px; }
 
+/* Contenido corto en el medio de la pantalla (ej: la página 404): ocupa todo el alto libre del .wrap */
+.centrado {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+}
+
 /* Grillas que pasan a menos columnas en pantallas chicas: cada una define el ancho mínimo de sus columnas.
    min() evita que una columna ancha se salga de la pantalla en un celular */
 .cols, .f2, .f3, .f4, .dos-columnas, .estadisticas {
