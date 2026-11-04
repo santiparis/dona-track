@@ -63,29 +63,37 @@ body { min-height: 100vh; }
     padding: 16px;
 }
 
-/* Placeholder de foto dentro de una tarjeta */
-.ph.foto { height: 140px; }
+/* Foto dentro de una tarjeta, o su placeholder si no hay. La foto se recorta para llenar el recuadro */
+.ph.foto, img.foto { height: 140px; }
+img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
 
-/* Mapa placeholder con la tarjeta de detalle flotando arriba a la derecha */
-.mapa { position: relative; }
-.mapa > .ph { height: 420px; flex-direction: column; gap: 6px; }
+/* Mapa de MapLibre (mapa.js). font: inherit le saca la letra que le pone MapLibre */
+.mapa { height: 420px; border: 1px solid var(--color-borde); border-radius: 10px; font: inherit; }
+.mapa > .ph { height: 100%; box-sizing: border-box; flex-direction: column; gap: 6px; }
 .mapa > .ph .muted { font-weight: 400; }
-.mapa-detalle { position: absolute; top: 24px; right: 24px; width: 260px; box-shadow: 0 4px 12px var(--color-sombra); }
-.mapa-detalle .foto { height: 110px; }
 
-/* En pantallas chicas la tarjeta tapaba el mapa: pasa abajo */
-@media (max-width: 600px) {
-    .mapa {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
+/* Tarjetas que quedan en el desplegable "Ver más" */
+.ver-mas > .cols { margin-top: 16px; }
 
-    .mapa-detalle {
-        position: static;
-        width: auto;
-    }
+/* Los elementos con marcador se pueden tocar para verlos en el mapa */
+[data-marcador] { cursor: pointer; }
+
+/* Marcador: un punto con borde blanco */
+.marcador {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 3px solid var(--color-superficie);
+    background: var(--color-principal);
+    box-shadow: 0 1px 4px var(--color-sombra);
+    cursor: pointer;
 }
+
+/* Popup del marcador: un bloque por elemento que cae en ese punto. Si no entra en el mapa, scrollea */
+.popup { display: flex; flex-direction: column; gap: 14px; max-height: 240px; overflow-y: auto; }
+.popup > div { display: flex; flex-direction: column; gap: 4px; }
+.popup > div + div { border-top: 1px solid var(--color-borde); padding-top: 14px; }
+.popup .foto { height: 90px; }
 
 .num {
     width: 32px;
