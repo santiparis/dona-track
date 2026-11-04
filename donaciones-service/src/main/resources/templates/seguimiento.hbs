@@ -1,5 +1,5 @@
-{{!-- Seguimiento compartido por donante y entidad: los textos los pone el controller
-      y dos columnas de la tabla cambian según el rol --}}
+{{!-- Seguimiento compartido por donante y entidad: ven lo mismo (pantallas 7 y 12 del enunciado).
+      Cambian los textos, que pone el controller, y qué camiones entran (los filtra el controller) --}}
 {{#partial "dependencias"}}
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">
     {{!-- defer: el mapa se arma recién con todos los CSS cargados; si no, a veces mide el recuadro sin alto y queda cortado --}}
@@ -35,13 +35,8 @@
                 <thead>
                     <tr>
                         <th scope="col">Camión</th>
-                        {{#if (eq rol "entidad")}}
-                            <th scope="col">Trae</th>
-                            <th scope="col">Paradas antes que vos</th>
-                        {{else}}
-                            <th scope="col">Tu donación</th>
-                            <th scope="col">Destino</th>
-                        {{/if}}
+                        <th scope="col">Donación</th>
+                        <th scope="col">Destino</th>
                         <th scope="col">Ubicación</th>
                         <th scope="col">Velocidad</th>
                         <th scope="col">Última actualización</th>
@@ -56,13 +51,8 @@
                                 <p class="muted">Ubicación: {{latitud}}, {{longitud}}</p>
                                 <p class="muted">Última actualización: {{actualizacion}}</p>
                             </template></td>
-                            {{#if (eq ../rol "entidad")}}
-                                <td>{{trae}}</td>
-                                <td>{{paradasAntes}}</td>
-                            {{else}}
-                                <td>{{donacion}}</td>
-                                <td>{{destino}}</td>
-                            {{/if}}
+                            <td>{{donacion}}</td>
+                            <td>{{destino}}</td>
                             <td>{{latitud}}, {{longitud}}</td>
                             <td>{{velocidad}}</td>
                             <td>{{actualizacion}}</td>
