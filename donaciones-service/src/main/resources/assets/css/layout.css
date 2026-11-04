@@ -107,6 +107,18 @@ img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
 .popup > div + div { border-top: 1px solid var(--color-borde); padding-top: 14px; }
 .popup .foto { height: 90px; }
 
+/* X de cerrar del popup (la pone MapLibre): más grande, con su propio espacio arriba para no tapar el contenido */
+.mapa .maplibregl-popup-content { padding: 36px 12px 14px; }
+.mapa .maplibregl-popup-close-button {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-texto-suave);
+    border-radius: 0 8px 0 8px;
+}
+.mapa .maplibregl-popup-close-button:hover { background: var(--color-neutro); color: var(--color-texto); }
+
 .num {
     width: 32px;
     height: 32px;
