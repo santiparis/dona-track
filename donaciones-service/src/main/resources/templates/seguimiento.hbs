@@ -18,6 +18,17 @@
 
     <div class="mapa"></div>
 
+    {{!-- Solo la entidad tiene "entidad": su ubicación es un marcador más, de otro color (ver mapa.js) --}}
+    {{#with entidad}}
+        <div class="muted" data-marcador="entidad" data-lat="{{latitud}}" data-lng="{{longitud}}">
+            Tu entidad: {{nombre}} · {{direccion}}
+            <template>
+                <h3>{{nombre}}</h3>
+                <p class="muted">{{direccion}}</p>
+            </template>
+        </div>
+    {{/with}}
+
     {{#if camiones}}
         <div class="tbl">
             <table>

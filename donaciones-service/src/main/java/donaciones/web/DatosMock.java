@@ -130,8 +130,10 @@ public class DatosMock {
     return Map.of("nombre", "admin@donatrack", "notificacionesSinLeer", 0);
   }
 
+  // latitud y longitud ubican a la entidad en el mapa del seguimiento (EntidadBeneficiaria todavía no las tiene)
   public static Map<String, Object> entidad() {
-    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1);
+    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1,
+        "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
   }
 
   public static List<Map<String, String>> necesidadesDeLaEntidad() {

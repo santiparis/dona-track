@@ -87,6 +87,9 @@ img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
     cursor: pointer;
 }
 
+/* La entidad se distingue de los camiones */
+.marcador.entidad { background: var(--color-acento); }
+
 /* Popup del marcador: un bloque por elemento que cae en ese punto. Si no entra en el mapa, scrollea */
 .popup { display: flex; flex-direction: column; gap: 14px; max-height: 240px; overflow-y: auto; }
 .popup > div { display: flex; flex-direction: column; gap: 4px; }

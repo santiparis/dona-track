@@ -22,6 +22,7 @@ Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`dona
 ## Comportamiento del mapa
 
 * Los elementos que caen en el mismo punto (ej: dos entregas a la misma entidad) comparten marcador y su popup los lista a todos.
+* El valor de `data-marcador` es también la clase del marcador: en el seguimiento de la entidad, su ubicación (`entidad`) se pinta de otro color que los camiones (`camion`).
 * El popup sale siempre arriba del marcador y el mapa se desplaza para que entre; si el contenido no entra, scrollea.
 * Tocar una tarjeta o una fila sube hasta el mapa con un scroll animado y, al llegar, abre el popup de su marcador.
 * Los scripts del mapa se cargan con `defer`, para que el mapa se arme con todos los CSS ya aplicados. Sin eso, a veces MapLibre medía el recuadro sin alto y el mapa quedaba cortado.

@@ -72,6 +72,7 @@ public class CamionesController {
     model.put("seccion", "seguimiento");
     Map<String, Object> entidad = DatosMock.entidad();   // MOCK
     model.put("usuario", entidad);
+    model.put("entidad", entidad);   // su ubicación también va en el mapa
     model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
     // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDestino(idEntidad).execute().body();
