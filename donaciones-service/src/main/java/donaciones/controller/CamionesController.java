@@ -59,7 +59,6 @@ public class CamionesController {
     model.put("seccion", "seguimiento");
     model.put("usuario", DatosMock.donante());   // MOCK
     model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
-    model.put("textoMapa", "Un marcador por camión y los destinos de tus donaciones");
     // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDonacionesDe(idDonante).execute().body();
     model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
@@ -74,7 +73,6 @@ public class CamionesController {
     Map<String, Object> entidad = DatosMock.entidad();   // MOCK
     model.put("usuario", entidad);
     model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
-    model.put("textoMapa", "Un marcador por camión y la ubicación de tu entidad");
     // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDestino(idEntidad).execute().body();
     model.put("camiones", DatosMock.camionesEnRuta().stream()

@@ -113,15 +113,16 @@ public class DatosMock {
     );
   }
 
-  // "donacion" es lo que ve el donante (su donación); "trae" y "paradasAntes" es lo que ve la entidad del destino
-  public static List<Map<String, String>> camionesEnRuta() {
+  // "donacion" es lo que ve el donante (su donación); "trae" y "paradasAntes" es lo que ve la entidad del destino.
+  // latitud y longitud son la última posición que reportó el camión: ahí va su marcador en el mapa
+  public static List<Map<String, Object>> camionesEnRuta() {
     return List.of(
         Map.of("patente", "AB123CD", "donacion", "Sillas · 6 unidades", "destino", "Escuela Rural N°10",
             "trae", "Sillas · 6 unidades, Mesas · 1 unidad", "paradasAntes", "1",
-            "ubicacion", "-34.4521, -59.4467", "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
+            "latitud", -34.5862, "longitud", -59.1250, "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
         Map.of("patente", "AE456FG", "donacion", "Fideos · 100 paquetes", "destino", "Comedor Escobar Sonrisas",
             "trae", "Fideos · 100 paquetes", "paradasAntes", "0",
-            "ubicacion", "-34.3489, -58.7956", "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
+            "latitud", -34.3489, "longitud", -58.7956, "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
     );
   }
 
