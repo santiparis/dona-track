@@ -23,6 +23,7 @@ public abstract class Persona implements Notificable {
     @Where(clause = "tipo_notificable = 'PERSONA'")
     @OrderBy("id")
     private List<Contacto> contactos = new ArrayList<>();
+    // Aclaración: Es @Transient porque la entidad Contacto tiene un campo que indica si es el medio predeterminado de la persona
     @Transient private Contacto medioPredeterminado;
     @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "usuario_id") private Usuario usuario;
     @Column(name = "ultima_interaccion") private LocalDateTime ultimaInteraccion = LocalDateTime.now();

@@ -18,6 +18,7 @@ entity Necesidad {
     ---
     entidad_id (FK)
     descripcion: nvarchar(255)
+    ---
     fecha_inicio: date
     fecha_fin: date
     periodo: nvarchar(255)

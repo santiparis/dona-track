@@ -133,6 +133,10 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
         Long necesidadId = necesidad.getId();
         em.clear();
 
+        Object[] columnasRenovacion = (Object[]) em.createNativeQuery(
+                        "select fecha_inicio, fecha_fin, periodo from necesidad where necesidad_id = ?")
+                .setParameter(1, necesidadId)
+                .getSingleResult();
         Necesidad recuperada = em.find(Necesidad.class, necesidadId);
         Number requeridas = (Number) em.createNativeQuery(
                         "select count(*) from cantidad_requerida where necesidad_id = ?")
@@ -147,6 +151,10 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
         assertAll(
                 () -> assertEquals(2, requeridas.intValue()),
                 () -> assertEquals(4, suplidas.intValue()),
+                () -> assertEquals(LocalDate.of(2026, 6, 1), ((java.sql.Date) columnasRenovacion[0]).toLocalDate()),
+                () -> assertEquals(LocalDate.of(2026, 7, 1), ((java.sql.Date) columnasRenovacion[1]).toLocalDate()),
+                () -> assertEquals("MENSUAL", columnasRenovacion[2]),
+                () -> assertEquals(LocalDate.of(2026, 6, 1), recuperada.getRenovacion().getFechaInicio()),
                 () -> assertTrue(recuperada.getRenovacion().seRenueva()),
                 () -> assertFalse(recuperada.estaSatisfecha())
         );
