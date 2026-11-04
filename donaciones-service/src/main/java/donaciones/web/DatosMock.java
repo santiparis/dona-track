@@ -5,17 +5,37 @@ import java.util.Map;
 
 public class DatosMock {
 
+  // latitud y longitud son las de la entidad que recibió la entrega: ahí va el marcador del mapa.
+  // foto es una URL, como Bien.foto (las del mock son fotos libres de Wikimedia Commons)
   public static List<Map<String, Object>> donacionesEntregadas() {
+    String commons = "https://thumb.wikimedia.org/wikipedia/commons/thumb/";
     return List.of(
-        Map.of("entidad", "Escuela Rural N°10", "bien", "Bancos", "cantidad", "30 unidades", "fecha", "12/10/2026"),
-        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Fideos", "cantidad", "100 paquetes", "fecha", "08/10/2026"),
-        Map.of("entidad", "Escuela Rural N°10", "bien", "Sillas", "cantidad", "30 unidades", "fecha", "05/10/2026"),
-        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Leche", "cantidad", "50 litros", "fecha", "01/10/2026")
+        Map.of("entidad", "Escuela Rural N°10", "bien", "Bancos", "cantidad", "30 unidades", "fecha", "12/10/2026",
+            "latitud", -34.4705, "longitud", -59.4890,
+            "foto", commons + "e/e9/Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg/960px-Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg"),
+        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Fideos", "cantidad", "100 paquetes", "fecha", "08/10/2026",
+            "latitud", -34.3467, "longitud", -58.7920,
+            "foto", commons + "2/26/Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg/960px-Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg"),
+        Map.of("entidad", "Escuela Rural N°10", "bien", "Sillas", "cantidad", "30 unidades", "fecha", "05/10/2026",
+            "latitud", -34.4705, "longitud", -59.4890,
+            "foto", "https://upload.wikimedia.org/wikipedia/commons/5/51/Wooden_Chair.jpg"),
+        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Leche", "cantidad", "50 litros", "fecha", "01/10/2026",
+            "latitud", -34.3467, "longitud", -58.7920,
+            "foto", commons + "2/2d/Cartons_of_Nature%27s_Promise_milk_%2850855058622%29.jpg/960px-Cartons_of_Nature%27s_Promise_milk_%2850855058622%29.jpg"),
+        Map.of("entidad", "Merendero Mitaí (Posadas, Misiones)", "bien", "Leche", "cantidad", "60 litros", "fecha", "26/09/2026",
+            "latitud", -27.3671, "longitud", -55.8961,
+            "foto", commons + "7/7f/Tetra-Milk-Carton---Betsukai-Milk---2024-04-27_08.jpg/960px-Tetra-Milk-Carton---Betsukai-Milk---2024-04-27_08.jpg"),
+        Map.of("entidad", "Hogar Escuela Bariloche (Río Negro)", "bien", "Camperas", "cantidad", "40 unidades", "fecha", "22/09/2026",
+            "latitud", -41.1335, "longitud", -71.3103,
+            "foto", commons + "e/e9/Blazer_Jackets_on_Rack_%28Unsplash%29.jpg/960px-Blazer_Jackets_on_Rack_%28Unsplash%29.jpg"),
+        Map.of("entidad", "Comedor Los Changuitos (Salta)", "bien", "Fideos", "cantidad", "80 paquetes", "fecha", "18/09/2026",
+            "latitud", -24.7883, "longitud", -65.4106,
+            "foto", "https://upload.wikimedia.org/wikipedia/commons/a/a8/Pates_pas_fraiches.jpg")
     );
   }
 
   public static Map<String, Object> donante() {
-    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 2);
+    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
   }
 
   public static List<Map<String, String>> donacionesDelDonante() {
@@ -77,38 +97,12 @@ public class DatosMock {
     };
   }
 
-  // Los textos entre corchetes quedan como en el boceto: el dominio de incentivos todavía no está definido
-  public static Map<String, Object> incentivos() {
-    return Map.of(
-        "categoria", Map.of("nombre", "[CATEGORÍA ACTUAL]", "porcentaje", "70",
-            "faltan", "Te faltan [N] donaciones para llegar a [PRÓXIMA CATEGORÍA]"),
-        "resumenMisiones", "2 en curso · 1 cumplida",
-        "misiones", List.of(
-            Map.of("titulo", "[Misión] Doná alimentos 3 meses seguidos", "cumplida", false,
-                "porcentaje", "66", "detalle", "2 de 3 · Recompensa: insignia [NOMBRE]"),
-            Map.of("titulo", "[Misión] Doná a 3 entidades distintas", "cumplida", false,
-                "porcentaje", "33", "detalle", "1 de 3"),
-            Map.of("titulo", "[Misión] Primera donación", "cumplida", true,
-                "porcentaje", "100", "detalle", "Cumplida el 02/09/2026")),
-        "insignias", List.of(
-            Map.of("nombre", "[Insignia 1]", "obtenida", true),
-            Map.of("nombre", "[Insignia 2]", "obtenida", true),
-            Map.of("nombre", "[Insignia 3]", "obtenida", false),
-            Map.of("nombre", "[Insignia 4]", "obtenida", false))
-    );
-  }
-
   // Todas las notificaciones juntas, como las devuelve el repositorio: cada controller filtra por destinatario
   public static List<Map<String, Object>> notificaciones() {
     return List.of(
         Map.of("destinatario", "donante", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
             "mensaje", "Tu donación de 6 sillas fue asignada a Escuela Rural N°10.",
             "link", "/donante/donaciones", "linkTexto", "Ver donación"),
-        Map.of("destinatario", "donante", "tipo", "Misión cumplida", "fecha", "Ayer 18:20", "leida", false,
-            "mensaje", "Cumpliste la misión [Primera donación].",
-            "link", "/donante/incentivos", "linkTexto", "Ver incentivos"),
-        Map.of("destinatario", "donante", "tipo", "Subiste de categoría", "fecha", "15/10/2026", "leida", true,
-            "mensaje", "Ahora sos [CATEGORÍA]."),
         Map.of("destinatario", "donante", "tipo", "Entrega recibida", "fecha", "02/09/2026", "leida", true,
             "mensaje", "Escuela Rural N°10 recibió tus 10 bancos. Camión AB123CD, 02/09/2026 11:40."),
         Map.of("destinatario", "entidad", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
@@ -119,15 +113,16 @@ public class DatosMock {
     );
   }
 
-  // "donacion" es lo que ve el donante (su donación); "trae" y "paradasAntes" es lo que ve la entidad del destino
-  public static List<Map<String, String>> camionesEnRuta() {
+  // latitud y longitud son la última posición que reportó el camión: ahí va su marcador en el mapa.
+  // avance son las entregas ya hechas de su ruta
+  public static List<Map<String, Object>> camionesEnRuta() {
     return List.of(
         Map.of("patente", "AB123CD", "donacion", "Sillas · 6 unidades", "destino", "Escuela Rural N°10",
-            "trae", "Sillas · 6 unidades, Mesas · 1 unidad", "paradasAntes", "1",
-            "ubicacion", "-34.4521, -59.4467", "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
+            "avance", "1 de 2 entregas",
+            "latitud", -34.5862, "longitud", -59.1250, "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
         Map.of("patente", "AE456FG", "donacion", "Fideos · 100 paquetes", "destino", "Comedor Escobar Sonrisas",
-            "trae", "Fideos · 100 paquetes", "paradasAntes", "0",
-            "ubicacion", "-34.3489, -58.7956", "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
+            "avance", "0 de 1 entregas",
+            "latitud", -34.3489, "longitud", -58.7956, "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
     );
   }
 
@@ -135,8 +130,10 @@ public class DatosMock {
     return Map.of("nombre", "admin@donatrack", "notificacionesSinLeer", 0);
   }
 
+  // latitud y longitud ubican a la entidad en el mapa del seguimiento (EntidadBeneficiaria todavía no las tiene)
   public static Map<String, Object> entidad() {
-    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1);
+    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1,
+        "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
   }
 
   public static List<Map<String, String>> necesidadesDeLaEntidad() {
@@ -260,19 +257,29 @@ public class DatosMock {
     );
   }
 
+  // La Escuela tiene más de 3 necesidades: su tarjeta muestra 3 y el link al detalle con todas
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
-        Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+        Map.of("id", "11", "nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+            "correos", List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar"),
             "necesidades", List.of(
                 Map.of("subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "tipo", "Extraordinaria",
                     "porcentaje", "33", "detalle", "10 de 30 unidades · Reposición tras inundación"),
                 Map.of("subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "tipo", "Extraordinaria",
-                    "porcentaje", "20", "detalle", "6 de 30 unidades"))),
-        Map.of("nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+                    "porcentaje", "20", "detalle", "6 de 30 unidades"),
+                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
+                    "porcentaje", "0", "detalle", "0 de 10 unidades"),
+                Map.of("subcategoria", "LECHE", "subcategoriaTexto", "Leche", "tipo", "Recurrente · mensual",
+                    "porcentaje", "80", "detalle", "40 de 50 litros este mes · Desayuno escolar"),
+                Map.of("subcategoria", "ABRIGOS", "subcategoriaTexto", "Abrigos", "tipo", "Extraordinaria",
+                    "porcentaje", "12", "detalle", "5 de 40 unidades"))),
+        Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+            "correos", List.of("escobarsonrisas@gmail.com"),
             "necesidades", List.of(
                 Map.of("subcategoria", "FIDEOS", "subcategoriaTexto", "Fideos", "tipo", "Recurrente · semanal",
                     "porcentaje", "60", "detalle", "60 de 100 paquetes esta semana"))),
-        Map.of("nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+        Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+            "correos", List.of("tutoriasbarrionorte@gmail.com"),
             "necesidades", List.of(
                 Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
                     "porcentaje", "0", "detalle", "0 de 5 unidades")))

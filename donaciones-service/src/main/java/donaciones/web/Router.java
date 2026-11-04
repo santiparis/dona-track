@@ -40,6 +40,7 @@ public class Router {
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
     app.get("/donaciones-entregadas", ctx -> ctx.render("publico/entregadas", donacionController.entregadas()));
+    app.error(404, "html", ctx -> ctx.render("publico/404", publicoController.noEncontrada()));
 
     app.get("/login", ctx -> ctx.render("sesion/login", sesionController.login()));
     app.post("/login", sesionController::ingresar);
@@ -48,7 +49,7 @@ public class Router {
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
-    app.get("/donante/incentivos", ctx -> ctx.render("donante/incentivos", donanteController.incentivos()));
+    app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante()));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
 
@@ -74,6 +75,7 @@ public class Router {
     app.get("/admin/asignaciones/{id}", ctx -> ctx.render("admin/asignacion", asignacionesController.asignacion(ctx)));
     app.post("/admin/asignaciones/{id}", asignacionesController::confirmarDestino);
     app.get("/admin/camiones", ctx -> ctx.render("admin/camiones", camionesController.camiones(ctx)));
+    app.get("/admin/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoAdmin()));
     app.post("/admin/camiones", camionesController::crearCamion);
     app.post("/admin/camiones/{id}", camionesController::modificarCamion);
     app.post("/admin/camiones/{id}/eliminar", camionesController::eliminarCamion);

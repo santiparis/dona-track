@@ -1,6 +1,7 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
@@ -9,15 +10,19 @@ import donaciones.grpc.DonacionesServiceImpl;
 import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.NotificacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import donaciones.retrofit_client.LogisticaAPICalls;
+import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
 import donaciones.web.templates.JavalinHandlebars;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import donaciones.controller.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,6 +47,8 @@ public class Main {
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+
     OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
 
     AsignacionesController asignacionesController = new AsignacionesController(
@@ -76,7 +83,10 @@ public class Main {
         staticFiles.directory = "/assets";
         staticFiles.location = Location.CLASSPATH;
       });
-    }).start(8081);
+    })
+        .before(ctx -> transaccion.abrir())
+        .after(ctx -> transaccion.cerrar(ctx.statusCode()))
+        .start(8081);
 
     new Router(controller, donanteController, entidadesController, asignacionesController, camionesController,
         notificacionesController, publicoController, sesionController).configure(app);

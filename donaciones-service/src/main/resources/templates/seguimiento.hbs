@@ -1,5 +1,13 @@
-{{!-- Seguimiento compartido por donante y entidad: los textos los pone el controller
-      y dos columnas de la tabla cambian según el rol --}}
+{{!-- Seguimiento compartido por donante, entidad (pantallas 7 y 12 del enunciado de la E4) y admin
+      (monitoreo de la flota, de la E2): ven lo mismo. Cambian los textos, que pone el controller,
+      y qué camiones entran (los filtra el controller; el admin ve todos) --}}
+{{#partial "dependencias"}}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">
+    {{!-- defer: el mapa se arma recién con todos los CSS cargados; si no, a veces mide el recuadro sin alto y queda cortado --}}
+    <script defer src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+    <script defer src="/assets/js/mapa.js"></script>
+{{/partial}}
+
 {{#partial "contenido"}}
     <div class="encabezado-con-accion">
         <div class="encabezado">
@@ -9,12 +17,18 @@
         <a class="btn2" href="/{{rol}}/seguimiento">Actualizar</a>
     </div>
 
-    <div class="mapa">
-        <div class="ph">
-            <span>Mapa en tiempo real — próxima iteración</span>
-            <span class="muted">{{textoMapa}}</span>
+    <div class="mapa"></div>
+
+    {{!-- Solo la entidad tiene "entidad": su ubicación es un marcador más, de otro color (ver mapa.js) --}}
+    {{#with entidad}}
+        <div class="muted" data-marcador="entidad" data-lat="{{latitud}}" data-lng="{{longitud}}">
+            Tu entidad: {{nombre}} · {{direccion}}
+            <template>
+                <h3>{{nombre}}</h3>
+                <p class="muted">{{direccion}}</p>
+            </template>
         </div>
-    </div>
+    {{/with}}
 
     {{#if camiones}}
         <div class="tbl">
@@ -22,30 +36,28 @@
                 <thead>
                     <tr>
                         <th scope="col">Camión</th>
-                        {{#if (eq rol "entidad")}}
-                            <th scope="col">Trae</th>
-                            <th scope="col">Paradas antes que vos</th>
-                        {{else}}
-                            <th scope="col">Tu donación</th>
-                            <th scope="col">Destino</th>
-                        {{/if}}
+                        <th scope="col">Donación</th>
+                        <th scope="col">Destino</th>
+                        <th scope="col">Avance</th>
                         <th scope="col">Ubicación</th>
                         <th scope="col">Velocidad</th>
                         <th scope="col">Última actualización</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{!-- Cada fila es también un marcador del mapa (ver mapa.js) --}}
                     {{#each camiones}}
-                        <tr>
-                            <td>{{patente}}</td>
-                            {{#if (eq ../rol "entidad")}}
-                                <td>{{trae}}</td>
-                                <td>{{paradasAntes}}</td>
-                            {{else}}
-                                <td>{{donacion}}</td>
-                                <td>{{destino}}</td>
-                            {{/if}}
-                            <td>{{ubicacion}}</td>
+                        <tr data-marcador="camion" data-lat="{{latitud}}" data-lng="{{longitud}}">
+                            <td>{{patente}}<template>
+                                <h3>Camión {{patente}}</h3>
+                                <p class="muted">Avance: {{avance}}</p>
+                                <p class="muted">Ubicación: {{latitud}}, {{longitud}}</p>
+                                <p class="muted">Última actualización: {{actualizacion}}</p>
+                            </template></td>
+                            <td>{{donacion}}</td>
+                            <td>{{destino}}</td>
+                            <td>{{avance}}</td>
+                            <td>{{latitud}}, {{longitud}}</td>
                             <td>{{velocidad}}</td>
                             <td>{{actualizacion}}</td>
                         </tr>

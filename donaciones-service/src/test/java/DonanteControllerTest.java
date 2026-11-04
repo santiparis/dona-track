@@ -24,7 +24,7 @@ public class DonanteControllerTest implements SimplePersistenceTest {
 
     @BeforeEach
     void setUp() {
-        personasRepository = new RepositorioPersonas(entityManager());
+        personasRepository = new RepositorioPersonas();
         controller = new DonanteController(personasRepository);
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }

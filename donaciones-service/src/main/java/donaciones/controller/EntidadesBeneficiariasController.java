@@ -8,6 +8,7 @@ import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada");
@@ -79,7 +80,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(EntidadBeneficiariaPatchDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada parcialmente");
@@ -95,8 +96,8 @@ public class EntidadesBeneficiariasController {
   public void deleteEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      buscarEntidad(id);
-      entidadesRepository.eliminarPorId(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidadesRepository.eliminar(entidad);
       ctx.result("Entidad beneficiaria eliminada correctamente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al eliminar entidad beneficiaria: {}", e.getMessage());
@@ -122,8 +123,9 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
-      entidad.registrarNecesidad(crearNecesidad(dto));
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidad.registrarNecesidad(necesidad);
       entidadesRepository.guardar(entidad);
       ctx.status(HttpStatus.CREATED).result("Necesidad guardada correctamente");
     } catch (RuntimeException e) {
@@ -137,9 +139,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada correctamente");
     } catch (RuntimeException e) {
@@ -153,9 +156,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(idEntidad);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(idEntidad);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada parcialmente");
     } catch (RuntimeException e) {
@@ -168,7 +172,7 @@ public class EntidadesBeneficiariasController {
     Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
       entidad.eliminarNecesidadPorId(idNecesidad);
       entidadesRepository.guardar(entidad);
@@ -189,6 +193,11 @@ public class EntidadesBeneficiariasController {
 
   private EntidadBeneficiaria buscarEntidad(Long id) {
     return entidadesRepository.buscarPorId(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
+  }
+
+  private EntidadBeneficiaria buscarEntidadParaActualizar(Long id) {
+    return entidadesRepository.buscarPorIdParaActualizar(id)
         .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
   }
 
@@ -247,6 +256,24 @@ public class EntidadesBeneficiariasController {
     model.put("subcategorias", DatosMock.categorias().stream()
         .flatMap(c -> DatosMock.subcategorias(c.get("valor")).stream())
         .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> entidad(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("rol", "donante");
+    model.put("seccion", "entidades");
+    model.put("usuario", DatosMock.donante());   // MOCK
+
+    // EntidadBeneficiaria entidad = entidadRepo.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    Map<String, Object> entidad = DatosMock.entidadesConNecesidades().stream()
+        .filter(e -> e.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new);   // MOCK
+    model.put("entidad", entidad);
+    model.put("titulo", entidad.get("nombre"));
     return model;
   }
 

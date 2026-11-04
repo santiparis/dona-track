@@ -7,8 +7,11 @@ import logistica.dto.CamionDTO;
 import logistica.dto.LocalizacionDTO;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import logistica.repository.CamionesRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -31,14 +34,21 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @BeforeEach
   void setUp() {
+    setupTransaction();
+
     camionesRepository = new CamionesRepository();
     controller = new CamionesController(camionesRepository);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
 
-    camion = new Camion("AB123CD", 10, 2, 1000);
+    camion = new Camion("TEST-" + UUID.randomUUID(), 10, 2, 1000);
     camionesRepository.agregar(camion);
     // el id lo genera la base al insertar, no se puede asumir que es 1
     camionId = camion.getId();
+  }
+
+  @AfterEach
+  void tearDown() {
+    tearDownTransaction();
   }
 
   @Test
