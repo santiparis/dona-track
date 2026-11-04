@@ -13,7 +13,6 @@ import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -21,7 +20,6 @@ import io.javalin.http.NotFoundResponse;
 import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,10 +174,13 @@ public class AsignacionesController {
 
   private void enviarAsignacionALogistica(DonacionLogisticaDTO dto) {
     try {
+      // Origen predetermindo.
+      String origen = "DEPOSITO_CENTRAL";
+
       TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(
-          String.valueOf(donacion.getId()),
+          String.valueOf(dto.donacionID()),
           origen,
-          destino
+          dto.destino()
       );
       if (!response.getExito()) {
         throw new IllegalStateException("Error reportado por gRPC");
