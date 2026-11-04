@@ -1,0 +1,19 @@
+{{#partial "contenido"}}
+    {{#with entidad}}
+        <nav class="migas" aria-label="Ruta de navegación">
+            <a href="/donante/entidades">Entidades beneficiarias</a> / {{nombre}}
+        </nav>
+        <div class="encabezado">
+            <h1>{{nombre}}</h1>
+            <p class="muted">{{direccion}} · {{telefono}}</p>
+            <p class="muted">{{#each correos}}{{#unless @first}} · {{/unless}}{{this}}{{/each}}</p>
+        </div>
+
+        <section class="card">
+            <h2>Necesidades</h2>
+            {{#each necesidades}}{{> necesidad}}{{/each}}
+        </section>
+    {{/with}}
+{{/partial}}
+
+{{> layout}}

@@ -254,19 +254,29 @@ public class DatosMock {
     );
   }
 
+  // La Escuela tiene más de 3 necesidades: su tarjeta muestra 3 y el link al detalle con todas
   public static List<Map<String, Object>> entidadesConNecesidades() {
     return List.of(
-        Map.of("nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+        Map.of("id", "11", "nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+            "correos", List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar"),
             "necesidades", List.of(
                 Map.of("subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "tipo", "Extraordinaria",
                     "porcentaje", "33", "detalle", "10 de 30 unidades · Reposición tras inundación"),
                 Map.of("subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "tipo", "Extraordinaria",
-                    "porcentaje", "20", "detalle", "6 de 30 unidades"))),
-        Map.of("nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+                    "porcentaje", "20", "detalle", "6 de 30 unidades"),
+                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
+                    "porcentaje", "0", "detalle", "0 de 10 unidades"),
+                Map.of("subcategoria", "LECHE", "subcategoriaTexto", "Leche", "tipo", "Recurrente · mensual",
+                    "porcentaje", "80", "detalle", "40 de 50 litros este mes · Desayuno escolar"),
+                Map.of("subcategoria", "ABRIGOS", "subcategoriaTexto", "Abrigos", "tipo", "Extraordinaria",
+                    "porcentaje", "12", "detalle", "5 de 40 unidades"))),
+        Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+            "correos", List.of("escobarsonrisas@gmail.com"),
             "necesidades", List.of(
                 Map.of("subcategoria", "FIDEOS", "subcategoriaTexto", "Fideos", "tipo", "Recurrente · semanal",
                     "porcentaje", "60", "detalle", "60 de 100 paquetes esta semana"))),
-        Map.of("nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+        Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+            "correos", List.of("tutoriasbarrionorte@gmail.com"),
             "necesidades", List.of(
                 Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
                     "porcentaje", "0", "detalle", "0 de 5 unidades")))

@@ -23,17 +23,11 @@
                 <article class="card">
                     <h2>{{nombre}}</h2>
                     <p class="muted">{{direccion}} · {{telefono}}</p>
-                    {{#each necesidades}}
-                        <div class="necesidad">
-                            <div class="titulo-con-chip">
-                                <span>{{subcategoriaTexto}}</span>
-                                <span class="chip">{{tipo}}</span>
-                            </div>
-                            {{!-- El ancho de la barra depende del dato: único estilo inline --}}
-                            <div class="bar" role="img" aria-label="{{detalle}}"><span style="width: {{porcentaje}}%"></span></div>
-                            <p class="muted">{{detalle}}</p>
-                        </div>
-                    {{/each}}
+                    {{!-- Hasta 3 necesidades; si tiene más, el link lleva al detalle con todas --}}
+                    {{#each necesidades}}{{#if (lt @index 3)}}{{> necesidad}}{{/if}}{{/each}}
+                    {{#if necesidades.[3]}}
+                        <a href="/donante/entidades/{{id}}">Ver todas las necesidades</a>
+                    {{/if}}
                 </article>
             {{/each}}
         </div>

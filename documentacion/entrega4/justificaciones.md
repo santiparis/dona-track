@@ -4,7 +4,7 @@ Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`dona
 
 ## Mapas: MapLibre GL + OpenFreeMap
 
-* **MapLibre GL** es la librería JS que dibuja el mapa en el navegador (zoom, marcadores, popups). **OpenFreeMap** sirve los datos de OpenStreetMap y el estilo `liberty`, que le indica a MapLibre cómo pintar cada cosa. Una es la librería y la otra la fuente de datos: se usan juntas.
+* **[MapLibre GL](https://maplibre.org/maplibre-gl-js/docs/)** es la librería JS que dibuja el mapa en el navegador (zoom, marcadores, popups). **[OpenFreeMap](https://openfreemap.org/)** sirve los datos de OpenStreetMap y el estilo `liberty`, que le indica a MapLibre cómo pintar cada cosa. Una es la librería y la otra la fuente de datos: se usan juntas.
 * **Por qué:** las dos son gratuitas y no piden API key, así que no hay credenciales que guardar ni cuota de un plan gratis. MapLibre se carga por CDN y no suma dependencias al `pom`.
 * **Alternativas descartadas:**
   * Estilo de demo de MapLibre: solo trae países y fronteras, sin calles ni ciudades; no sirve para seguir un camión.
