@@ -127,13 +127,13 @@ entity SugerenciaAsignacion {
     donacion_id (PK, FK)
 }
 
-Persona ||--o{ Contacto : notificable_id + tipo_notificable
-EntidadBeneficiaria ||--o{ Contacto : notificable_id + tipo_notificable
-PersonaAdministradora ||--o{ Contacto : notificable_id + tipo_notificable
+Persona ||--o{ Contacto
+EntidadBeneficiaria ||--o{ Contacto
+PersonaAdministradora ||--o{ Contacto
 Persona |o--o| Usuario
-Notificacion }o--|| Persona : receptor_id + tipo_receptor (lógica)
-Notificacion }o--|| EntidadBeneficiaria : receptor_id + tipo_receptor (lógica)
-Notificacion }o--|| PersonaAdministradora : receptor_id + tipo_receptor (lógica)
+Notificacion }o--|| Persona
+Notificacion }o--|| EntidadBeneficiaria
+Notificacion }o--|| PersonaAdministradora
 
 Bien |o--|| Donacion
 
@@ -147,23 +147,7 @@ EntidadBeneficiaria ||--o{ CorreoRepresentante
 Persona ||--o{ Donacion
 
 Donacion ||--o{ RegistroCambioEstado
-Persona }o--o{ Persona : representantes_habilitados (personas juridicas)
+Persona }o--o{ Persona
 Donacion ||--o| SugerenciaAsignacion
-SugerenciaAsignacion }o--o{ EntidadBeneficiaria : entidades_coincidentes
-
-note right of Bien
-Subcategoria, Categoria y los estados son enums persistidos como texto;
-no tienen tablas propias ni relaciones FK.
-end note
-
-note right of Contacto
-Herencia SINGLE_TABLE: tipo_contacto discrimina Email, SMS y WhatsApp.
-notificable_id + tipo_notificable identifican al propietario de forma lógica,
-sin FK física porque puede apuntar a tres tablas distintas.
-end note
-
-note right of Persona
-Herencia SINGLE_TABLE: tipo discrimina PersonaHumana y PersonaJuridica.
-Los campos de ambas subclases ocupan esta misma tabla.
-end note
+SugerenciaAsignacion }o--o{ EntidadBeneficiaria
 @enduml
