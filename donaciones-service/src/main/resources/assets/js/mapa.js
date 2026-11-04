@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     center: [-58.38, -34.60], // Buenos Aires, hasta que se ajuste a los marcadores
     zoom: 9
   });
+  // Saca el spinner (ver .mapa en layout.css) cuando el mapa terminó de cargar
+  mapa.on("load", () => mapa.getContainer().classList.add("cargado"));
 
   const elementosPorPunto = new Map();
   document.querySelectorAll("[data-marcador]").forEach(elemento => {

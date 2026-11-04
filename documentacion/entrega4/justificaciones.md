@@ -1,6 +1,6 @@
 # Justificaciones de Diseño — Entrega 4: Cliente liviano
 
-Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`donaciones-service`), en Donaciones entregadas (pública) y en el Seguimiento de entregas del donante y de la entidad.
+Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`donaciones-service`), en Donaciones entregadas (pública) y en el Seguimiento de entregas del donante, de la entidad y del admin.
 
 ## Mapas: MapLibre GL + OpenFreeMap
 
@@ -26,6 +26,12 @@ Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`dona
 * El popup sale siempre arriba del marcador y el mapa se desplaza para que entre; si el contenido no entra, scrollea.
 * Tocar una tarjeta o una fila sube hasta el mapa con un scroll animado y, al llegar, abre el popup de su marcador.
 * Los scripts del mapa se cargan con `defer`, para que el mapa se arme con todos los CSS ya aplicados. Sin eso, a veces MapLibre medía el recuadro sin alto y el mapa quedaba cortado.
+
+## Un solo seguimiento para donante, entidad y admin
+
+* Las pantallas 7 y 12 del enunciado de la E4 piden lo mismo para donante y entidad: los camiones de sus entregas activas, con ubicación y última actualización. Por eso usan la misma plantilla (`seguimiento.hbs`) con las mismas columnas; cambian los textos y qué camiones entran, que filtra el controller.
+* **Monitoreo del admin (requerimiento de la Entrega 2, no de la E4):** la E2 pide un dashboard administrativo con la posición y el avance de los camiones en tiempo real. Las pantallas mínimas de la E4 no lo incluyen, pero para cubrir ese requerimiento el admin tiene `/admin/seguimiento`, con la misma plantilla y todos los camiones en ruta, sin filtro. La columna "Avance" (entregas hechas de la ruta) sale de ese requerimiento y la ven los tres perfiles.
+* **Por qué:** una pantalla que muestra lo mismo se resuelve con una plantilla; tres copias se desincronizan al primer cambio.
 
 ## JavaScript solo donde hace falta
 

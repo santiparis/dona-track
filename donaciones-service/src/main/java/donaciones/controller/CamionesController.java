@@ -52,6 +52,19 @@ public class CamionesController {
     ctx.redirect("/admin/camiones");
   }
 
+  // Monitoreo de la flota que pide la entrega 2: el admin ve todos los camiones en ruta, sin filtro
+  public Map<String, Object> seguimientoAdmin() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Seguimiento de camiones");
+    model.put("rol", "admin");
+    model.put("seccion", "seguimiento");
+    model.put("usuario", DatosMock.admin());   // MOCK
+    model.put("subtitulo", "Todos los camiones en ruta y el avance de sus entregas.");
+    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesEnRuta().execute().body();
+    model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
+    return model;
+  }
+
   public Map<String, Object> seguimientoDonante() {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Seguimiento de entregas");

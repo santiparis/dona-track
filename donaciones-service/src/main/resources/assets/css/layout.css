@@ -79,7 +79,24 @@ body { min-height: 100vh; }
 img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
 
 /* Mapa de MapLibre (mapa.js). font: inherit le saca la letra que le pone MapLibre */
-.mapa { height: 420px; border: 1px solid var(--color-borde); border-radius: 10px; font: inherit; }
+.mapa { position: relative; height: 420px; border: 1px solid var(--color-borde); border-radius: 10px; font: inherit; }
+
+/* Spinner mientras el mapa carga: mapa.js le pone .cargado cuando MapLibre termina */
+.mapa:not(.cargado)::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 36px;
+    height: 36px;
+    margin: -22px 0 0 -22px; /* la mitad del tamaño con el borde, para quedar centrado */
+    border: 4px solid var(--color-principal-claro);
+    border-top-color: var(--color-principal);
+    border-radius: 999px;
+    animation: girar 0.8s linear infinite;
+    z-index: 1;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
 
 /* Tarjetas que quedan en el desplegable "Ver más" */
 .ver-mas > .cols { margin-top: 16px; }

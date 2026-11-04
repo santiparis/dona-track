@@ -113,12 +113,15 @@ public class DatosMock {
     );
   }
 
-  // latitud y longitud son la última posición que reportó el camión: ahí va su marcador en el mapa
+  // latitud y longitud son la última posición que reportó el camión: ahí va su marcador en el mapa.
+  // avance son las entregas ya hechas de su ruta
   public static List<Map<String, Object>> camionesEnRuta() {
     return List.of(
         Map.of("patente", "AB123CD", "donacion", "Sillas · 6 unidades", "destino", "Escuela Rural N°10",
+            "avance", "1 de 2 entregas",
             "latitud", -34.5862, "longitud", -59.1250, "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
         Map.of("patente", "AE456FG", "donacion", "Fideos · 100 paquetes", "destino", "Comedor Escobar Sonrisas",
+            "avance", "0 de 1 entregas",
             "latitud", -34.3489, "longitud", -58.7956, "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
     );
   }
