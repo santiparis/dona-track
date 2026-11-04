@@ -1,0 +1,48 @@
+services:
+
+  # 1. API LOGÍSTICA
+  logistica-api:
+    build:
+      context: ..
+      dockerfile: logistica-service/Dockerfile
+      target: logistica-api
+    ports:
+      - "7070:7070"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/logistica
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DONACIONES_URL: http://donaciones-api:8081/
+      PLANIFICADOR_URL: http://planificador-api:9090/
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 2. BASE DE DATOS
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: logistica
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logistica"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 3. PLANIFICADOR
+  planificador:
+    build:
+      context: ..
+      dockerfile: logistica-service/Dockerfile
+      target: planificador
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070
+    depends_on:
+      - logistica-api
+
+volumes:
+  postgres_data:
