@@ -1,0 +1,10 @@
+{{!-- Una necesidad con su barra de avance: la usan la tarjeta de entidades y el detalle de la entidad --}}
+<div class="necesidad">
+    <div class="titulo-con-chip">
+        <span>{{subcategoriaTexto}}</span>
+        <span class="chip">{{tipo}}</span>
+    </div>
+    {{!-- El ancho de la barra depende del dato: único estilo inline --}}
+    <div class="bar" role="img" aria-label="{{detalle}}"><span style="width: {{porcentaje}}%"></span></div>
+    <p class="muted">{{detalle}}</p>
+</div>

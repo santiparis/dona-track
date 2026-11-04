@@ -1,37 +1,48 @@
+{{#partial "dependencias"}}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css">
+    {{!-- defer: el mapa se arma recién con todos los CSS cargados; si no, a veces mide el recuadro sin alto y queda cortado --}}
+    <script defer src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+    <script defer src="/assets/js/mapa.js"></script>
+{{/partial}}
+
 {{#partial "contenido"}}
     <div class="encabezado">
         <h1>Donaciones entregadas</h1>
         <p class="muted">Tocá un marcador del mapa para ver el detalle de la entrega.</p>
     </div>
 
-    <div class="mapa">
-        <div class="ph">
-            <span>Mapa interactivo — próxima iteración</span>
-            <span class="muted">Un marcador por entidad que recibió donaciones</span>
-        </div>
-        {{#with entregas.[0]}}
-            <div class="card mapa-detalle">
-                <span class="chip">Detalle al tocar un marcador</span>
-                <div class="ph foto">Foto de la entrega</div>
+    <div class="mapa"></div>
+
+    {{!-- Cada tarjeta es también un marcador del mapa (ver mapa.js) --}}
+    {{#*inline "tarjeta"}}
+        <article class="card" data-marcador="entrega" data-lat="{{latitud}}" data-lng="{{longitud}}">
+            {{#if foto}}<img class="foto" src="{{foto}}" alt="{{bien}} entregados a {{entidad}}">{{else}}<div class="ph foto">Foto</div>{{/if}}
+            <h3>{{entidad}}</h3>
+            <p class="muted">{{bien}} · {{cantidad}}</p>
+            <p class="muted">{{fecha}}</p>
+            <template>
+                {{#if foto}}<img class="foto" src="{{foto}}" alt="{{bien}} entregados a {{entidad}}">{{else}}<div class="ph foto">Foto de la entrega</div>{{/if}}
                 <h3>{{entidad}}</h3>
                 <p class="muted">{{bien}} · {{cantidad}}</p>
                 <p class="muted">Entregada el {{fecha}}</p>
-            </div>
-        {{/with}}
-    </div>
+            </template>
+        </article>
+    {{/inline}}
 
+    {{!-- Se ven las 4 más recientes; el resto queda en un desplegable (sus marcadores igual están en el mapa) --}}
     <section class="seccion">
         <h2>Últimas entregas</h2>
         <div class="cols">
-            {{#each entregas}}
-                <article class="card">
-                    <div class="ph foto">Foto</div>
-                    <h3>{{entidad}}</h3>
-                    <p class="muted">{{bien}} · {{cantidad}}</p>
-                    <p class="muted">{{fecha}}</p>
-                </article>
-            {{/each}}
+            {{#each entregas}}{{#if (lt @index 4)}}{{> tarjeta}}{{/if}}{{/each}}
         </div>
+        {{#if entregas.[4]}}
+            <details class="ver-mas">
+                <summary>Ver más entregas</summary>
+                <div class="cols">
+                    {{#each entregas}}{{#if (gte @index 4)}}{{> tarjeta}}{{/if}}{{/each}}
+                </div>
+            </details>
+        {{/if}}
     </section>
 {{/partial}}
 

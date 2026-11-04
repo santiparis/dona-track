@@ -51,7 +51,7 @@ p { margin: 0; line-height: 1.5; }
 /* Contenedores que apilan su contenido en columna; cada uno define después su separación (gap) */
 label, .bloque, fieldset, .carga-archivo, body, .wrap, .encabezado, .seccion, .card, .banner-texto,
 .hero-texto, .admin-contenido, .menu-lateral, .dato, .opcion-texto, .estadistica, .necesidad,
-.categoria-texto, .mision, .bandeja, .notificacion-texto, .historial {
+.bandeja, .notificacion-texto, .historial {
     display: flex;
     flex-direction: column;
 }

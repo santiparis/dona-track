@@ -8,6 +8,7 @@ import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -255,6 +256,24 @@ public class EntidadesBeneficiariasController {
     model.put("subcategorias", DatosMock.categorias().stream()
         .flatMap(c -> DatosMock.subcategorias(c.get("valor")).stream())
         .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> entidad(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("rol", "donante");
+    model.put("seccion", "entidades");
+    model.put("usuario", DatosMock.donante());   // MOCK
+
+    // EntidadBeneficiaria entidad = entidadRepo.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    Map<String, Object> entidad = DatosMock.entidadesConNecesidades().stream()
+        .filter(e -> e.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new);   // MOCK
+    model.put("entidad", entidad);
+    model.put("titulo", entidad.get("nombre"));
     return model;
   }
 
