@@ -81,7 +81,7 @@ public class Main {
       config.routes.put("/api/camiones/{id}", camionesController::putCamion);
 
       // Actualización de la localización de un camión
-      config.routes.patch("/api/camiones/{id}/localizacion", camionesController::actualizarLocalizacion);
+      config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
       config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);

@@ -2,11 +2,14 @@ package donaciones.grpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.util.List;
 import logistica.grpc.LogisticaServiceGrpc;
 import logistica.grpc.RutaRequest;
 import logistica.grpc.RutaResponse;
 import logistica.grpc.TrazarRutaRequest;
 import logistica.grpc.TrazarRutaResponse;
+import logistica.grpc.UbicacionCamionesRequest;
+import logistica.grpc.UbicacionCamionesResponse;
 
 public class LogisticaGrpcClient {
 
@@ -37,5 +40,17 @@ public class LogisticaGrpcClient {
         .build();
 
     return blockingStub.obtenerEstadoRuta(request);
+  }
+
+  public UbicacionCamionesResponse obtenerUbicacionCamiones(List<Long> idsDonaciones) {
+    if (idsDonaciones == null || idsDonaciones.isEmpty()) {
+      return UbicacionCamionesResponse.newBuilder().build();
+    }
+
+    UbicacionCamionesRequest request = UbicacionCamionesRequest.newBuilder()
+        .addAllIdsDonaciones(idsDonaciones)
+        .build();
+
+    return blockingStub.obtenerUbicacionCamiones(request);
   }
 }

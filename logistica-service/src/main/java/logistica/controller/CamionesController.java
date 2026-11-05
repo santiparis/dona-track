@@ -81,18 +81,23 @@ public class CamionesController {
     }
   }
 
+  // Antes lo hacíamos buscando por id, ahora es buscando por patente
+  // porque el gps solo conoce la patente del camión, no conoce su id
+  // que proviene de la base de datos.
   public void actualizarLocalizacion(Context ctx) {
     try {
-      Long id = Long.parseLong(ctx.pathParam("id"));
+      String patente = ctx.pathParam("patente");
       LocalizacionDTO dto = ctx.bodyAsClass(LocalizacionDTO.class);
 
-      Camion camion = camionesRepository.buscarPorId(id)
+      Camion camion = camionesRepository.buscarPorPatente(patente)
           .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+
       camion.actualizarLocalizacion(new Coordenadas(dto.latitud(), dto.longitud()), dto.velocidad());
 
+      // Al estar dentro de una transacción activa en Javalin/JPA, el cambio sobre la entidad
+      // se persiste automáticamente, actualizando coordenadas, velocidad y ultimaActualizacion.
+
       ctx.status(HttpStatus.OK);
-    } catch (NumberFormatException e) {
-      ctx.status(HttpStatus.BAD_REQUEST).json(new ErrorResponse("ID inválido"));
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
     }

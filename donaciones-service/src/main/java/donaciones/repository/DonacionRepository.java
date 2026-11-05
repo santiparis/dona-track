@@ -2,6 +2,7 @@ package donaciones.repository;
 
 import donaciones.domain.Donacion;
 import donaciones.db.TransaccionPorRequest;
+import donaciones.domain.EstadoDonacion;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import javax.persistence.LockModeType;
@@ -44,5 +45,21 @@ public class DonacionRepository implements WithSimplePersistenceUnit {
   public void eliminar(Donacion donacion) {
     TransaccionPorRequest.iniciarSiEsNecesario();
     remove(donacion);
+  }
+
+  public List<Donacion> buscarPorDonanteYEstado(Long donanteId, EstadoDonacion estado) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.donante.id = :donanteId and d.estado = :estado", Donacion.class)
+        .setParameter("donanteId", donanteId)
+        .setParameter("estado", estado)
+        .getResultList();
+  }
+
+  public List<Donacion> buscarPorEntidadYEstado(Long entidadId, EstadoDonacion estado) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.entidadBeneficiaria.id = :entidadId and d.estado = :estado", Donacion.class)
+        .setParameter("entidadId", entidadId)
+        .setParameter("estado", estado)
+        .getResultList();
   }
 }

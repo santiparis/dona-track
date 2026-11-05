@@ -54,7 +54,7 @@ public class Main {
     AsignacionesController asignacionesController = new AsignacionesController(
         donacionesRepository, entidadRepo, sugerenciasRepository, logisticaGrpcClient, notificador, organizadorAsignaciones);
 
-    CamionesController camionesController = new CamionesController(logisticaGrpcClient);
+    CamionesController camionesController = new CamionesController(logisticaGrpcClient, donacionesRepository);
     NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
     PublicoController publicoController = new PublicoController();
     SesionController sesionController = new SesionController();
@@ -62,7 +62,7 @@ public class Main {
     // Servidor gRPC propio de donaciones-service (puerto 9091)
     try {
       Server gRpcServer = ServerBuilder.forPort(9091)
-          .addService(new DonacionesServiceImpl())
+          .addService(new DonacionesServiceImpl(donacionesRepository))
           .build();
       gRpcServer.start();
       System.out.println("Servidor gRPC escuchando en puerto 9091...");
