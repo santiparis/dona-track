@@ -1,0 +1,16 @@
+
+services:
+  donaciones-api:
+    environment:
+      LOGISTICA_URL: http://${LOGISTICA_IP}:7070/
+
+  logistica-api:
+    environment:
+      DONACIONES_URL: http://${DONACIONES_IP}:8081/
+      PLANIFICADOR_URL: http://mock-planificador:9090/
+
+  mysql:
+    ports: !reset []
+
+  postgres:
+    ports: !reset []

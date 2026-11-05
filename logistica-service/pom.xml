@@ -67,6 +67,8 @@
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
         </dependency>
+
+        <!-- Base en memoria, para los tests -->
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
@@ -150,6 +152,7 @@
                 </configuration>
             </plugin>
             <plugin>
+                <!-- Empaqueta las tareas de cron como .jar con dependencias -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptorRefs>
@@ -172,8 +175,65 @@
                             </archive>
                         </configuration>
                     </execution>
+                    <!-- Otros crons -->
+                    <!-- JAR de la API -->
+                    <execution>
+                        <id>crear-jar-api</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>logistica-api</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>logistica.Main</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mock-gps</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>mock-gps</finalName>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>logistica.mock.MockGps</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>mock-planificador</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>mock-planificador</finalName>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>logistica.mock.MockPlanificador</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
 </project>

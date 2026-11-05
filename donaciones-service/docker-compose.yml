@@ -17,6 +17,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+  donaciones-api:
+    build:
+      context: ..
+      dockerfile: donaciones-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070/
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   donaciones_mysql_data:
