@@ -51,7 +51,7 @@ public class Router {
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante()));
-    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
+    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento.hbs", camionesController.seguimientoDonante(ctx)));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
     app.post("/entidad/necesidades", entidadesController::registrarNecesidad);
@@ -62,7 +62,7 @@ public class Router {
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad()));
-    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad()));
+    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento.hbs", camionesController.seguimientoEntidad(ctx)));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
     app.post("/admin/donantes", donanteController::registrarDonante);

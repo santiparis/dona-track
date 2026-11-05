@@ -3,6 +3,7 @@ package logistica.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
@@ -24,6 +25,9 @@ public class Camion {
   // la patente identifica al camion en el mundo real: no puede repetirse ni faltar
   @Column(unique = true, nullable = false)
   private String patente;
+
+  @Column(name = "ultima_actualizacion", nullable = true)
+  private LocalDateTime ultimaActualizacion = null;
 
   private double volumen;
   private double altura;
@@ -70,6 +74,7 @@ public class Camion {
     }
     this.localizacion = nuevaLocalizacion;
     this.velocidad = nuevaVelocidad;
+    this.ultimaActualizacion = LocalDateTime.now(); // Marca de tiempo actual al reportar
   }
 
   public void actualizarDatos(String nuevaPatente,
@@ -108,6 +113,10 @@ public class Camion {
 
   public String getPatente(){
     return this.patente;
+  }
+
+  public LocalDateTime getUltimaActualizacion() {
+    return ultimaActualizacion;
   }
 
   // ocupar/liberar en vez de un setter: el camion se ocupa al asignarsele una ruta

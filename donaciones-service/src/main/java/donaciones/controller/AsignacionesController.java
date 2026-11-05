@@ -9,17 +9,17 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.dto.AsignacionRequestDTO;
 import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,21 +33,21 @@ public class AsignacionesController {
   private final EntidadBeneficiariaRepository entidadRepository;
   private final SugerenciaAsignacionRepository sugerenciaRepository;
   private final OrganizadorAsignaciones organizadorAsignaciones;
-  private final LogisticaAPICalls logisticaAPICalls;
+  private final LogisticaGrpcClient logisticaGrpcClient;
   private final Notificador notificador;
 
   public AsignacionesController(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
       SugerenciaAsignacionRepository sugerenciaRepository,
-      LogisticaAPICalls logisticaAPICalls,
+      LogisticaGrpcClient logisticaGrpcClient,
       Notificador notificador,
       OrganizadorAsignaciones organizadorAsignaciones
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.sugerenciaRepository = sugerenciaRepository;
-    this.logisticaAPICalls = logisticaAPICalls;
+    this.logisticaGrpcClient = logisticaGrpcClient;
     this.notificador = notificador;
     this.organizadorAsignaciones = organizadorAsignaciones;
   }
@@ -156,7 +156,7 @@ public class AsignacionesController {
   ) {
     donacion.asignarA(entidad);
     if (notificador != null) notificador.donacionAsignada(donacion);
-    if (logisticaAPICalls == null) return;
+    if (logisticaGrpcClient == null) return;
 
     DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
         donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
@@ -174,12 +174,19 @@ public class AsignacionesController {
 
   private void enviarAsignacionALogistica(DonacionLogisticaDTO dto) {
     try {
-      Response<String> response = logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
-      if (!response.isSuccessful()) {
-        throw new IllegalStateException("Logística respondió con HTTP " + response.code());
+      // Origen predetermindo.
+      String origen = "DEPOSITO_CENTRAL";
+
+      TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(
+          String.valueOf(dto.donacionID()),
+          origen,
+          dto.destino()
+      );
+      if (!response.getExito()) {
+        throw new IllegalStateException("Error reportado por gRPC");
       }
     } catch (Exception e) {
-      throw new IllegalStateException("No se pudo informar la asignación a logística", e);
+      throw new IllegalStateException("No se pudo informar la asignación a logística vía gRPC", e);
     }
   }
 
