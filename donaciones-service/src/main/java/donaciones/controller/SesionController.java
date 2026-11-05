@@ -1,12 +1,20 @@
 package donaciones.controller;
 
 import io.javalin.http.Context;
+import donaciones.domain.donante.Usuario;
+import donaciones.repository.UsuarioRepository;
+import donaciones.web.SesionUsuario;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class SesionController {
+  private final UsuarioRepository usuarios;
+
+  public SesionController(UsuarioRepository usuarios) {
+    this.usuarios = usuarios;
+  }
 
   public Map<String, Object> login() {
     Map<String, Object> model = new HashMap<>();
@@ -16,8 +24,24 @@ public class SesionController {
   }
 
   public void ingresar(Context ctx) {
-    // Sin sesión todavía: acá va a ir la validación de usuario y contraseña
-    ctx.redirect("/");
+    String nombreUsuario = Objects.requireNonNullElse(ctx.formParam("usuario"), "").trim();
+    String password = ctx.formParam("password");
+    Usuario usuario = nombreUsuario.isEmpty() ? null : usuarios.buscarPorNombreUsuario(nombreUsuario).orElse(null);
+    if (usuario == null || !usuario.validarPassword(password) || usuario.getRol() == null) {
+      Map<String, Object> model = login();
+      model.put("error", "Usuario o contraseña incorrectos.");
+      model.put("nombreUsuario", nombreUsuario);
+      ctx.status(401).render("sesion/login", model);
+      return;
+    }
+
+    SesionUsuario.iniciar(ctx, usuario);
+    String destino = switch (usuario.getRol()) {
+      case DONANTE -> "/donante/donaciones";
+      case ENTIDAD -> "/entidad/necesidades";
+      case ADMINISTRADORA -> "/admin/donaciones";
+    };
+    ctx.redirect(destino, io.javalin.http.HttpStatus.SEE_OTHER);
   }
 
   public Map<String, Object> registro(Context ctx) {

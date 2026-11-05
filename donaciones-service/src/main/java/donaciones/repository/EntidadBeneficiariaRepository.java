@@ -15,6 +15,15 @@ public class EntidadBeneficiariaRepository implements WithSimplePersistenceUnit 
     return createQuery("from EntidadBeneficiaria", EntidadBeneficiaria.class).getResultList();
   }
 
+    public Optional<EntidadBeneficiaria> buscarPorUsuario(Long usuarioId) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        return createQuery("from EntidadBeneficiaria p where p.usuario.id = :usuarioId", EntidadBeneficiaria.class)
+                .setParameter("usuarioId", usuarioId)
+                .getResultStream()
+                .findFirst();
+    }
+
+
   public Optional<EntidadBeneficiaria> buscarPorId(Long id) {
     TransaccionPorRequest.iniciarSiEsNecesario();
     return Optional.ofNullable(find(EntidadBeneficiaria.class, id));

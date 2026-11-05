@@ -39,7 +39,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     void persisteLaJerarquiaPersonaEnUnaSolaTablaYConservaElSubtipo() {
         EntityManager em = entityManager();
         Contacto contacto = new ContactoPorEmail("ana@example.org");
-        Usuario usuario = new Usuario("ana", "secreto");
+        Usuario usuario = new Usuario("ana", "secreto", Rol.DONANTE);
         PersonaHumana humana = new PersonaHumana(
                 "Ana", "Pérez", 30, TipoDoc.DNI, "12345678", Genero.FEMENINO,
                 "Calle 1", List.of(contacto), contacto, usuario);
@@ -61,6 +61,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                 () -> assertInstanceOf(PersonaHumana.class, personaHumana),
                 () -> assertEquals("Ana", personaHumana.getNombre()),
                 () -> assertNotNull(personaHumana.getUsuario()),
+                () -> assertEquals(Rol.DONANTE, personaHumana.getUsuario().getRol()),
                 () -> assertInstanceOf(PersonaJuridica.class, personaJuridica),
                 () -> assertEquals("Asistencia social", ((PersonaJuridica) personaJuridica).getRubro())
         );
@@ -284,6 +285,41 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                                 () -> assertEquals(recuperada.getContactos().get(0), recuperada.getMedioPredeterminado())
                 );
         }
+
+    @Test
+    void persisteUsuariosDeEntidadYAdministradoraPorCascada() {
+        EntityManager em = entityManager();
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(
+                "Comedor", "Calle 1", "111", List.of("comedor@example.org"),
+                new Usuario("comedor@example.org", "secreto", Rol.ENTIDAD));
+        PersonaAdministradora administradora = new PersonaAdministradora(
+                "Admin", List.of(), null,
+                new Usuario("admin@example.org", "secreto", Rol.ADMINISTRADORA));
+
+        em.persist(entidad);
+        em.persist(administradora);
+        em.flush();
+        Long entidadId = entidad.getId();
+        Long administradoraId = administradora.getId();
+        Long usuarioEntidadId = entidad.getUsuario().getId();
+        Long usuarioAdministradoraId = administradora.getUsuario().getId();
+        em.clear();
+
+        Usuario usuarioEntidad = em.find(EntidadBeneficiaria.class, entidadId).getUsuario();
+        Usuario usuarioAdministradora = em.find(PersonaAdministradora.class, administradoraId).getUsuario();
+
+        assertAll(
+                () -> assertNotNull(usuarioEntidadId),
+                () -> assertNotNull(usuarioAdministradoraId),
+                () -> assertNotEquals(usuarioEntidadId, usuarioAdministradoraId),
+                () -> assertEquals(usuarioEntidadId, usuarioEntidad.getId()),
+                () -> assertEquals("comedor@example.org", usuarioEntidad.getNombreUsuario()),
+                () -> assertEquals(Rol.ENTIDAD, usuarioEntidad.getRol()),
+                () -> assertEquals(usuarioAdministradoraId, usuarioAdministradora.getId()),
+                () -> assertEquals("admin@example.org", usuarioAdministradora.getNombreUsuario()),
+                () -> assertEquals(Rol.ADMINISTRADORA, usuarioAdministradora.getRol())
+        );
+    }
 
     private PersonaHumana personaHumana(String email) {
         Contacto contacto = new ContactoPorEmail(email);

@@ -14,6 +14,8 @@ import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
+import donaciones.web.SesionUsuario;
+import donaciones.repository.UsuarioRepository;
 import donaciones.web.templates.JavalinHandlebars;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
@@ -51,10 +53,11 @@ public class Main {
     CamionesController camionesController = new CamionesController(logisticaAPICalls);
     NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
     PublicoController publicoController = new PublicoController();
-    SesionController sesionController = new SesionController();
+    SesionController sesionController = new SesionController(new UsuarioRepository());
 
 
     Javalin app = Javalin.create(config -> {
+      SesionUsuario.configurar(config);
       config.fileRenderer(new JavalinHandlebars());
       config.staticFiles.add(staticFiles -> {
         staticFiles.hostedPath = "/assets";

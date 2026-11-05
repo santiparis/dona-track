@@ -1,6 +1,8 @@
 package donaciones.domain.donante;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
 
 @Entity
 @Table(name = "usuario")
@@ -9,22 +11,30 @@ public class Usuario {
     @Column(name = "nombre_usuario")
     private String nombreUsuario;
     @Column(name = "contrasenia")
-    private String password;
+    @JsonIgnore
+    private String passwordHash;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol", nullable = false)
+    private Rol rol;
 
     protected Usuario() { }
 
-    public Usuario(String nombreUsuario, String password) {
+    public Usuario(String nombreUsuario, String password, Rol rol) {
         this.nombreUsuario = nombreUsuario;
-        // TODO: Almacenar la password de forma segura.
-        this.password = password;
+        this.rol = Objects.requireNonNull(rol, "El rol del usuario es obligatorio.");
+        this.passwordHash = HashContrasenia.generar(password);
     }
 
     public String getNombreUsuario() {
         return nombreUsuario;
     }
 
-    public String getPassword() {
-        return password;
+    public boolean validarPassword(String password) {
+        return HashContrasenia.verificar(password, passwordHash);
     }
     public Long getId() { return id; }
+
+    public Rol getRol() {
+        return rol;
+    }
 }

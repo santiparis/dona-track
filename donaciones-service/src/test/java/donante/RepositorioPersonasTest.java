@@ -10,6 +10,7 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.donante.Usuario;
+import donaciones.domain.donante.Rol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
@@ -26,7 +27,7 @@ public class RepositorioPersonasTest implements SimplePersistenceTest {
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
     List<Contacto> contactos = List.of(new ContactoPorEmail("contacto@example.org"));
-    Usuario usuario = new Usuario("user", "pass");
+    Usuario usuario = new Usuario("user", "pass", Rol.DONANTE);
 
     @BeforeEach
     void setUp() {

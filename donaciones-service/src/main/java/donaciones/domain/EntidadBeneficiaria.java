@@ -1,5 +1,7 @@
 package donaciones.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import donaciones.domain.donante.Usuario;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 
@@ -17,6 +19,9 @@ public class EntidadBeneficiaria implements Notificable {
     @Column(name = "razon_social") private String razonSocial;
     @Column(name = "direccion") private String direccion;
     @Column(name = "telefono") private String telefono;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "usuario_id", unique = true)
+    private Usuario usuario;
     @ElementCollection @CollectionTable(name = "correo_representante", joinColumns = @JoinColumn(name = "entidad_id"))
     @Column(name = "correo") private List<String> correosRepresentantes = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "entidad_id")
@@ -37,10 +42,21 @@ public class EntidadBeneficiaria implements Notificable {
             String telefono,
             List<String> correosRepresentantes
     ) {
+        this(razonSocial, direccion, telefono, correosRepresentantes, null);
+    }
+
+    public EntidadBeneficiaria(
+            String razonSocial,
+            String direccion,
+            String telefono,
+            List<String> correosRepresentantes,
+            Usuario usuario
+    ) {
         this.razonSocial = razonSocial;
         this.direccion = direccion;
         this.telefono = telefono;
         this.correosRepresentantes = correosRepresentantes;
+        this.usuario = usuario;
         this.contactos.forEach(contacto -> contacto.identificarNotificable("ENTIDAD"));
     }
 
@@ -52,7 +68,19 @@ public class EntidadBeneficiaria implements Notificable {
             List<Contacto> contactos,
             Contacto medioPredeterminado
     ) {
-        this(razonSocial, direccion, telefono, correosRepresentantes);
+        this(razonSocial, direccion, telefono, correosRepresentantes, contactos, medioPredeterminado, null);
+    }
+
+    public EntidadBeneficiaria(
+            String razonSocial,
+            String direccion,
+            String telefono,
+            List<String> correosRepresentantes,
+            List<Contacto> contactos,
+            Contacto medioPredeterminado,
+            Usuario usuario
+    ) {
+        this(razonSocial, direccion, telefono, correosRepresentantes, usuario);
         if (contactos != null) {
             this.contactos.addAll(contactos);
             this.contactos.forEach(contacto -> contacto.identificarNotificable("ENTIDAD"));
@@ -61,6 +89,11 @@ public class EntidadBeneficiaria implements Notificable {
             this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
             this.medioPredeterminado = medioPredeterminado;
         }
+    }
+
+    @JsonIgnore
+    public Usuario getUsuario() {
+        return usuario;
     }
 
     public String getRazonSocial() {
