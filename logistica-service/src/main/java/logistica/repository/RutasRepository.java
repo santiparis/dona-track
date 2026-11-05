@@ -36,6 +36,16 @@ public class RutasRepository implements WithSimplePersistenceUnit {
         .findFirst();
   }
 
+  public Optional<Entrega> buscarEntregaPorDonacionId(Long donacionId) {
+    return createQuery(
+        "select e from Ruta r join r.entregas e join e.listaDonaciones d where d.donacionId = :donacionId",
+        Entrega.class
+    )
+        .setParameter("donacionId", donacionId)
+        .getResultStream()
+        .findFirst();
+  }
+
   public List<UbicacionCamion> obtenerUbicacionCamionesPorIdsDonaciones(List<Long> idsDonaciones) {
     if (idsDonaciones == null || idsDonaciones.isEmpty()) {
       return List.of();
