@@ -39,7 +39,7 @@ public class Main {
     var camionesController = new CamionesController(repositorioCamiones);
 
     var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
-    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
+    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador, notificadorEntregas);
 
     // 2. Servidor gRPC propio de logistica-service (puerto 9090)
     try {
