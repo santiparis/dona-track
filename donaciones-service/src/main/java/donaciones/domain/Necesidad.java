@@ -16,7 +16,9 @@ public class Necesidad {
     @ElementCollection @CollectionTable(name = "cantidad_suplida", joinColumns = @JoinColumn(name = "necesidad_id"))
     @MapKeyEnumerated(EnumType.STRING) @MapKeyColumn(name = "subcategoria_id") @Column(name = "cantidad_suplida")
     private Map<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
-    @Transient private PoliticaDeRenovacion renovacion = new SinRenovacion();
+    @Column(name = "fecha_inicio") private java.time.LocalDate fechaInicio;
+    @Column(name = "fecha_fin") private java.time.LocalDate fechaFin;
+    @Enumerated(EnumType.STRING) @Column(name = "periodo") private Periodo periodo;
 
     protected Necesidad() { }
 
@@ -26,7 +28,10 @@ public class Necesidad {
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
         this.descripcion = descripcion;
-        this.renovacion = renovacion == null ? new SinRenovacion() : renovacion;
+        PoliticaDeRenovacion politica = renovacion == null ? new SinRenovacion() : renovacion;
+        this.fechaInicio = politica.getFechaInicio();
+        this.fechaFin = politica.getFechaFin();
+        this.periodo = politica.getPeriodo();
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
@@ -41,60 +46,33 @@ public class Necesidad {
     }
 
     public PoliticaDeRenovacion getRenovacion() {
-        return renovacion;
+        return periodo == null
+                ? new SinRenovacion()
+                : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
     }
 
-    @Access(AccessType.PROPERTY)
-    @Column(name = "fecha_inicio")
     public java.time.LocalDate getFechaInicio() {
-        return renovacion.getFechaInicio();
+        return fechaInicio;
     }
 
     public void setFechaInicio(java.time.LocalDate fechaInicio) {
-        actualizarRenovacion(
-                fechaInicio,
-                renovacion.getFechaFin(),
-                renovacion.getPeriodo()
-        );
+        this.fechaInicio = fechaInicio;
     }
 
-    @Access(AccessType.PROPERTY)
-    @Column(name = "fecha_fin")
     public java.time.LocalDate getFechaFin() {
-        return renovacion.getFechaFin();
+        return fechaFin;
     }
 
     public void setFechaFin(java.time.LocalDate fechaFin) {
-        actualizarRenovacion(
-                renovacion.getFechaInicio(),
-                fechaFin,
-                renovacion.getPeriodo()
-        );
+        this.fechaFin = fechaFin;
     }
 
-    @Access(AccessType.PROPERTY)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "periodo")
     public Periodo getPeriodo() {
-        return renovacion.getPeriodo();
+        return periodo;
     }
 
     public void setPeriodo(Periodo periodo) {
-        actualizarRenovacion(
-                renovacion.getFechaInicio(),
-                renovacion.getFechaFin(),
-                periodo
-        );
-    }
-
-    private void actualizarRenovacion(
-            java.time.LocalDate fechaInicio,
-            java.time.LocalDate fechaFin,
-            Periodo periodo
-    ) {
-        renovacion = fechaInicio == null && fechaFin == null && periodo == null
-                ? new SinRenovacion()
-                : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
+        this.periodo = periodo;
     }
 
     public void registrarSuplido(Bien bien) {

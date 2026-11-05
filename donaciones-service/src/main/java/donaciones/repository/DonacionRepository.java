@@ -4,8 +4,6 @@ import donaciones.domain.Donacion;
 import donaciones.db.TransaccionPorRequest;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
-import javax.persistence.LockModeType;
-import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,24 +14,22 @@ public class DonacionRepository implements WithSimplePersistenceUnit {
   }
 
   public List<Donacion> obtenerTodas() {
-    TransaccionPorRequest.iniciarSiEsNecesario();
     return createQuery("from Donacion", Donacion.class).getResultList();
   }
 
+  public List<Donacion> obtenerEnDeposito() {
+    return createQuery("from Donacion d where d.estado = :estado", Donacion.class)
+        .setParameter("estado", donaciones.domain.EstadoDonacion.EN_DEPOSITO)
+        .getResultList();
+  }
+
   public Optional<Donacion> buscarPorId(Long id) {
-    TransaccionPorRequest.iniciarSiEsNecesario();
     return Optional.ofNullable(find(Donacion.class, id));
   }
 
   public Optional<Donacion> buscarPorIdParaActualizar(Long id) {
     TransaccionPorRequest.iniciarSiEsNecesario();
-    entityManager().flush();
-    return Optional.ofNullable(entityManager().find(
-        Donacion.class,
-        id,
-        LockModeType.PESSIMISTIC_WRITE,
-        Map.of("javax.persistence.lock.timeout", 2000)
-    ));
+    return Optional.ofNullable(find(Donacion.class, id));
   }
 
   public void borrarPorId(Long id) {

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class AsignacionesController {
   private static final Logger logger = LoggerFactory.getLogger(AsignacionesController.class);
@@ -53,26 +54,50 @@ public class AsignacionesController {
   }
 
   public List<SugerenciaAsignacion> procesarDonacionesEnDeposito() {
-    List<Donacion> donacionesEnDeposito = donacionRepository.obtenerTodas().stream()
-        .filter(donacion -> donacion.getEstado() == EstadoDonacion.EN_DEPOSITO)
-        .toList();
+    List<Donacion> donacionesEnDeposito = donacionRepository.obtenerEnDeposito();
 
     List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
         .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
         .toList();
 
-    List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
+    List<SugerenciaAsignacion> sugerenciasGeneradas = donacionesEnDeposito.stream()
+        .map(donacion -> organizadorAsignaciones.procesarMatchmaking(donacion, entidadesConNecesidadesActivas))
+        .toList();
+    sugerenciasGeneradas.forEach(sugerenciaRepository::guardar);
 
-    for (Donacion donacion : donacionesEnDeposito) {
-      SugerenciaAsignacion sugerencia = organizadorAsignaciones.procesarMatchmaking(
-          donacion,
-          entidadesConNecesidadesActivas
-      );
+    return sugerenciasGeneradas;
+  }
 
-      sugerenciaRepository.guardar(sugerencia);
-      sugerenciasGeneradas.add(sugerencia);
+  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamañoLote) {
+    if (tamañoLote < 1) {
+      throw new IllegalArgumentException("El tamaño del lote debe ser positivo");
     }
 
+    List<Long> idsDonaciones = donacionRepository.obtenerEnDeposito().stream()
+        .map(Donacion::getId)
+        .toList();
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+    transaccion.perThreadEntityManagerAccess().dispose();
+
+    List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
+    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamañoLote) {
+      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamañoLote, idsDonaciones.size()));
+      try {
+        List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
+            .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
+            .toList();
+        List<SugerenciaAsignacion> sugerenciasLote = idsLote.stream()
+            .map(donacionRepository::buscarPorId)
+            .flatMap(Optional::stream)
+            .filter(donacion -> donacion.getEstado() == EstadoDonacion.EN_DEPOSITO)
+            .map(donacion -> organizadorAsignaciones.procesarMatchmaking(donacion, entidadesConNecesidadesActivas))
+            .toList();
+        transaccion.withTransaction(() -> sugerenciasLote.forEach(sugerenciaRepository::guardar));
+        sugerenciasGeneradas.addAll(sugerenciasLote);
+      } finally {
+        transaccion.perThreadEntityManagerAccess().dispose();
+      }
+    }
     return sugerenciasGeneradas;
   }
 

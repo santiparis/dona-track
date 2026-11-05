@@ -33,18 +33,21 @@ public class ProcesarAsignaciones {
         organizadorAsignaciones
     );
 
-    new TransaccionPorRequest().withTransaction(() -> {
-      controller.limpiarSugerencias(); // TODO: revisar la actualización de sugerencias existentes para no saturar la DB.
-      var sugerencias = controller.procesarDonacionesEnDeposito();
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+    try {
+      transaccion.withTransaction(controller::limpiarSugerencias);
+    } finally {
+      transaccion.perThreadEntityManagerAccess().dispose();
+    }
+    var sugerencias = controller.procesarDonacionesEnDepositoEnLotes(25);
 
-      System.out.println("==== Inicio de procesamiento de asignaciones ====");
-      if (sugerencias.isEmpty()) {
-        System.out.println("No hay donaciones en depósito para procesar.");
-        return;
-      }
+    System.out.println("==== Inicio de procesamiento de asignaciones ====");
+    if (sugerencias.isEmpty()) {
+      System.out.println("No hay donaciones en depósito para procesar.");
+      return;
+    }
 
-      System.out.println("Total de sugerencias guardadas: " + controller.obtenerSugerenciasGuardadas().size());
-      System.out.println("==== Fin de procesamiento de asignaciones ====");
-    });
+    System.out.println("Total de sugerencias guardadas: " + sugerencias.size());
+    System.out.println("==== Fin de procesamiento de asignaciones ====");
   }
 }

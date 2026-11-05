@@ -14,7 +14,6 @@ import org.hibernate.Session;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
-    void persisteLaJerarquiaPersonaEnUnaSolaTablaYConservaElSubtipo() {
+    void persisteLaJerarquiaPersonaEnTablasUnidasYConservaElSubtipo() {
         EntityManager em = entityManager();
         Contacto contacto = new ContactoPorEmail("ana@example.org");
         Usuario usuario = new Usuario("ana", "secreto");
@@ -52,6 +51,14 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
         em.flush();
         Long humanaId = humana.getId();
         Long juridicaId = juridica.getId();
+        Number filasHumanas = (Number) em.createNativeQuery(
+                        "select count(*) from persona_humana where persona_id = ?")
+                .setParameter(1, humanaId)
+                .getSingleResult();
+        Number filasJuridicas = (Number) em.createNativeQuery(
+                        "select count(*) from persona_juridica where persona_id = ?")
+                .setParameter(1, juridicaId)
+                .getSingleResult();
         em.clear();
 
         Persona personaHumana = em.find(Persona.class, humanaId);
@@ -61,6 +68,8 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                 () -> assertInstanceOf(PersonaHumana.class, personaHumana),
                 () -> assertEquals("Ana", personaHumana.getNombre()),
                 () -> assertNotNull(personaHumana.getUsuario()),
+                () -> assertEquals(1, filasHumanas.intValue()),
+                () -> assertEquals(1, filasJuridicas.intValue()),
                 () -> assertInstanceOf(PersonaJuridica.class, personaJuridica),
                 () -> assertEquals("Asistencia social", ((PersonaJuridica) personaJuridica).getRubro())
         );
@@ -100,7 +109,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
-    void obtieneDonacionConLockDeEscrituraParaEvitarActualizacionesConcurrentes() {
+    void buscarDonacionParaActualizarNoAdquiereLockPesimista() {
         EntityManager em = entityManager();
         PersonaHumana donante = personaHumana("lock@example.org");
         Donacion donacion = new Donacion(
@@ -112,9 +121,45 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
         Long donacionId = donacion.getId();
         em.clear();
 
-        Donacion bloqueada = new DonacionRepository().buscarPorIdParaActualizar(donacionId).orElseThrow();
+        Donacion donacionActualizable = new DonacionRepository().buscarPorIdParaActualizar(donacionId).orElseThrow();
 
-        assertEquals(LockModeType.PESSIMISTIC_WRITE, em.getLockMode(bloqueada));
+        javax.persistence.LockModeType lockMode = em.getLockMode(donacionActualizable);
+        assertNotEquals(javax.persistence.LockModeType.PESSIMISTIC_READ, lockMode);
+        assertNotEquals(javax.persistence.LockModeType.PESSIMISTIC_WRITE, lockMode);
+    }
+
+    @Test
+    void persisteLosResultadosDeCadaAlgoritmo() {
+        EntityManager em = entityManager();
+        PersonaHumana donante = personaHumana("algoritmos@example.org");
+        Donacion donacion = new Donacion(
+                donante,
+                new Bien(Subcategoria.FIDEOS, 1, "unidad", null, null, null, null));
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria("Comedor", "Calle 1", "1111", List.of());
+        em.persist(donante);
+        em.persist(donacion);
+        em.persist(entidad);
+        em.flush();
+
+        donaciones.domain.algoritmos.SugerenciaAsignacion sugerencia =
+                new donaciones.domain.algoritmos.SugerenciaAsignacion(
+                        donacion.getId(),
+                        donacion,
+                        List.of(entidad),
+                        Map.of("Compatibilidad", List.of(entidad), "Prioridad", List.of()));
+        em.persist(sugerencia);
+        em.flush();
+        Long donacionId = donacion.getId();
+        em.clear();
+
+        donaciones.domain.algoritmos.SugerenciaAsignacion recuperada =
+                em.find(donaciones.domain.algoritmos.SugerenciaAsignacion.class, donacionId);
+
+        assertEquals(List.of(entidad.getId()),
+                recuperada.getEntidadesPorAlgoritmo().get("Compatibilidad").stream()
+                        .map(EntidadBeneficiaria::getId).toList());
+        assertTrue(recuperada.getEntidadesPorAlgoritmo().containsKey("Prioridad"));
+        assertTrue(recuperada.getEntidadesPorAlgoritmo().get("Prioridad").isEmpty());
     }
 
     @Test

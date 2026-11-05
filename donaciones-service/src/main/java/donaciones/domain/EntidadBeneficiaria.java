@@ -26,7 +26,6 @@ public class EntidadBeneficiaria implements Notificable {
     @Where(clause = "tipo_notificable = 'ENTIDAD'")
     @OrderBy("id")
     private List<Contacto> contactos = new ArrayList<>();
-    @Transient private Contacto medioPredeterminado;
     @OneToMany(mappedBy = "entidadBeneficiaria") private List<Donacion> donacionesRecibidas = new ArrayList<>();
 
     protected EntidadBeneficiaria() { }
@@ -59,7 +58,6 @@ public class EntidadBeneficiaria implements Notificable {
         }
         if (medioPredeterminado != null) {
             this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
-            this.medioPredeterminado = medioPredeterminado;
         }
     }
 
@@ -111,10 +109,7 @@ public class EntidadBeneficiaria implements Notificable {
 
     @Override
     public Contacto getMedioPredeterminado() {
-        if (medioPredeterminado == null) {
-            medioPredeterminado = contactoPredeterminado();
-        }
-        return this.medioPredeterminado;
+        return contactoPredeterminado();
     }
 
     public void registrarContacto(Contacto contacto, boolean predeterminado) {
@@ -122,8 +117,7 @@ public class EntidadBeneficiaria implements Notificable {
             contacto.identificarNotificable("ENTIDAD");
             this.contactos.add(contacto);
         }
-        if (predeterminado || this.medioPredeterminado == null) {
-            this.medioPredeterminado = contacto;
+        if (predeterminado || getMedioPredeterminado() == null) {
             this.contactos.forEach(actual -> actual.marcarComoMedioPredeterminado(actual == contacto));
         }
     }

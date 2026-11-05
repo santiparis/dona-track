@@ -22,7 +22,6 @@ public class NotificacionRepository implements WithSimplePersistenceUnit {
     }
 
     public List<Notificacion> obtenerTodas() {
-        TransaccionPorRequest.iniciarSiEsNecesario();
         return createQuery("from Notificacion order by fecha", Notificacion.class).getResultList();
     }
 }
