@@ -294,7 +294,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     EntidadBeneficiaria entidad = new EntidadBeneficiaria(razonSocial, direccion, telefono, Collections.emptyList());
     Map<Subcategoria, Integer> cantidadesRequeridas = new HashMap<>();
     cantidadesRequeridas.put(subcategoria, cantidadRequerida);
-    Necesidad necesidad = new Necesidad(subcategoria.name() + " de cualquier tipo", new SinRenovacion(), cantidadesRequeridas);
+    Necesidad necesidad = new Necesidad(subcategoria.name() + " de cualquier tipo", false, null, null, cantidadesRequeridas);
     entidad.registrarNecesidad(necesidad);
     return entidad;
   }

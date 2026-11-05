@@ -163,11 +163,13 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     }
 
     @Test
-    void persisteNecesidadConCantidadesDeClaveCompuestaYPoliticaDeRenovacion() {
+    void persisteNecesidadConCantidadesYDatosDeRenovacionEnLaMismaEntidad() {
         EntityManager em = entityManager();
         Necesidad necesidad = new Necesidad(
                 "Alimentos para junio",
-                new RenovacionPeriodica(LocalDate.of(2026, 6, 1), Periodo.MENSUAL),
+                true,
+                LocalDate.of(2026, 6, 1),
+                Periodo.MENSUAL,
                 Map.of(Subcategoria.ARROZ, 10, Subcategoria.FIDEOS, 20));
         necesidad.registrarSuplido(new Bien(Subcategoria.ARROZ, 4, "kg", null, null, null, null));
         EntidadBeneficiaria entidad = new EntidadBeneficiaria("Hogar", "Calle 2", "2222", List.of());
@@ -199,8 +201,10 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                 () -> assertEquals(LocalDate.of(2026, 6, 1), ((java.sql.Date) columnasRenovacion[0]).toLocalDate()),
                 () -> assertEquals(LocalDate.of(2026, 7, 1), ((java.sql.Date) columnasRenovacion[1]).toLocalDate()),
                 () -> assertEquals("MENSUAL", columnasRenovacion[2]),
-                () -> assertEquals(LocalDate.of(2026, 6, 1), recuperada.getRenovacion().getFechaInicio()),
-                () -> assertTrue(recuperada.getRenovacion().seRenueva()),
+                () -> assertEquals(LocalDate.of(2026, 6, 1), recuperada.getFechaInicio()),
+                () -> assertEquals(LocalDate.of(2026, 7, 1), recuperada.getFechaFin()),
+                () -> assertEquals(Periodo.MENSUAL, recuperada.getPeriodo()),
+                () -> assertTrue(recuperada.seRenueva()),
                 () -> assertFalse(recuperada.estaSatisfecha())
         );
     }
@@ -208,7 +212,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
     @Test
     void unaNecesidadSinRenovacionPersisteNulosEnLasColumnasDeRenovacion() {
         EntityManager em = entityManager();
-        Necesidad necesidad = new Necesidad("Donación única", new SinRenovacion(), Map.of(Subcategoria.ROPA_INFANTIL, 5));
+        Necesidad necesidad = new Necesidad("Donación única", false, null, null, Map.of(Subcategoria.ROPA_INFANTIL, 5));
 
         em.persist(necesidad);
         em.flush();
@@ -228,7 +232,7 @@ class PersistenciaDominioTest implements SimplePersistenceTest {
                 () -> assertNull(recuperada.getFechaInicio()),
                 () -> assertNull(recuperada.getFechaFin()),
                 () -> assertNull(recuperada.getPeriodo()),
-                () -> assertFalse(recuperada.getRenovacion().seRenueva())
+                () -> assertFalse(recuperada.seRenueva())
         );
     }
 

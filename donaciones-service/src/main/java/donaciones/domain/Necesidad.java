@@ -1,5 +1,6 @@
 package donaciones.domain;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -16,22 +17,26 @@ public class Necesidad {
     @ElementCollection @CollectionTable(name = "cantidad_suplida", joinColumns = @JoinColumn(name = "necesidad_id"))
     @MapKeyEnumerated(EnumType.STRING) @MapKeyColumn(name = "subcategoria_id") @Column(name = "cantidad_suplida")
     private Map<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
-    @Column(name = "fecha_inicio") private java.time.LocalDate fechaInicio;
-    @Column(name = "fecha_fin") private java.time.LocalDate fechaFin;
+    @Column(name = "fecha_inicio") private LocalDate fechaInicio;
+    @Column(name = "fecha_fin") private LocalDate fechaFin;
     @Enumerated(EnumType.STRING) @Column(name = "periodo") private Periodo periodo;
 
     protected Necesidad() { }
 
     public Necesidad(
             String descripcion,
-            PoliticaDeRenovacion renovacion,
+            boolean renovacion,
+            LocalDate fechaInicio,
+            Periodo periodo,
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
         this.descripcion = descripcion;
-        PoliticaDeRenovacion politica = renovacion == null ? new SinRenovacion() : renovacion;
-        this.fechaInicio = politica.getFechaInicio();
-        this.fechaFin = politica.getFechaFin();
-        this.periodo = politica.getPeriodo();
+        if (renovacion && (fechaInicio == null || periodo == null)) {
+            throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+        }
+        this.periodo = renovacion ? periodo : null;
+        this.fechaInicio = renovacion ? fechaInicio : null;
+        this.fechaFin = calcularFechaFin();
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
@@ -45,34 +50,37 @@ public class Necesidad {
         this.id = id;
     }
 
-    public PoliticaDeRenovacion getRenovacion() {
-        return periodo == null
-                ? new SinRenovacion()
-                : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
+    public boolean isRenovacion() {
+        return periodo != null;
     }
 
-    public java.time.LocalDate getFechaInicio() {
+    public boolean seRenueva() {
+        return isRenovacion();
+    }
+
+    public boolean estaVencida() {
+        return isRenovacion() && fechaFin.isBefore(LocalDate.now());
+    }
+
+    public LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
-    public void setFechaInicio(java.time.LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
-
-    public java.time.LocalDate getFechaFin() {
+    public LocalDate getFechaFin() {
         return fechaFin;
-    }
-
-    public void setFechaFin(java.time.LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
     }
 
     public Periodo getPeriodo() {
         return periodo;
     }
 
-    public void setPeriodo(Periodo periodo) {
-        this.periodo = periodo;
+    private LocalDate calcularFechaFin() {
+        if (periodo == null || fechaInicio == null) {
+            return null;
+        }
+        return periodo == Periodo.SEMANAL
+                ? fechaInicio.plusDays(7)
+                : fechaInicio.plusMonths(1);
     }
 
     public void registrarSuplido(Bien bien) {

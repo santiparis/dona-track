@@ -19,10 +19,16 @@ entity Necesidad {
     entidad_id (FK)
     descripcion: nvarchar(255)
     ---
-    fecha_inicio: date
-    fecha_fin: date
-    periodo: nvarchar(255)
+    fecha_inicio: date (nullable)
+    fecha_fin: date (nullable, calculada)
+    periodo: nvarchar(255) (nullable)
 }
+
+note right of Necesidad
+  La renovación se representa en estas columnas
+  de la misma fila. Sin periodo no se renueva.
+  No existe una tabla de política de renovación.
+end note
 
 entity CantidadRequerida {
     necesidad_id (PK, FK)

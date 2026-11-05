@@ -11,9 +11,9 @@ Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_do
 
 ## Identidad
 
-* Las entidades con identidad propia usan `id: Long` y, cuando corresponde, `GenerationType.IDENTITY`: la base genera el valor y el dominio no arrastra lógica de numeración. `Contacto` usa una clave compuesta y `SugerenciaAsignacion` usa como id el de su donación.
+* Las entidades con identidad propia usan `id: Long` y, cuando corresponde, `GenerationType.IDENTITY`: la base genera el valor y el dominio no arrastra lógica de numeración. `Contacto` usa `contacto_id` y `SugerenciaAsignacion` usa como id el de su donación.
 * Hasta la entrega 2 la identidad de objeto alcanzaba para el dominio, pero los recursos REST ya exponían ids. Con el ORM el id pasa a ser el mismo en ambos lados, en vez de una secuencia propia del repositorio en memoria.
-* `Notificacion` y `PersonaAdministradora` se persisten porque el historial de avisos y sus destinatarios deben sobrevivir a un reinicio. `SugerenciaAsignacion` también se persiste para permitir la revisión de una persona administradora; el mapa completo de entidades por algoritmo permanece transitorio. Las estrategias de asignación no se persisten porque son reglas de cálculo, no datos del negocio.
+* `Notificacion` y `PersonaAdministradora` se persisten porque el historial de avisos y sus destinatarios deben sobrevivir a un reinicio. `SugerenciaAsignacion` y los resultados de cada algoritmo también se persisten para permitir la revisión de una persona administradora. Las estrategias de asignación no se persisten porque son reglas de cálculo, no datos del negocio.
 
 ## Herencia de `Persona`: tablas unidas
 
@@ -42,12 +42,12 @@ Ver diagramas: [diagrama_clases.puml](./diagrama_clases.puml) (completo), [dc_do
 * **Por qué:** con `ORDINAL`, agregar o reordenar una constante corrompe los datos ya guardados. Además el texto hace legible la base sin consultar el código.
 * `Subcategoria` y `Categoria` siguen siendo enums del dominio y **no** tablas: su contenido es fijo, lo define el sistema y no lo administra ninguna persona usuaria. `Subcategoria` guarda su categoría, si requiere estado y si requiere vencimiento como parte de la constante.
 
-## `Necesidad` y la política de renovación
+## Renovación de `Necesidad`
 
-* `PoliticaDeRenovacion` es polimórfica (`SinRenovacion` / `RenovacionPeriodica`) pero **no tiene identidad propia**: es una regla, no un dato que se consulte por sí solo.
-* **Decisión:** `Necesidad` persiste directamente `fecha_inicio`, `fecha_fin` y `periodo`; `getRenovacion()` construye el objeto de política desde esas columnas. Si no hay período, devuelve `SinRenovacion`; si lo hay, `RenovacionPeriodica`.
-* **Por qué:** conserva el polimorfismo en el dominio sin guardar una instancia auxiliar ni sumar una jerarquía de tablas para dos clases que entre las dos tienen tres atributos.
-* **Alternativa descartada:** tabla `politica_renovacion` con herencia propia: tres tablas y un join más para reconstruir una regla que se deduce de un único campo nullable.
+* La renovación es parte de `Necesidad`, no un objeto o una entidad aparte. `fecha_inicio`, `fecha_fin` y `periodo` son columnas de la misma fila en `necesidad`; no hay tabla ni relación de renovación.
+* La necesidad se renueva cuando tiene `periodo` (`isRenovacion()` se deriva de que ese campo no sea nulo). `fecha_fin` se calcula al crear la necesidad desde `fecha_inicio` y la frecuencia semanal o mensual, y se persiste para evaluar vencimientos.
+* Sin renovación, `fecha_inicio`, `fecha_fin` y `periodo` quedan nulos. No se agrega una columna booleana de renovación, ya que el dato se deduce del período.
+* El cambio elimina las clases de política del modelo, pero no requiere modificar el esquema: estas columnas ya pertenecían a `necesidad`.
 
 ## Cantidades por subcategoría
 
