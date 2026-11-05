@@ -1,6 +1,7 @@
 package logistica.grpc;
 
 import io.grpc.stub.StreamObserver;
+import java.util.List;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;
@@ -14,6 +15,8 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
     this.rutasRepository = rutasRepo;
   }
 
+  // Los métodos son void porque devolvemos interactuando con el StreamObserver envíandole
+  // eventos con sus métodos.
   @Override
   public void obtenerEstadoRuta(RutaRequest request, StreamObserver<RutaResponse> responseObserver) {
     String idRutaStr = request.getIdRuta();
@@ -81,6 +84,30 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
+    }
+  }
+
+  // La request contiene una lista de ids de Donación.
+  @Override
+  public void obtenerUbicacionCamiones(UbicacionCamionesRequest request,
+                                       StreamObserver<UbicacionCamionesResponse> responseObserver) {
+    List<Long> idsDonaciones = request.getIdsDonacionesList();
+    UbicacionCamionesResponse response;
+    try {
+      List<UbicacionCamion> ubicaciones =
+          rutasRepository.obtenerUbicacionCamionesPorIdsDonaciones(idsDonaciones);
+
+      response = UbicacionCamionesResponse.newBuilder()
+          .addAllUbicaciones(ubicaciones)
+          .build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      responseObserver.onError(
+          io.grpc.Status.INTERNAL
+              .withDescription("Error al obtener las ubicaciones de los camiones: " + e.getMessage())
+              .asRuntimeException()
+      );
     }
   }
 }
