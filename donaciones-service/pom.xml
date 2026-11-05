@@ -181,6 +181,21 @@
                             </archive>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>crear-jar-api</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>donaciones-api</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>donaciones.Main</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

@@ -1,0 +1,94 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: donaciones
+      MYSQL_USER: donaciones
+      MYSQL_PASSWORD: donaciones
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - donaciones_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -h 127.0.0.1 -P 3306 -u donaciones -pdonaciones -D donaciones -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: logistica
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - logistica_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logistica"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  donaciones-api:
+    build:
+      context: .
+      dockerfile: donaciones-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070/
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  logistica-api:
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: logistica-api
+    ports:
+      - "7070:7070"
+    environment:
+      DONACIONES_URL: http://donaciones-api:8081/
+      PLANIFICADOR_URL: http://mock-planificador:9090/
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  planificador:
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: planificador
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070
+    depends_on:
+      - logistica-api
+    restart: "no"
+
+  mock-gps:
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: mock-gps
+    depends_on:
+      - logistica-api
+    restart: unless-stopped
+
+  mock-planificador:
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: mock-planificador
+    depends_on:
+      - logistica-api
+    restart: unless-stopped
+volumes:
+  donaciones_mysql_data:
+  logistica_postgres_data:
