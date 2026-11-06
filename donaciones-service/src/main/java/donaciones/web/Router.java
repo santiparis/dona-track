@@ -120,5 +120,9 @@ public class Router {
     app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
     app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
     app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
+
+    // Entregas
+    app.post("/api/entregas/{id}/confirmacion", donacionController::confirmarRecepcion);
+    app.post("/api/entregas/{id}/rechazo", donacionController::informarNoRecibida);
   }
 }

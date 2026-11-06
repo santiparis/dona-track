@@ -15,6 +15,7 @@ service LogisticaService {
   rpc ObtenerEstadoRuta (RutaRequest) returns (RutaResponse);
   rpc TrazarRuta (TrazarRutaRequest) returns (TrazarRutaResponse);
   rpc ObtenerUbicacionCamiones (UbicacionCamionesRequest) returns (UbicacionCamionesResponse);
+  rpc ReportarEntrega (ReportarEntregaRequest) returns (ReportarEntregaResponse);
 }
 
 // Servicio que expone donaciones-service (servidor) y consume logistica-service (cliente)
@@ -79,6 +80,16 @@ message CambiarEstadoRequest {
 }
 
 message CambiarEstadoResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message ReportarEntregaRequest {
+  int64 entrega_id = 1;
+  bool exito = 2;
+}
+
+message ReportarEntregaResponse {
   bool exito = 1;
   string mensaje = 2;
 }

@@ -13,6 +13,7 @@ import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionPatchDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.dto.DonacionResponseDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
@@ -32,6 +33,7 @@ class DonacionControllerTest implements SimplePersistenceTest {
     private DonacionRepository donacionesRepository;
     private RepositorioPersonas personasRepository;
     private DonacionController controller;
+    private LogisticaGrpcClient logisticaGrpcClient;
     private Context ctx;
 
     @BeforeEach
@@ -42,7 +44,9 @@ class DonacionControllerTest implements SimplePersistenceTest {
                 donacionesRepository,
                 personasRepository,
                 new PersonasAdministradorasRepository(),
-                new Notificador());
+                new Notificador(),
+                logisticaGrpcClient = mock(LogisticaGrpcClient.class)
+            );
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
 
