@@ -4,6 +4,10 @@ import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;
+import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.RazonSocial;
+import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.donante.Usuario;
 import donaciones.dto.ContactoResponseDTO;
 import donaciones.dto.DonantePatchDTO;
 import donaciones.dto.DonanteRequestDTO;
@@ -218,7 +222,31 @@ public class DonanteController {
   }
 
   public void registrarDonante(Context ctx) {
-    // Sin persistencia todavía: acá se da de alta la persona y se le manda el mail de bienvenida
+    List<Contacto> contactos = new ArrayList<>();
+    contactos.add(new ContactoPorEmail(ctx.formParam("email")));
+    if (!ctx.formParam("telefono").isBlank()) {
+      contactos.add(new ContactoPorSMS(ctx.formParam("telefono")));
+    }
+    if (!ctx.formParam("whatsapp").isBlank()) {
+      contactos.add(new ContactoPorWhatsApp(ctx.formParam("whatsapp")));
+    }
+    Contacto medioPredeterminado = contactos.stream()
+        .filter(contacto -> contacto.getEstrategia().contains(ctx.formParam("medio")))
+        .findFirst()
+        .orElse(contactos.get(0));
+    Usuario usuario = new Usuario(ctx.formParam("email"), "password_provisoria");
+
+    Persona donante = "HUMANA".equals(ctx.formParam("tipo"))
+        ? new PersonaHumana(ctx.formParam("nombre"), ctx.formParam("apellido"),
+            ctx.formParamAsClass("edad", Integer.class).allowNullable().get(),
+            TipoDoc.valueOf(ctx.formParam("tipoDoc")), ctx.formParam("documento"),
+            Genero.valueOf(ctx.formParam("genero")), ctx.formParam("direccion"),
+            contactos, medioPredeterminado, usuario)
+        : new PersonaJuridica(TipoDoc.CUIT, ctx.formParam("documento"), ctx.formParam("razonSocial"),
+            RazonSocial.valueOf(ctx.formParam("tipoJuridica")), ctx.formParam("rubro"), new ArrayList<>(),
+            contactos, medioPredeterminado, usuario);
+    personasRepository.agregar(donante);
+
     // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
     if ("donacion".equals(ctx.formParam("siguiente"))) {
       ctx.redirect("/admin/donaciones/nueva");

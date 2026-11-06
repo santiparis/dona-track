@@ -1,6 +1,7 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.db.Seed;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
@@ -35,6 +36,8 @@ public class Main {
     if (dbUrl != null) {
       WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
     }
+
+    new Seed().cargarSiEstaVacia();
 
     PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
