@@ -1,28 +1,29 @@
 package donaciones.repository;
 
 import donaciones.domain.PersonaAdministradora;
-import donaciones.persistence.JpaContext;
-import donaciones.persistence.JpaRepository;
-import javax.persistence.EntityManager;
+import donaciones.db.TransaccionPorRequest;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
+
 import java.util.List;
+import java.util.Optional;
 
 /** Repositorio JPA de administradoras. */
-public class PersonasAdministradorasRepository extends JpaRepository {
-    public PersonasAdministradorasRepository() { this(JpaContext.INSTANCE.entityManager()); }
-    public PersonasAdministradorasRepository(EntityManager entityManager) { super(entityManager); }
-    public List<PersonaAdministradora> obtenerTodos() {
-        List<PersonaAdministradora> administradoras = entityManager()
-            .createQuery("from PersonaAdministradora", PersonaAdministradora.class).getResultList();
-        administradoras.forEach(this::reconstruirContactos);
-        return administradoras;
+public class PersonasAdministradorasRepository implements WithSimplePersistenceUnit {
+    public Optional<PersonaAdministradora> buscarPorUsuario(Long usuarioId) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        return createQuery("from PersonaAdministradora p where p.usuario.id = :usuarioId", PersonaAdministradora.class)
+                .setParameter("usuarioId", usuarioId)
+                .getResultStream()
+                .findFirst();
     }
-    public void guardar(PersonaAdministradora admin) { enTransaccion(() -> { if (admin.getId() == null) entityManager().persist(admin); else entityManager().merge(admin); }); }
 
-    private void reconstruirContactos(PersonaAdministradora administradora) {
-        if (administradora != null && administradora.getId() != null) {
-            List<donaciones.domain.notificacion.Contacto> contactos = new ContactoRepository(entityManager())
-                .buscarPorNotificable(administradora.getId(), "ADMIN");
-            if (!contactos.isEmpty()) administradora.reconstruirContactos(contactos);
-        }
+
+    public List<PersonaAdministradora> obtenerTodos() {
+        return createQuery("from PersonaAdministradora", PersonaAdministradora.class).getResultList();
+    }
+
+    public void guardar(PersonaAdministradora admin) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        if (admin.getId() == null) persist(admin);
     }
 }

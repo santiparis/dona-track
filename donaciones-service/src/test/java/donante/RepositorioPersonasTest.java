@@ -8,7 +8,9 @@ import donaciones.domain.donante.PersonaJuridica;
 import donaciones.domain.donante.RazonSocial;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
+import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.donante.Usuario;
+import donaciones.domain.donante.Rol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
@@ -18,19 +20,18 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 public class RepositorioPersonasTest implements SimplePersistenceTest {
 
     private RepositorioPersonas repositorioPersonas;
     private PersonaHumana donanteHumano;
     private PersonaJuridica donanteJuridico;
-    List<Contacto> contactos = List.of(mock(Contacto.class));
-    Usuario usuario = new Usuario("user", "pass");
+    List<Contacto> contactos = List.of(new ContactoPorEmail("contacto@example.org"));
+    Usuario usuario = new Usuario("user", "pass", Rol.DONANTE);
 
     @BeforeEach
     void setUp() {
-        repositorioPersonas = new RepositorioPersonas(entityManager());
+        repositorioPersonas = new RepositorioPersonas();
         donanteHumano = new PersonaHumana("Nombre", "Apellido", 30, TipoDoc.DNI, "12345678", Genero.MASCULINO, "Calle Falsa 123", contactos, contactos.get(0), usuario);
         donanteJuridico = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Empresa S.A.", RazonSocial.EMPRESA, "Tecnología", Collections.emptyList(), contactos, contactos.get(0), usuario);
     }

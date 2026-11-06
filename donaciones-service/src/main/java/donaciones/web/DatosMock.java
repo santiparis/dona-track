@@ -1,0 +1,288 @@
+package donaciones.web;
+
+import java.util.List;
+import java.util.Map;
+
+public class DatosMock {
+
+  // latitud y longitud son las de la entidad que recibió la entrega: ahí va el marcador del mapa.
+  // foto es una URL, como Bien.foto (las del mock son fotos libres de Wikimedia Commons)
+  public static List<Map<String, Object>> donacionesEntregadas() {
+    String commons = "https://thumb.wikimedia.org/wikipedia/commons/thumb/";
+    return List.of(
+        Map.of("entidad", "Escuela Rural N°10", "bien", "Bancos", "cantidad", "30 unidades", "fecha", "12/10/2026",
+            "latitud", -34.4705, "longitud", -59.4890,
+            "foto", commons + "e/e9/Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg/960px-Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg"),
+        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Fideos", "cantidad", "100 paquetes", "fecha", "08/10/2026",
+            "latitud", -34.3467, "longitud", -58.7920,
+            "foto", commons + "2/26/Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg/960px-Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg"),
+        Map.of("entidad", "Escuela Rural N°10", "bien", "Sillas", "cantidad", "30 unidades", "fecha", "05/10/2026",
+            "latitud", -34.4705, "longitud", -59.4890,
+            "foto", "https://upload.wikimedia.org/wikipedia/commons/5/51/Wooden_Chair.jpg"),
+        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Leche", "cantidad", "50 litros", "fecha", "01/10/2026",
+            "latitud", -34.3467, "longitud", -58.7920,
+            "foto", commons + "2/2d/Cartons_of_Nature%27s_Promise_milk_%2850855058622%29.jpg/960px-Cartons_of_Nature%27s_Promise_milk_%2850855058622%29.jpg"),
+        Map.of("entidad", "Merendero Mitaí (Posadas, Misiones)", "bien", "Leche", "cantidad", "60 litros", "fecha", "26/09/2026",
+            "latitud", -27.3671, "longitud", -55.8961,
+            "foto", commons + "7/7f/Tetra-Milk-Carton---Betsukai-Milk---2024-04-27_08.jpg/960px-Tetra-Milk-Carton---Betsukai-Milk---2024-04-27_08.jpg"),
+        Map.of("entidad", "Hogar Escuela Bariloche (Río Negro)", "bien", "Camperas", "cantidad", "40 unidades", "fecha", "22/09/2026",
+            "latitud", -41.1335, "longitud", -71.3103,
+            "foto", commons + "e/e9/Blazer_Jackets_on_Rack_%28Unsplash%29.jpg/960px-Blazer_Jackets_on_Rack_%28Unsplash%29.jpg"),
+        Map.of("entidad", "Comedor Los Changuitos (Salta)", "bien", "Fideos", "cantidad", "80 paquetes", "fecha", "18/09/2026",
+            "latitud", -24.7883, "longitud", -65.4106,
+            "foto", "https://upload.wikimedia.org/wikipedia/commons/a/a8/Pates_pas_fraiches.jpg")
+    );
+  }
+
+  public static Map<String, Object> donante() {
+    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
+  }
+
+  public static List<Map<String, String>> donacionesDelDonante() {
+    return List.of(
+        Map.of("id", "1", "fecha", "20/10/2026", "bien", "Sillas · usadas", "cantidad", "6 unidades",
+            "categoria", "MUEBLES", "subcategoria", "SILLAS",
+            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "entidad", "Escuela Rural N°10"),
+        Map.of("id", "2", "fecha", "20/10/2026", "bien", "Mesas · usada", "cantidad", "1 unidad",
+            "categoria", "MUEBLES", "subcategoria", "MESAS",
+            "estado", "ASIGNADA", "estadoTexto", "Asignación realizada", "entidad", "Escuela Rural N°10"),
+        Map.of("id", "3", "fecha", "02/09/2026", "bien", "Fideos", "cantidad", "40 paquetes",
+            "categoria", "ALIMENTOS", "subcategoria", "FIDEOS",
+            "estado", "ENTREGADA", "estadoTexto", "Entregada", "entidad", "Comedor Escobar Sonrisas")
+    );
+  }
+
+  public static List<Map<String, Object>> historialDeEstados() {
+    return List.of(
+        Map.of("fecha", "20/10/2026 09:12", "descripcion", "En depósito"),
+        Map.of("fecha", "21/10/2026 03:00", "descripcion", "Asignación realizada a Escuela Rural N°10"),
+        Map.of("fecha", "22/10/2026 03:00", "descripcion", "Lista para entregar"),
+        Map.of("fecha", "23/10/2026 08:30", "descripcion", "En traslado (camión AB123CD)")
+    );
+  }
+
+  public static List<Map<String, String>> estados() {
+    return List.of(
+        Map.of("valor", "EN_DEPOSITO", "texto", "En depósito"),
+        Map.of("valor", "ASIGNADA", "texto", "Asignación realizada"),
+        Map.of("valor", "LISTA_PARA_ENTREGAR", "texto", "Lista para entregar"),
+        Map.of("valor", "EN_TRASLADO", "texto", "En traslado"),
+        Map.of("valor", "ENTREGADA", "texto", "Entregada"),
+        Map.of("valor", "ENTREGA_FALLIDA", "texto", "Entrega fallida"),
+        Map.of("valor", "VENCIDA", "texto", "Vencida")
+    );
+  }
+
+  public static List<Map<String, String>> categorias() {
+    return List.of(
+        Map.of("valor", "ALIMENTOS", "texto", "Alimentos"),
+        Map.of("valor", "MUEBLES", "texto", "Muebles"),
+        Map.of("valor", "ROPA", "texto", "Ropa")
+    );
+  }
+
+  public static List<Map<String, String>> subcategorias(String categoria) {
+    return switch (categoria) {
+      case "ALIMENTOS" -> List.of(
+          Map.of("valor", "FIDEOS", "texto", "Fideos"),
+          Map.of("valor", "LECHE", "texto", "Leche"));
+      case "MUEBLES" -> List.of(
+          Map.of("valor", "BANCOS", "texto", "Bancos"),
+          Map.of("valor", "SILLAS", "texto", "Sillas"),
+          Map.of("valor", "MESAS", "texto", "Mesas"));
+      case "ROPA" -> List.of(
+          Map.of("valor", "ABRIGOS", "texto", "Abrigos"),
+          Map.of("valor", "CALZADO", "texto", "Calzado"));
+      default -> List.of();
+    };
+  }
+
+  // Todas las notificaciones juntas, como las devuelve el repositorio: cada controller filtra por destinatario
+  public static List<Map<String, Object>> notificaciones() {
+    return List.of(
+        Map.of("destinatario", "donante", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
+            "mensaje", "Tu donación de 6 sillas fue asignada a Escuela Rural N°10.",
+            "link", "/donante/donaciones", "linkTexto", "Ver donación"),
+        Map.of("destinatario", "donante", "tipo", "Entrega recibida", "fecha", "02/09/2026", "leida", true,
+            "mensaje", "Escuela Rural N°10 recibió tus 10 bancos. Camión AB123CD, 02/09/2026 11:40."),
+        Map.of("destinatario", "entidad", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
+            "mensaje", "Se te asignaron 6 sillas usadas de Arcos Plateados S.A.",
+            "link", "/entidad/donaciones", "linkTexto", "Ver donaciones"),
+        Map.of("destinatario", "entidad", "tipo", "Recepción confirmada", "fecha", "02/09/2026", "leida", true,
+            "mensaje", "Registramos la recepción de 10 bancos. Comprobante: camión AB123CD, 02/09/2026 11:40.")
+    );
+  }
+
+  // latitud y longitud son la última posición que reportó el camión: ahí va su marcador en el mapa.
+  // avance son las entregas ya hechas de su ruta
+  public static List<Map<String, Object>> camionesEnRuta() {
+    return List.of(
+        Map.of("patente", "AB123CD", "donacion", "Sillas · 6 unidades", "destino", "Escuela Rural N°10",
+            "avance", "1 de 2 entregas",
+            "latitud", -34.5862, "longitud", -59.1250, "velocidad", "62 km/h", "actualizacion", "Hace 1 min (10:42)"),
+        Map.of("patente", "AE456FG", "donacion", "Fideos · 100 paquetes", "destino", "Comedor Escobar Sonrisas",
+            "avance", "0 de 1 entregas",
+            "latitud", -34.3489, "longitud", -58.7956, "velocidad", "0 km/h", "actualizacion", "Hace 4 min (10:39)")
+    );
+  }
+
+  public static Map<String, Object> admin() {
+    return Map.of("nombre", "admin@donatrack", "notificacionesSinLeer", 0);
+  }
+
+  // latitud y longitud ubican a la entidad en el mapa del seguimiento (EntidadBeneficiaria todavía no las tiene)
+  public static Map<String, Object> entidad() {
+    return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1,
+        "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
+  }
+
+  public static List<Map<String, String>> necesidadesDeLaEntidad() {
+    return List.of(
+        Map.of("id", "1", "subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "descripcion", "Reposición tras inundación",
+            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
+            "cantidad", "30", "avance", "10 / 30", "porcentaje", "33"),
+        Map.of("id", "2", "subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "descripcion", "Reposición tras inundación",
+            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
+            "cantidad", "30", "avance", "6 / 30", "porcentaje", "20"),
+        Map.of("id", "3", "subcategoria", "LECHE", "subcategoriaTexto", "Leche", "descripcion", "Desayuno escolar",
+            "tipo", "RECURRENTE", "tipoTexto", "Recurrente · mensual", "periodo", "MENSUAL",
+            "cantidad", "50", "avance", "40 / 50", "porcentaje", "80")
+    );
+  }
+
+  public static List<Map<String, String>> donacionesAsignadas() {
+    return List.of(
+        Map.of("id", "12", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
+            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "actualizado", "Hoy 08:30", "camion", "AB123CD"),
+        Map.of("id", "13", "bien", "Mesas · usada", "cantidad", "1 unidad", "donante", "Arcos Plateados S.A.",
+            "estado", "LISTA_PARA_ENTREGAR", "estadoTexto", "Lista para entregar", "actualizado", "Ayer 03:00", "camion", "AE456FG"),
+        Map.of("id", "7", "bien", "Bancos · nuevos", "cantidad", "10 unidades", "donante", "Ana Pérez",
+            "estado", "ENTREGADA", "estadoTexto", "Entregada", "actualizado", "02/09/2026", "camion", "AB123CD"),
+        Map.of("id", "5", "bien", "Bancos · usados", "cantidad", "4 unidades", "donante", "Ana Pérez",
+            "estado", "ENTREGA_FALLIDA", "estadoTexto", "Entrega fallida", "actualizado", "28/08/2026", "camion", "AE456FG")
+    );
+  }
+
+  // Subcategorías agrupadas por categoría, para los <select> con <optgroup>
+  public static List<Map<String, Object>> categoriasConSubcategorias() {
+    return categorias().stream()
+        .map(c -> Map.of("texto", c.get("texto"), "subcategorias", subcategorias(c.get("valor"))))
+        .toList();
+  }
+
+    public static List<Map<String, String>> donacionesEnDeposito() {
+    return List.of(
+        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ALIMENTOS"),
+        Map.of("id", "22", "bien", "Leche", "cantidad", "30 litros", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "vence", "26/10/2026", "vencimiento", "VENCIDA", "categoria", "ALIMENTOS"),
+        Map.of("id", "23", "bien", "Leche", "cantidad", "20 litros", "donante", "Ana Pérez",
+            "ingreso", "26/10/2026", "vence", "01/01/2027", "vencimiento", "LEJANA", "categoria", "ALIMENTOS"),
+        Map.of("id", "25", "bien", "Tomate", "cantidad", "50 tetra-packs", "donante", "Pastas del Sur",
+            "ingreso", "27/10/2026", "vence", "01/11/2026", "vencimiento", "PROXIMA", "categoria", "ALIMENTOS"),
+        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
+            "ingreso", "27/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ROPA")
+    );
+  }
+
+  // Una sugerencia por donación en depósito: lo que propusieron los dos algoritmos para esa donación
+  public static List<Map<String, String>> sugerencias() {
+    return List.of(
+        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
+            "ingreso", "25/10/2026", "coincidencias", "2", "resultado", "2 coincidencias"),
+        Map.of("id", "19", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
+            "ingreso", "24/10/2026", "coincidencias", "1", "resultado", "1 coincidencia"),
+        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
+            "ingreso", "27/10/2026", "coincidencias", "0", "resultado", "Sin coincidencias")
+    );
+  }
+
+  // Lo que devolvería la SugerenciaAsignacion de una donación: el ranking de cada algoritmo y las coincidencias entre ellos
+  public static Map<String, Object> rankingsDeSugerencia(String idDonacion) {
+    Map<String, String> escobar = Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas");
+    Map<String, String> barrioSur = Map.of("id", "5", "nombre", "Comedor Barrio Sur");
+    Map<String, String> sanJose = Map.of("id", "9", "nombre", "Hogar San José");
+    Map<String, String> losPibes = Map.of("id", "7", "nombre", "Merendero Los Pibes");
+    Map<String, String> escuela = Map.of("id", "11", "nombre", "Escuela Rural N°10");
+    Map<String, String> tutorias = Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte");
+
+    Map<String, String> coincidenciaEscobar = Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas",
+        "detalle", "Necesita 40 paquetes más esta semana", "posiciones", "Semántica #1 · Sub-atendidos #3");
+    Map<String, String> coincidenciaLosPibes = Map.of("id", "7", "nombre", "Merendero Los Pibes",
+        "detalle", "Necesita 100 paquetes por mes", "posiciones", "Semántica #4 · Sub-atendidos #1");
+
+    return switch (idDonacion) {
+      case "21" -> Map.of(
+          "algoritmos", List.of(
+              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(escobar, barrioSur, sanJose, losPibes)),
+              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(losPibes, escuela, escobar, tutorias))),
+          "coincidencias", List.of(coincidenciaEscobar, coincidenciaLosPibes));
+      case "19" -> Map.of(
+          "algoritmos", List.of(
+              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(escuela, tutorias, sanJose)),
+              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(losPibes, escuela, barrioSur))),
+          "coincidencias", List.of(Map.of("id", "11", "nombre", "Escuela Rural N°10",
+              "detalle", "Necesita 24 sillas más", "posiciones", "Semántica #1 · Sub-atendidos #2")));
+      default -> Map.of(
+          "algoritmos", List.of(
+              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(barrioSur, sanJose)),
+              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(escuela, tutorias))),
+          "coincidencias", List.of());
+    };
+  }
+
+  public static List<Map<String, String>> camiones() {
+    return List.of(
+        Map.of("id", "1", "patente", "AB123CD", "volumen", "18", "altura", "3.2", "cargaMax", "3500",
+            "estado", "EN_RUTA", "estadoTexto", "En ruta"),
+        Map.of("id", "2", "patente", "AE456FG", "volumen", "12", "altura", "2.8", "cargaMax", "2000",
+            "estado", "DISPONIBLE", "estadoTexto", "Disponible"),
+        Map.of("id", "3", "patente", "AC789HI", "volumen", "25", "altura", "3.8", "cargaMax", "6000",
+            "estado", "NO_DISPONIBLE", "estadoTexto", "No disponible")
+    );
+  }
+
+  // Resumen de una importación de donantes por CSV (hoy ImportadorPersonas no devuelve resumen: es solo para la vista)
+  public static Map<String, Object> resultadoImportacion() {
+    return Map.of(
+        "fecha", "Hoy 10:15",
+        "leidas", "20.000", "creados", "18.450", "actualizados", "1.520", "conError", "30",
+        "errores", List.of("Fila 1.204: falta el correo electrónico", "Fila 7.881: TipoDoc inválido"));
+  }
+
+  public static List<Map<String, String>> donantes() {
+    return List.of(
+        Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),
+        Map.of("id", "2", "nombre", "Ana Pérez", "documento", "12345678", "email", "ana@mail.com")
+    );
+  }
+
+  // La Escuela tiene más de 3 necesidades: su tarjeta muestra 3 y el link al detalle con todas
+  public static List<Map<String, Object>> entidadesConNecesidades() {
+    return List.of(
+        Map.of("id", "11", "nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
+            "correos", List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar"),
+            "necesidades", List.of(
+                Map.of("subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "tipo", "Extraordinaria",
+                    "porcentaje", "33", "detalle", "10 de 30 unidades · Reposición tras inundación"),
+                Map.of("subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "tipo", "Extraordinaria",
+                    "porcentaje", "20", "detalle", "6 de 30 unidades"),
+                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
+                    "porcentaje", "0", "detalle", "0 de 10 unidades"),
+                Map.of("subcategoria", "LECHE", "subcategoriaTexto", "Leche", "tipo", "Recurrente · mensual",
+                    "porcentaje", "80", "detalle", "40 de 50 litros este mes · Desayuno escolar"),
+                Map.of("subcategoria", "ABRIGOS", "subcategoriaTexto", "Abrigos", "tipo", "Extraordinaria",
+                    "porcentaje", "12", "detalle", "5 de 40 unidades"))),
+        Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
+            "correos", List.of("escobarsonrisas@gmail.com"),
+            "necesidades", List.of(
+                Map.of("subcategoria", "FIDEOS", "subcategoriaTexto", "Fideos", "tipo", "Recurrente · semanal",
+                    "porcentaje", "60", "detalle", "60 de 100 paquetes esta semana"))),
+        Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
+            "correos", List.of("tutoriasbarrionorte@gmail.com"),
+            "necesidades", List.of(
+                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
+                    "porcentaje", "0", "detalle", "0 de 5 unidades")))
+    );
+  }
+}

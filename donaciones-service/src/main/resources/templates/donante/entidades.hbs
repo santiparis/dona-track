@@ -1,0 +1,39 @@
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Entidades beneficiarias</h1>
+        <p class="muted">Conocé a las organizaciones registradas y qué necesitan hoy.</p>
+    </div>
+
+    <form class="buscador" action="/donante/entidades" method="get">
+        <label class="buscador-texto">Buscar por nombre<input name="q" type="search" placeholder="Ej: comedor" value="{{busqueda}}"></label>
+        <label class="buscador-filtro">Necesitan
+            <select name="subcategoria">
+                <option value="">Cualquier bien</option>
+                {{#each subcategorias}}
+                    <option value="{{valor}}" {{#if (eq valor ../subcategoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                {{/each}}
+            </select>
+        </label>
+        <button class="btn" type="submit">Buscar</button>
+    </form>
+
+    {{#if entidades}}
+        <div class="cols">
+            {{#each entidades}}
+                <article class="card">
+                    <h2>{{nombre}}</h2>
+                    <p class="muted">{{direccion}} · {{telefono}}</p>
+                    {{!-- Hasta 3 necesidades; si tiene más, el link lleva al detalle con todas --}}
+                    {{#each necesidades}}{{#if (lt @index 3)}}{{> necesidad}}{{/if}}{{/each}}
+                    {{#if necesidades.[3]}}
+                        <a href="/donante/entidades/{{id}}">Ver todas las necesidades</a>
+                    {{/if}}
+                </article>
+            {{/each}}
+        </div>
+    {{else}}
+        <p class="muted">No hay entidades que coincidan con la búsqueda.</p>
+    {{/if}}
+{{/partial}}
+
+{{> layout}}

@@ -1,0 +1,47 @@
+@startuml
+skinparam linetype ortho
+
+entity Camion {
+    camion_id (PK)
+    ---
+    patente: nvarchar(32)
+    volumen: double
+    altura: double
+    cargaMax: double
+    velocidad: double
+    latitud: double
+    longitud: double
+    disponibilidad: nvarchar(32)
+}
+
+entity Entrega {
+    entrega_id (PK)
+    ---
+    ruta_id (FK)
+    destino: nvarchar(255)
+    nombre_entidad: nvarchar(255)
+    estado: nvarchar(32)
+}
+
+entity DonacionEncolada {
+    donacion_id (PK)
+    ---
+    entrega_id (FK)
+    cantidad_bienes: int
+    unidad: nvarchar(8)
+    destino: nvarchar(255)
+    nombre_entidad: nvarchar(255)
+}
+
+entity Ruta {
+    ruta_id (PK)
+    ---
+    camion_id (FK)
+    estado: nvarchar(32)
+}
+
+Entrega |o--o{ DonacionEncolada
+
+Ruta |o--o{ Entrega
+Ruta }o--|| Camion
+@enduml

@@ -1,0 +1,60 @@
+{{#partial "contenido"}}
+    <nav class="migas" aria-label="Ruta de navegación">
+        <a href="/admin/asignaciones">Asignaciones</a> / Donación #{{donacion.id}}
+    </nav>
+    <h1>Elegir entidad final</h1>
+
+    <section class="card">
+        <div class="f4">
+            <div class="dato"><span class="muted">Bien</span><span>{{donacion.bien}}</span></div>
+            <div class="dato"><span class="muted">Cantidad</span><span>{{donacion.cantidad}}</span></div>
+            <div class="dato"><span class="muted">Donante</span><span>{{donacion.donante}}</span></div>
+            <div class="dato"><span class="muted">Ingreso</span><span>{{donacion.ingreso}}</span></div>
+        </div>
+    </section>
+
+    {{!-- Todos los radios se llaman "entidad": se elige una sola, sea de las coincidencias o de los rankings --}}
+    <form class="bloque" action="/admin/asignaciones/{{donacion.id}}" method="post">
+        {{#if coincidencias}}
+            <section class="card">
+                <div class="titulo-con-chip">
+                    <h2>Coincidencias entre algoritmos</h2>
+                    <span class="chip ok">{{donacion.resultado}}</span>
+                </div>
+                <p class="muted">Entidades que aparecen en los dos rankings.</p>
+                {{#each coincidencias}}
+                    <label class="opcion">
+                        <input type="radio" name="entidad" value="{{id}}" {{#if @first}}checked{{/if}} required>
+                        <span class="opcion-texto"><strong>{{nombre}}</strong><span class="muted">{{detalle}}</span></span>
+                        <span class="muted">{{posiciones}}</span>
+                    </label>
+                {{/each}}
+            </section>
+        {{/if}}
+
+        {{!-- Sin coincidencias los rankings aparecen abiertos y se elige desde acá --}}
+        <details class="card" {{#unless coincidencias}}open{{/unless}}>
+            <summary>Ver rankings completos de cada algoritmo</summary>
+            <div class="dos-columnas">
+                {{#each algoritmos}}
+                    <div class="bloque">
+                        <h2>{{nombre}}</h2>
+                        {{!-- El <ol> numera solo la posición en el ranking --}}
+                        <ol class="ranking">
+                            {{#each entidades}}
+                                <li><label class="radio"><input type="radio" name="entidad" value="{{id}}" required>{{nombre}}</label></li>
+                            {{/each}}
+                        </ol>
+                    </div>
+                {{/each}}
+            </div>
+        </details>
+
+        <div class="row acciones">
+            <a class="btn2" href="/admin/asignaciones">Volver</a>
+            <button class="btn" type="submit">Confirmar destino</button>
+        </div>
+    </form>
+{{/partial}}
+
+{{> layout}}

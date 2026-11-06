@@ -7,18 +7,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "persona")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Persona implements Notificable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_id") private Long id;
     @Enumerated(EnumType.STRING) @Column(name = "tipo_doc") private TipoDoc tipoDoc;
     @Column(name = "documento") private String documento;
     @Column(name = "nombre") private String nombre;
-    @Transient private List<Contacto> contactos = new ArrayList<>();
-    @Transient private Contacto medioPredeterminado;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "notificable_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "tipo_notificable = 'PERSONA'")
+    @OrderBy("id")
+    private List<Contacto> contactos = new ArrayList<>();
     @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "usuario_id") private Usuario usuario;
     @Column(name = "ultima_interaccion") private LocalDateTime ultimaInteraccion = LocalDateTime.now();
 
@@ -47,6 +50,7 @@ public abstract class Persona implements Notificable {
         if (contactos.isEmpty()) {
             throw new IllegalArgumentException("La lista de contactos no puede ser nula o vacía.");
         }
+        this.contactos.forEach(contacto -> contacto.identificarNotificable("PERSONA"));
         setMedioPredeterminado(medioPredeterminado);
         this.usuario = usuario;
     }
@@ -67,28 +71,31 @@ public abstract class Persona implements Notificable {
         return contactos;
     }
 
-    public void reconstruirContactos(List<Contacto> contactos) {
-        this.contactos = new ArrayList<>(contactos);
-        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
-    }
-
     public void agregarContactos(List<Contacto> nuevosContactos) {
         nuevosContactos.forEach(nuevoContacto -> {
             if (!this.contactos.contains(nuevoContacto)) {
+                nuevoContacto.identificarNotificable("PERSONA");
                 this.contactos.add(nuevoContacto);
             }
         });
     }
 
     public Contacto getMedioPredeterminado() {
-        return medioPredeterminado;
+        return contactoPredeterminado();
     }
 
     public void setMedioPredeterminado(Contacto medioPredeterminado) {
         if (!this.contactos.contains(medioPredeterminado)) {
             throw new IllegalArgumentException("El medio predeterminado debe existir en la lista de contactos.");
         }
-        this.medioPredeterminado = medioPredeterminado;
+        this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
+    }
+
+    private Contacto contactoPredeterminado() {
+        return this.contactos.stream()
+            .filter(Contacto::esMedioPredeterminado)
+            .findFirst()
+            .orElse(this.contactos.isEmpty() ? null : this.contactos.get(0));
     }
 
     @JsonIgnore

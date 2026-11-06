@@ -1,20 +1,31 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.grpc.DonacionesServiceImpl;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.NotificacionRepository;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.web.Router;
+import donaciones.web.SesionUsuario;
+import donaciones.repository.UsuarioRepository;
+import donaciones.web.templates.JavalinHandlebars;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
-import donaciones.controller.*;
+import io.javalin.http.staticfiles.Location;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Main {
@@ -25,61 +36,62 @@ public class Main {
     RepositorioPersonas personasRepository = new RepositorioPersonas();
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
-    RetrofitConfig retrofitConfig = new RetrofitConfig();
-    LogisticaAPICalls logisticaAPICalls = retrofitConfig.logisticaAPICalls();
+    // Cliente gRPC hacia logistica-service
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient(
+        System.getenv().getOrDefault("LOGISTICA_GRPC_HOST", "localhost"), 9090);
 
-    Notificador notificador = new Notificador(new NotificacionRepository());
+    NotificacionRepository notificacionRepository = new NotificacionRepository();
+    Notificador notificador = new Notificador(notificacionRepository);
 
-    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador, logisticaGrpcClient);
     DonanteController donanteController = new DonanteController(personasRepository);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
 
     OrganizadorAsignaciones organizadorAsignaciones = new OrganizadorAsignaciones(List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos()));
 
     AsignacionesController asignacionesController = new AsignacionesController(
-        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaAPICalls, notificador, organizadorAsignaciones);
+        donacionesRepository, entidadRepo, sugerenciasRepository, logisticaGrpcClient, notificador, organizadorAsignaciones);
 
+    CamionesController camionesController = new CamionesController(logisticaGrpcClient, donacionesRepository);
+    NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
+    PublicoController publicoController = new PublicoController();
+    SesionController sesionController = new SesionController(new UsuarioRepository());
 
-    Javalin app = Javalin.create().start(8081);
+    // Servidor gRPC propio de donaciones-service (puerto 9091)
+    try {
+      Server gRpcServer = ServerBuilder.forPort(9091)
+          .addService(new DonacionesServiceImpl(donacionesRepository))
+          .build();
+      gRpcServer.start();
+      System.out.println("Servidor gRPC escuchando en puerto 9091...");
 
-    // CRUD Donaciones
-    app.get("/api/donaciones", controller::listar);
-    app.get("/api/donaciones/{id}", controller::obtener);
-    app.post("/api/donaciones", controller::crear);
-    app.put("/api/donaciones/{id}", controller::actualizar);
-    app.patch("/api/donaciones/{id}", controller::actualizarParcial);
-    app.delete("/api/donaciones/{id}", controller::eliminar);
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        System.out.println("Apagando servidor gRPC...");
+        gRpcServer.shutdown();
+      }));
+    } catch (IOException e) {
+      System.err.println("Error al iniciar el servidor gRPC: " + e.getMessage());
+    }
 
-    // CRUD Donantes
-    app.get("/api/donantes", donanteController::listar);
-    app.get("/api/donantes/{id}", donanteController::obtener);
-    app.post("/api/donantes", donanteController::crear);
-    app.put("/api/donantes/{id}", donanteController::actualizar);
-    app.patch("/api/donantes/{id}", donanteController::actualizarParcial);
-    app.delete("/api/donantes/{id}", donanteController::eliminar);
+    // Servidor web HTTP / Javalin (puerto 8081)
+    Javalin app = Javalin.create(config -> {
+      SesionUsuario.configurar(config);
+      config.fileRenderer(new JavalinHandlebars());
+      config.staticFiles.add(staticFiles -> {
+        staticFiles.hostedPath = "/assets";
+        staticFiles.directory = "/assets";
+        staticFiles.location = Location.CLASSPATH;
+      });
+    })
+        .before(ctx -> transaccion.abrir())
+        .after(ctx -> transaccion.cerrar(ctx.statusCode()))
+        .start(8081);
 
-    // CRUD Entidades beneficiarias
-    app.get("/api/entidades-beneficiarias", entidadesController::getEntidadesBeneficiarias);
-    app.get("/api/entidades-beneficiarias/{id}", entidadesController::getEntidadBeneficiaria);
-    app.post("/api/entidades-beneficiarias", entidadesController::postEntidadBeneficiaria);
-    app.put("/api/entidades-beneficiarias/{id}", entidadesController::putEntidadBeneficiaria);
-    app.patch("/api/entidades-beneficiarias/{id}", entidadesController::patchEntidadBeneficiaria);
-    app.delete("/api/entidades-beneficiarias/{id}", entidadesController::deleteEntidadBeneficiaria);
-
-    // CRUD Necesidades
-    app.get("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::getNecesidades);
-    app.post("/api/entidades-beneficiarias/{id}/necesidades", entidadesController::postNecesidades);
-    app.put("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::putNecesidad);
-    app.patch("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::patchNecesidad);
-    app.delete("/api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}", entidadesController::deleteNecesidad);
-
-    app.get("/api/sugerencias", asignacionesController::getSugerencias);
-    app.post("/api/sugerencias", asignacionesController::ejecutarAlgoritmos);
-    app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
-    app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
-    app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
+    new Router(controller, donanteController, entidadesController, asignacionesController, camionesController,
+        notificacionesController, publicoController, sesionController).configure(app);
   }
 }

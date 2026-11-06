@@ -6,10 +6,12 @@ import javax.persistence.*;
 @Table(name = "contacto")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_contacto", discriminatorType = DiscriminatorType.STRING)
-@IdClass(ContactoId.class)
 public abstract class Contacto {
-    @Id @Column(name = "notificable_id") private Long notificableId;
-    @Id @Column(name = "tipo_notificable", length = 8) private String tipoNotificable;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "contacto_id") private Long id;
+    @Column(name = "notificable_id", insertable = false, updatable = false) private Long notificableId;
+    @Column(name = "tipo_notificable", nullable = false, length = 16) private String tipoNotificable;
+    @Column(name = "medio_predeterminado", nullable = false) private boolean medioPredeterminado;
     private String valor;
 
     protected Contacto() { }
@@ -21,9 +23,24 @@ public abstract class Contacto {
         return valor;
     }
 
-    public void identificarNotificable(Long notificableId, String tipoNotificable) {
-        this.notificableId = notificableId;
+    public Long getId() {
+        return id;
+    }
+
+    public Long getNotificableId() {
+        return notificableId;
+    }
+
+    public boolean esMedioPredeterminado() {
+        return medioPredeterminado;
+    }
+
+    public void identificarNotificable(String tipoNotificable) {
         this.tipoNotificable = tipoNotificable;
+    }
+
+    public void marcarComoMedioPredeterminado(boolean medioPredeterminado) {
+        this.medioPredeterminado = medioPredeterminado;
     }
 
     public String getEstrategia() {

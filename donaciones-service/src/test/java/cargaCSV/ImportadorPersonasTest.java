@@ -8,6 +8,7 @@ import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
+import donaciones.domain.donante.Rol;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
 
     @BeforeEach
     void setUp() {
-        repositorioPersonas = new RepositorioPersonas(entityManager());
+        repositorioPersonas = new RepositorioPersonas();
         importador = new ImportadorPersonas(repositorioPersonas);
     }
 
@@ -55,7 +56,7 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
         Contacto contacto = new ContactoPorEmail("ananavarro3658@yahoo.com");
         PersonaHumana existente = new PersonaHumana(
                 "Nombre viejo", "Apellido viejo", 1, TipoDoc.DNI, "1", Genero.FEMENINO,
-                "Av. Siempre Viva 742", List.of(contacto), contacto, new Usuario("ana_viejo", "passVieja"));
+                "Av. Siempre Viva 742", List.of(contacto), contacto, new Usuario("ana_viejo", "passVieja", Rol.DONANTE));
         repositorioPersonas.agregar(existente);
 
         importador.importarPersonasDesdeCSV("donantes_solo_persona_humana.csv");

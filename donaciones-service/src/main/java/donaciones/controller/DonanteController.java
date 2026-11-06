@@ -13,6 +13,7 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
+import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -20,6 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class DonanteController {
   private static final Logger logger = LoggerFactory.getLogger(DonanteController.class);
@@ -76,9 +80,10 @@ public class DonanteController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonanteRequestDTO dto = ctx.bodyAsClass(DonanteRequestDTO.class);
-      Persona existente = personasRepository.buscarPorId(id)
+      Persona nuevosDatos = crearPersona(dto);
+      Persona existente = personasRepository.buscarPorIdParaActualizar(id)
           .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
-      existente.actualizarseDesde(crearPersona(dto));
+      existente.actualizarseDesde(nuevosDatos);
       personasRepository.agregar(existente);
       ctx.result("Datos del donante actualizados");
     } catch (IllegalArgumentException e) {
@@ -94,9 +99,9 @@ public class DonanteController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       DonantePatchDTO dto = ctx.bodyAsClass(DonantePatchDTO.class);
-      Persona existente = personasRepository.buscarPorId(id)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
       List<Contacto> contactos = dto.contactos() == null ? null : crearContactos(dto.contactos());
+      Persona existente = personasRepository.buscarPorIdParaActualizar(id)
+          .orElseThrow(() -> new IllegalArgumentException("No se encontró un donante"));
       existente.actualizarDatosParciales(
           dto.nombre(), dto.documento(), dto.apellido(), dto.edad(), dto.direccion(), dto.rubro(), contactos);
       personasRepository.agregar(existente);
@@ -199,5 +204,43 @@ public class DonanteController {
     return contactos.stream()
         .map(contacto -> new ContactoResponseDTO(contacto.getEstrategia(), contacto.getValor()))
         .toList();
+  }
+
+  public Map<String, Object> donanteNuevo(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Registrar donante");
+    model.put("rol", "admin");
+    model.put("seccion", "donante-nuevo");
+    // La pestaña viaja en la URL: /admin/donantes/nuevo?tipo=HUMANA|JURIDICA
+    model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), "HUMANA"));
+    return model;
+  }
+
+  public void registrarDonante(Context ctx) {
+    // Sin persistencia todavía: acá se da de alta la persona y se le manda el mail de bienvenida
+    // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
+    if ("donacion".equals(ctx.formParam("siguiente"))) {
+      ctx.redirect("/admin/donaciones/nueva");
+    } else {
+      ctx.redirect("/admin/donantes/nuevo");
+    }
+  }
+
+  public Map<String, Object> importacion(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Importar donantes");
+    model.put("rol", "admin");
+    model.put("seccion", "importacion");
+    // Después de importar se vuelve con ?importado para mostrar el resultado
+    if (ctx.queryParam("importado") != null) {
+      model.put("resultado", DatosMock.resultadoImportacion());   // MOCK
+    }
+    return model;
+  }
+
+  public void importar(Context ctx) {
+    // Sin conexión todavía: acá se guarda ctx.uploadedFile("archivo") en un archivo temporal y se llama al importador ya hecho
+    // new ImportadorPersonas(repositorioPersonas).importarPersonasDesdeCSV(pathTemporal);
+    ctx.redirect("/admin/importacion?importado");
   }
 }

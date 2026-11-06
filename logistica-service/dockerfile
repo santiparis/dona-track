@@ -1,0 +1,48 @@
+# ETAPA 1: CONSTRUIR
+
+FROM maven:3.9-eclipse-temurin-17 AS constructor
+
+WORKDIR /workdir
+
+COPY pom.xml .
+COPY assembly.xml .
+COPY logistica-service/pom.xml ./logistica-service/pom.xml
+COPY logistica-service/src ./logistica-service/src
+
+WORKDIR /workdir/logistica-service
+RUN mvn clean package -DskipTests
+
+# ETAPA 2: EJECUTAR
+
+# Agarro otra imagen, que no incluye el compilador.
+FROM eclipse-temurin:17.0.20.1_1-jre-ubi9-minimal AS logistica-api
+
+WORKDIR /app
+
+COPY --from=constructor /workdir/logistica-service/target/logistica-api-jar-with-dependencies.jar ./app.jar
+
+EXPOSE 7070
+
+CMD ["java", "-jar", "app.jar"]
+
+# ETAPA 3: PLANIFICADOR
+
+FROM eclipse-temurin:17.0.20.1_1-jre-ubi9-minimal AS planificador
+
+WORKDIR /app
+
+COPY --from=constructor /workdir/logistica-service/target/lanzador-planificacion-jar-with-dependencies.jar ./app.jar
+
+CMD ["java", "-jar", "app.jar"]
+
+
+FROM eclipse-temurin:17.0.20.1_1-jre-ubi9-minimal AS mock-gps
+WORKDIR /app
+COPY --from=constructor /workdir/logistica-service/target/mock-gps-jar-with-dependencies.jar app.jar
+CMD ["java", "-jar", "app.jar"]
+
+FROM eclipse-temurin:17.0.20.1_1-jre-ubi9-minimal AS mock-planificador
+WORKDIR /app
+COPY --from=constructor /workdir/logistica-service/target/mock-planificador-jar-with-dependencies.jar app.jar
+EXPOSE 9090
+CMD ["java", "-jar", "app.jar"]

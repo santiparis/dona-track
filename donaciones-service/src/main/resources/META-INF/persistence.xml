@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
-  <persistence-unit name="donaciones-production" transaction-type="RESOURCE_LOCAL">
+  <persistence-unit name="simple-persistence-unit" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
     <class>donaciones.domain.Bien</class>
     <class>donaciones.domain.Donacion</class>
@@ -18,10 +18,11 @@
     <class>donaciones.domain.notificacion.ContactoPorWhatsApp</class>
     <class>donaciones.domain.notificacion.Notificacion</class>
     <class>donaciones.domain.algoritmos.SugerenciaAsignacion</class>
+    <class>donaciones.domain.algoritmos.SugerenciaAlgoritmo</class>
     <properties>
       <property name="hibernate.archive.autodetection" value="class"/>
       <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>
-      <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/donaciones"/>
+      <property name="hibernate.connection.url" value="jdbc:mysql://mysql:3306/donaciones"/>
       <property name="hibernate.connection.username" value="donaciones"/>
       <property name="hibernate.connection.password" value="donaciones"/>
       <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>

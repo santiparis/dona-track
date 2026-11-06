@@ -13,6 +13,7 @@ import donaciones.dto.BienDTO;
 import donaciones.dto.DonacionPatchDTO;
 import donaciones.dto.DonacionRequestDTO;
 import donaciones.dto.DonacionResponseDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
@@ -32,17 +33,20 @@ class DonacionControllerTest implements SimplePersistenceTest {
     private DonacionRepository donacionesRepository;
     private RepositorioPersonas personasRepository;
     private DonacionController controller;
+    private LogisticaGrpcClient logisticaGrpcClient;
     private Context ctx;
 
     @BeforeEach
     void setUp() {
-        donacionesRepository = new DonacionRepository(entityManager());
-        personasRepository = new RepositorioPersonas(entityManager());
+        donacionesRepository = new DonacionRepository();
+        personasRepository = new RepositorioPersonas();
         controller = new DonacionController(
                 donacionesRepository,
                 personasRepository,
-                new PersonasAdministradorasRepository(entityManager()),
-                new Notificador());
+                new PersonasAdministradorasRepository(),
+                new Notificador(),
+                logisticaGrpcClient = mock(LogisticaGrpcClient.class)
+            );
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
 
@@ -81,7 +85,7 @@ class DonacionControllerTest implements SimplePersistenceTest {
     void marcarEnTrasladoActualizaUnaDonacionPersistida() {
         PersonaHumana donante = guardarDonante();
         EntidadBeneficiaria entidad = new EntidadBeneficiaria("Comedor", "Calle 1", "123", List.of());
-        new EntidadBeneficiariaRepository(entityManager()).guardar(entidad);
+        new EntidadBeneficiariaRepository().guardar(entidad);
         Donacion donacion = new Donacion(donante, new Bien(Subcategoria.FIDEOS, 1, "kg", "desc", null, null, null));
         donacion.asignarA(entidad);
         donacionesRepository.guardar(donacion);

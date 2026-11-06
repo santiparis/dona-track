@@ -19,9 +19,30 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protobuf.plugin.version>0.6.1</protobuf.plugin.version>
+        <os.plugin.version>1.7.1</os.plugin.version>
+        <protobuf.version>3.25.1</protobuf.version>
     </properties>
 
     <dependencies>
+        <!-- Dependencias gRPC (Heredadas del POM Padre) -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
@@ -39,6 +60,16 @@
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>6.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin-rendering</artifactId>
+            <version>6.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>4.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
@@ -119,15 +150,42 @@
     </dependencies>
 
     <build>
+        <!-- Plugin para detectar el SO -->
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>${os.plugin.version}</version>
+            </extension>
+        </extensions>
+
         <plugins>
+            <!-- Plugin para compilar archivos .proto a código Java -->
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf.plugin.version}</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- Una JVM por clase de test: la unidad de test es HSQLDB en memoria y el
-                         EntityManager de JpaContext vive en un ThreadLocal estático, así que sin
-                         esto las clases comparten base y caché de primer nivel entre sí. -->
+                    <!-- Una JVM por clase: cada suite usa una base HSQLDB limpia. -->
                     <reuseForks>false</reuseForks>
                     <systemPropertyVariables>
                         <donaciones.persistence.unit>simple-persistence-unit</donaciones.persistence.unit>
@@ -135,14 +193,11 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Este plugin permite empaquetar nuestras aplicaciones utilizando distintos formatos -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--<appendAssemblyId>false</appendAssemblyId>-->
-                    <descriptorRefs>
-                        <!-- Esto indica que genere un paquete que incluya las dependencias -->
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>${project.basedir}/../assembly.xml</descriptor>
+                    </descriptors>
                 </configuration>
 
                 <executions>
@@ -172,6 +227,21 @@
                             <archive>
                                 <manifest>
                                     <mainClass>planificacion.ProcesarAsignaciones</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>crear-jar-api</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>donaciones-api</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>donaciones.Main</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

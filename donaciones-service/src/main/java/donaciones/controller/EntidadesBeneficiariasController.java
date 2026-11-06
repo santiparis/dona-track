@@ -5,8 +5,11 @@ import donaciones.dto.EntidadBeneficiariaDTO;
 import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +17,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class EntidadesBeneficiariasController {
   private static final Logger logger = LoggerFactory.getLogger(EntidadesBeneficiariasController.class);
@@ -60,7 +64,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaDTO dto = ctx.bodyAsClass(EntidadBeneficiariaDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada");
@@ -77,7 +81,7 @@ public class EntidadesBeneficiariasController {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
       EntidadBeneficiariaPatchDTO dto = ctx.bodyAsClass(EntidadBeneficiariaPatchDTO.class);
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       entidad.actualizarDatos(dto.razonSocial(), dto.direccion(), dto.telefono(), dto.correosRepresentantes());
       entidadesRepository.guardar(entidad);
       ctx.result("Entidad beneficiaria actualizada parcialmente");
@@ -93,8 +97,8 @@ public class EntidadesBeneficiariasController {
   public void deleteEntidadBeneficiaria(Context ctx) {
     try {
       Long id = Long.parseLong(ctx.pathParam("id"));
-      buscarEntidad(id);
-      entidadesRepository.eliminarPorId(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidadesRepository.eliminar(entidad);
       ctx.result("Entidad beneficiaria eliminada correctamente");
     } catch (IllegalArgumentException e) {
       logger.warn("Error al eliminar entidad beneficiaria: {}", e.getMessage());
@@ -120,8 +124,9 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
-      entidad.registrarNecesidad(crearNecesidad(dto));
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
+      entidad.registrarNecesidad(necesidad);
       entidadesRepository.guardar(entidad);
       ctx.status(HttpStatus.CREATED).result("Necesidad guardada correctamente");
     } catch (RuntimeException e) {
@@ -135,9 +140,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada correctamente");
     } catch (RuntimeException e) {
@@ -151,9 +157,10 @@ public class EntidadesBeneficiariasController {
     NecesidadDTO dto = ctx.bodyAsClass(NecesidadDTO.class);
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(idEntidad);
+      Necesidad necesidad = crearNecesidad(dto);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(idEntidad);
       buscarNecesidad(entidad, idNecesidad);
-      entidad.actualizarNecesidadPorId(idNecesidad, crearNecesidad(dto));
+      entidad.actualizarNecesidadPorId(idNecesidad, necesidad);
       entidadesRepository.guardar(entidad);
       ctx.result("Necesidad actualizada parcialmente");
     } catch (RuntimeException e) {
@@ -166,7 +173,7 @@ public class EntidadesBeneficiariasController {
     Long idNecesidad = Long.parseLong(ctx.pathParam("idNecesidad"));
 
     try {
-      EntidadBeneficiaria entidad = buscarEntidad(id);
+      EntidadBeneficiaria entidad = buscarEntidadParaActualizar(id);
       buscarNecesidad(entidad, idNecesidad);
       entidad.eliminarNecesidadPorId(idNecesidad);
       entidadesRepository.guardar(entidad);
@@ -190,6 +197,11 @@ public class EntidadesBeneficiariasController {
         .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
   }
 
+  private EntidadBeneficiaria buscarEntidadParaActualizar(Long id) {
+    return entidadesRepository.buscarPorIdParaActualizar(id)
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró la entidad beneficiaria"));
+  }
+
   private Necesidad buscarNecesidad(EntidadBeneficiaria entidad, Long idNecesidad) {
     return entidad.getNecesidades().stream()
         .filter(n -> n.getId() != null && n.getId().equals(idNecesidad))
@@ -201,15 +213,17 @@ public class EntidadesBeneficiariasController {
   private Necesidad crearNecesidad(NecesidadDTO dto) {
     Map<Subcategoria, Integer> cantidades = new HashMap<>();
     dto.cantidadesRequeridas().forEach((subcategoria, cantidad) -> cantidades.put(parsearSubcategoria(subcategoria), cantidad));
-    return new Necesidad(dto.descripcion(), parsearRenovacion(dto), cantidades);
-  }
-
-  private PoliticaDeRenovacion parsearRenovacion(NecesidadDTO dto) {
-    if (!dto.renovacion()) return new SinRenovacion();
-    if (dto.fechaInicio() == null || dto.periodo() == null) {
-      throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+    boolean renovacion = dto.renovacion();
+    LocalDate fechaInicio = null;
+    Periodo periodo = null;
+    if (renovacion) {
+      if (dto.fechaInicio() == null || dto.periodo() == null) {
+        throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+      }
+      fechaInicio = LocalDate.parse(dto.fechaInicio());
+      periodo = parsearPeriodo(dto.periodo());
     }
-    return new RenovacionPeriodica(LocalDate.parse(dto.fechaInicio()), parsearPeriodo(dto.periodo()));
+    return new Necesidad(dto.descripcion(), renovacion, fechaInicio, periodo, cantidades);
   }
 
   private Subcategoria parsearSubcategoria(String subcategoria) {
@@ -220,5 +234,123 @@ public class EntidadesBeneficiariasController {
   private Periodo parsearPeriodo(String periodo) {
     try { return Periodo.valueOf(periodo.toUpperCase()); }
     catch (IllegalArgumentException e) { throw new IllegalArgumentException("Periodo incorrecto", e); }
+  }
+
+  public Map<String, Object> entidades(Context ctx) {
+    // La búsqueda viaja en la URL: ?q=...&subcategoria=...
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("q"), "");
+    String subcategoria = Objects.requireNonNullElse(ctx.queryParam("subcategoria"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Entidades beneficiarias");
+    model.put("rol", "donante");
+    model.put("seccion", "entidades");
+
+    // List<EntidadBeneficiaria> entidades = entidadRepo.buscar(busqueda, subcategoria);
+    model.put("entidades", DatosMock.entidadesConNecesidades().stream()
+        .filter(e -> ((String) e.get("nombre")).toLowerCase().contains(busqueda.toLowerCase()))
+        .filter(e -> subcategoria.isEmpty() || ((List<?>) e.get("necesidades")).stream()
+            .anyMatch(n -> subcategoria.equals(((Map<?, ?>) n).get("subcategoria"))))
+        .toList());   // MOCK
+    model.put("busqueda", busqueda);
+    model.put("subcategoriaElegida", subcategoria);
+    // Todas las subcategorías, de todas las categorías
+    model.put("subcategorias", DatosMock.categorias().stream()
+        .flatMap(c -> DatosMock.subcategorias(c.get("valor")).stream())
+        .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> entidad(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("rol", "donante");
+    model.put("seccion", "entidades");
+
+    // EntidadBeneficiaria entidad = entidadRepo.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    Map<String, Object> entidad = DatosMock.entidadesConNecesidades().stream()
+        .filter(e -> e.get("id").equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new);   // MOCK
+    model.put("entidad", entidad);
+    model.put("titulo", entidad.get("nombre"));
+    return model;
+  }
+
+  public Map<String, Object> necesidades(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Necesidades");
+    model.put("rol", "entidad");
+    model.put("seccion", "necesidades");
+
+    List<Map<String, String>> necesidades = entidadDeLaSesion(ctx).getNecesidades().stream()
+        .flatMap(necesidad -> necesidad.getCantidadesRequeridas().entrySet().stream()
+            .map(cantidad -> necesidadParaVista(necesidad, cantidad.getKey(), cantidad.getValue())))
+        .toList();
+    model.put("necesidades", necesidades);
+
+    // ?editar={id} carga esa necesidad en el formulario; si no, el formulario queda vacío para dar de alta
+    String idEditar = ctx.queryParam("editar");
+    Map<String, String> enEdicion = necesidades.stream()
+        .filter(n -> n.get("id").equals(idEditar))
+        .findFirst()
+        .orElseGet(() -> {
+          if (idEditar != null) throw new io.javalin.http.NotFoundResponse();
+          return Map.of();
+        });
+    model.put("necesidad", enEdicion);
+
+    // La pestaña viaja en la URL (?tipo=EXTRAORDINARIA|RECURRENTE); al editar arranca en el tipo de la necesidad
+    model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), enEdicion.getOrDefault("tipo", "EXTRAORDINARIA")));
+
+    // Subcategorías agrupadas por categoría para el <select> con <optgroup>
+    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    return model;
+  }
+
+  public void registrarNecesidad(Context ctx) {
+    // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  public void modificarNecesidad(Context ctx) {
+    verificarNecesidadPropia(ctx);
+    // Sin persistencia todavía: acá se busca la necesidad ctx.pathParam("id") y se actualiza con los datos del form
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  public void eliminarNecesidad(Context ctx) {
+    verificarNecesidadPropia(ctx);
+    // Sin persistencia todavía: acá va la baja de la necesidad ctx.pathParam("id")
+    ctx.redirect("/entidad/necesidades");
+  }
+
+  private EntidadBeneficiaria entidadDeLaSesion(Context ctx) {
+    return entidadesRepository.buscarPorUsuario(ctx.sessionAttribute(SesionUsuario.USUARIO_ID))
+        .orElseThrow(io.javalin.http.NotFoundResponse::new);
+  }
+
+  private void verificarNecesidadPropia(Context ctx) {
+    String id = ctx.pathParam("id");
+    if (entidadDeLaSesion(ctx).getNecesidades().stream().noneMatch(n -> n.getId().toString().equals(id))) {
+      throw new io.javalin.http.NotFoundResponse();
+    }
+  }
+
+  private Map<String, String> necesidadParaVista(Necesidad necesidad, Subcategoria subcategoria, int cantidad) {
+    int suplida = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
+    boolean recurrente = necesidad.getPeriodo() != null;
+    return Map.of(
+        "id", necesidad.getId().toString(),
+        "descripcion", Objects.toString(necesidad.getDescripcion(), ""),
+        "subcategoria", subcategoria.name(),
+        "subcategoriaTexto", subcategoria.nombre(),
+        "cantidad", Integer.toString(cantidad),
+        "tipo", recurrente ? "RECURRENTE" : "EXTRAORDINARIA",
+        "tipoTexto", recurrente ? "Recurrente" : "Extraordinaria",
+        "periodo", Objects.toString(necesidad.getPeriodo(), ""),
+        "avance", suplida + " / " + cantidad,
+        "porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0));
   }
 }

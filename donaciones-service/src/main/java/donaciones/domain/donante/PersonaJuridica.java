@@ -5,7 +5,8 @@ import java.util.List;
 import javax.persistence.*;
 
 @Entity
-@DiscriminatorValue("JURIDICA")
+@Table(name = "persona_juridica")
+@PrimaryKeyJoinColumn(name = "persona_id")
 public class PersonaJuridica extends Persona {
     @Enumerated(EnumType.STRING) @Column(name = "razon_social") private RazonSocial razonSocial;
     @Column(name = "rubro") private String rubro;

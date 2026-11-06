@@ -1,0 +1,95 @@
+// Ambos archivos se llaman logistica.proto porque el único que expone funciones
+// remotas al servidor es Logística.
+
+syntax = "proto3";
+
+package logistica;
+
+option java_multiple_files = true;
+option java_package = "logistica.grpc";
+option java_outer_classname = "LogisticaProto";
+
+// Servicio expuesto por logistica-service
+// Es el equivalente a declarar los endpoints en una API REST
+service LogisticaService {
+  rpc ObtenerEstadoRuta (RutaRequest) returns (RutaResponse);
+  rpc TrazarRuta (TrazarRutaRequest) returns (TrazarRutaResponse);
+  rpc ObtenerUbicacionCamiones (UbicacionCamionesRequest) returns (UbicacionCamionesResponse);
+  rpc ReportarEntrega (ReportarEntregaRequest) returns (ReportarEntregaResponse);
+}
+
+// Servicio que expone donaciones-service (servidor) y consume logistica-service (cliente)
+service DonacionesService {
+  rpc CambiarEstadoDonacion (CambiarEstadoRequest) returns (CambiarEstadoResponse);
+}
+
+// Una fila por donación: el camión que la lleva y dónde está
+message UbicacionCamion {
+  int64 idDonacion = 1;
+  string patente = 2;
+  double latitud = 3;
+  double longitud = 4;
+  double velocidad = 5;
+  string ultimaActualizacion = 6;   // ISO-8601, como fechaEntrega
+}
+
+message UbicacionCamionesResponse {
+  repeated UbicacionCamion ubicaciones = 1;
+}
+
+// Ids de las donaciones EN_TRASLADO de un donante o de una entidad
+message UbicacionCamionesRequest {
+  repeated int64 idsDonaciones = 1;
+}
+
+// Estructura binaria para consultar un envío
+message RutaRequest {
+  string idRuta = 1;
+}
+
+// Respuesta con los detalles del envío
+// Protobuf a diferencia de como se haría en un json "transforma" las claves en texto
+// a números binarios para que viajen más rápido.
+// Ejemplo "idRuta" ocupa 7 bytes mientras que "1" solo 1 byte.
+message RutaResponse {
+  string idRuta = 1;
+  string estado = 2;
+  string idCamion = 3;
+  string fechaEntrega = 4;
+}
+
+// Estructura binaria para solicitar trazado de envío
+message TrazarRutaRequest {
+  string idDonacion = 1;
+  string idEntidadOrigen = 2;
+  string idEntidadDestino = 3;
+}
+
+// Respuesta al trazar el envío
+message TrazarRutaResponse {
+  string idRuta = 1;
+  bool exito = 2;
+  string mensaje = 3;
+}
+
+// Mensajes para CambiarEstadoDonacion
+message CambiarEstadoRequest {
+  int64 idDonacion = 1;
+  string nuevoEstado = 2;
+  string detallesAdicionales = 3;
+}
+
+message CambiarEstadoResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message ReportarEntregaRequest {
+  int64 entrega_id = 1;
+  bool exito = 2;
+}
+
+message ReportarEntregaResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}

@@ -15,7 +15,11 @@ import java.net.http.HttpResponse;
  */
 public class LanzadorPlanificacion {
 
-  private static final String URL = "http://localhost:7070/api/planificaciones";
+  private static final String URL =
+      System.getenv().getOrDefault(
+          "LOGISTICA_URL",
+          "http://localhost:7070"
+      ) + "/api/planificaciones";
 
   public static void main(String[] args) {
     try {

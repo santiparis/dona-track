@@ -1,0 +1,67 @@
+{{#partial "contenido"}}
+    <div class="encabezado">
+        <h1>Importar donantes desde CSV</h1>
+        <p class="muted">Si el correo ya existe se actualiza el donante; si no, se le crea un usuario.</p>
+    </div>
+
+    <form class="card" action="/admin/importacion" method="post" enctype="multipart/form-data">
+        <div class="carga-archivo">
+            <label class="subtitulo">Elegí el archivo CSV
+                <input type="file" name="archivo" accept=".csv,text/csv" required>
+            </label>
+            <p class="hint">Un donante por fila, con el formato de abajo.</p>
+        </div>
+        <div class="row acciones">
+            <button class="btn" type="submit">Importar</button>
+        </div>
+    </form>
+
+    <section class="card">
+        <h2>Formato esperado</h2>
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">TipoPersona</th>
+                        <th scope="col">TipoDoc</th>
+                        <th scope="col">Documento</th>
+                        <th scope="col">Nombre/Razón Social</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>HUMANA</code></td><td><code>DNI</code></td><td><code>12345678</code></td><td>Ana Pérez</td><td>ana@mail.com</td><td>+54 11 5555-5555</td></tr>
+                    <tr><td><code>JURIDICA</code></td><td><code>CUIT</code></td><td><code>30-12345678-9</code></td><td>Arcos Plateados S.A.</td><td>contacto@empresa.com</td><td>+54 11 4444-4444</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{#with resultado}}
+        <section class="card" aria-live="polite">
+            <div class="titulo-con-chip">
+                <h2>Resultado de la importación</h2>
+                <span class="muted">{{fecha}}</span>
+            </div>
+            <div class="estadisticas">
+                <div class="estadistica"><span class="muted">Filas leídas</span><strong>{{leidas}}</strong></div>
+                <div class="estadistica"><span class="muted">Usuarios creados</span><strong>{{creados}}</strong></div>
+                <div class="estadistica"><span class="muted">Actualizados</span><strong>{{actualizados}}</strong></div>
+                <div class="estadistica"><span class="muted">Con error</span><strong>{{conError}}</strong></div>
+            </div>
+            {{#if errores}}
+                <details>
+                    <summary>Ver filas con error</summary>
+                    <ul class="historial">
+                        {{#each errores}}
+                            <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                </details>
+            {{/if}}
+        </section>
+    {{/with}}
+{{/partial}}
+
+{{> layout}}

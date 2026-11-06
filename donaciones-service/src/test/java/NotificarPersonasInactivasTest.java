@@ -14,9 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class NotificarPersonasInactivasTest implements SimplePersistenceTest {
 
@@ -24,8 +21,7 @@ public class NotificarPersonasInactivasTest implements SimplePersistenceTest {
 
     @BeforeEach
     public void setUp() {
-        ContactoPorEmail contactoMock = mock(ContactoPorEmail.class);
-        when(contactoMock.enviar(anyString())).thenReturn(true);
+        ContactoPorEmail contactoMock = new ContactoPorEmail("notificaciones@example.org");
 
         PersonaHumana donanteAusente = new PersonaHumana("Carlos Ausente", "Perez", 40, TipoDoc.DNI, "11111111", Genero.MASCULINO, "Calle 1", List.of(contactoMock), contactoMock, null);
         donanteAusente.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
@@ -33,7 +29,7 @@ public class NotificarPersonasInactivasTest implements SimplePersistenceTest {
         PersonaHumana donanteActivo = new PersonaHumana("Ana Activa", "Lopez", 35, TipoDoc.DNI, "22222222", Genero.FEMENINO, "Calle 2", List.of(contactoMock), contactoMock, null);
         donanteActivo.setUltimaInteraccion(LocalDateTime.now().minusDays(5));
 
-        repositorioPersonas = new RepositorioPersonas(entityManager());
+        repositorioPersonas = new RepositorioPersonas();
         repositorioPersonas.agregar(donanteAusente);
         repositorioPersonas.agregar(donanteActivo);
     }

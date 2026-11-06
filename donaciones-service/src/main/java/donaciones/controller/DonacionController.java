@@ -20,17 +20,26 @@ import donaciones.dto.DonacionRequestDTO;
 import donaciones.dto.DonacionResponseDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.RegistroCambioEstadoDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
+import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
+import logistica.grpc.ReportarEntregaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 public class DonacionController {
   private static final Logger logger = LoggerFactory.getLogger(DonacionController.class);
@@ -39,17 +48,20 @@ public class DonacionController {
   private final RepositorioPersonas personasRepository;
   private final PersonasAdministradorasRepository administradorasRepository;
   private final Notificador notificador;
+  private final LogisticaGrpcClient logisticaGrpcClient;
 
   public DonacionController(
       DonacionRepository donacionesRepository,
       RepositorioPersonas personasRepository,
       PersonasAdministradorasRepository administradorasRepository,
-      Notificador notificador
+      Notificador notificador,
+      LogisticaGrpcClient logisticaGrpcClient
   ) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
     this.administradorasRepository = administradorasRepository;
     this.notificador = notificador;
+    this.logisticaGrpcClient = logisticaGrpcClient;
   }
 
   public void listar(Context ctx) {
@@ -115,7 +127,7 @@ public class DonacionController {
       DonacionPatchDTO dto = ctx.bodyAsClass(DonacionPatchDTO.class);
 
       if (dto.estado() != null) {
-        Donacion donacion = donacionesRepository.buscarPorId(id)
+        Donacion donacion = donacionesRepository.buscarPorIdParaActualizar(id)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación"));
         this.cambiarEstado(donacion, dto);
         ctx.result("Estado de la donación actualizado");
@@ -263,15 +275,11 @@ public class DonacionController {
 
   public void crearDonacion(DonacionRequestDTO dto) {
     List<Bien> bienesDelDominio = this.crearListaBienes(dto.bienes());
+    Persona persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante())
+        .orElseThrow(() -> new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante()));
 
     for (Bien bien : bienesDelDominio) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
-
-      if (persona.isPresent()) {
-        this.donacionesRepository.guardar(new Donacion(persona.get(), bien));
-      } else {
-        throw new IllegalArgumentException("No se encontró el donante con id: " + dto.idDonante());
-      }
+      this.donacionesRepository.guardar(new Donacion(persona, bien));
     }
   }
 
@@ -342,21 +350,20 @@ public class DonacionController {
   }
 
   public void actualizarDonacion(Long id, DonacionRequestDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Bien bienActualizado = null;
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      bienActualizado = this.crearListaBienes(dto.bienes()).get(0);
+    }
+
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
 
     Donacion donacionExistente = donacionOpt.get();
-    Bien bienActualizado = null;
-
-    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
-      List<Bien> bienes = this.crearListaBienes(dto.bienes());
-      bienActualizado = bienes.get(0);
-    }
 
     if (dto.idDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
+      Optional<Persona> persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante());
       if (persona.isPresent()) {
         donacionExistente.actualizarDatos(persona.get(), bienActualizado);
       } else {
@@ -368,17 +375,21 @@ public class DonacionController {
   }
 
   public void actualizarDonacionParcial(Long id, DonacionPatchDTO dto) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Bien bienActualizado = null;
+    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
+      bienActualizado = this.crearListaBienes(dto.bienes()).get(0);
+    }
+
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la donación");
     }
 
     Donacion donacionExistente = donacionOpt.get();
     Persona personaActualizada = null;
-    Bien bienActualizado = null;
 
     if (dto.idDonante() != null) {
-      Optional<Persona> persona = this.personasRepository.buscarPorId(dto.idDonante());
+      Optional<Persona> persona = this.personasRepository.buscarPorIdParaReferencia(dto.idDonante());
       if (persona.isPresent()) {
         personaActualizada = persona.get();
       } else {
@@ -386,20 +397,236 @@ public class DonacionController {
       }
     }
 
-    if (dto.bienes() != null && !dto.bienes().isEmpty()) {
-      List<Bien> bienes = this.crearListaBienes(dto.bienes());
-      bienActualizado = bienes.get(0);
-    }
-
     donacionExistente.actualizarDatos(personaActualizada, bienActualizado);
   }
 
   public void eliminarDonacion(Long id) {
-    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorId(id);
+    Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isPresent()) {
-      donacionesRepository.borrarPorId(id);
+      donacionesRepository.eliminar(donacionOpt.get());
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }
+  }
+
+  public Map<String, Object> donacionNueva(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Registrar donación");
+    model.put("rol", "admin");
+    model.put("seccion", "donacion-nueva");
+
+    // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
+    model.put("busqueda", busqueda);
+    // Persona donante = personasRepository.buscarPorDocumentoOEmail(busqueda);
+    DatosMock.donantes().stream()
+        .filter(d -> d.get("documento").equals(busqueda) || d.get("email").equals(busqueda))
+        .findFirst()
+        .ifPresent(d -> model.put("donante", d));   // MOCK
+
+    // Paso 3: una fila por bien; "+ Agregar bien" recarga con ?filas=N+1 (sin JavaScript)
+    int cantidadFilas = ctx.queryParamAsClass("filas", Integer.class).getOrDefault(3);
+    model.put("filas", IntStream.rangeClosed(1, cantidadFilas)
+        .mapToObj(numero -> Map.of("indice", numero - 1, "numero", numero))
+        .toList());
+    model.put("masFilas", cantidadFilas + 1);
+    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    return model;
+  }
+
+  public void registrarDonacion(Context ctx) {
+    // Sin persistencia todavía: acá se arma la donación con sus bienes (bienes[i].subcategoria, cantidad, ...),
+    // se segmenta por subcategoría y vencimiento, y las donaciones resultantes quedan En depósito
+    ctx.redirect("/admin/donaciones");
+  }
+
+  public Map<String, Object> deposito(Context ctx) {
+    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA|PROXIMA
+    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones en depósito");
+    model.put("rol", "admin");
+    model.put("seccion", "deposito");
+
+    // List<Donacion> enDeposito = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO).toList();
+    List<Map<String, String>> enDeposito = DatosMock.donacionesEnDeposito();   // MOCK
+    model.put("donaciones", enDeposito.stream()
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
+        .filter(d -> vence.isEmpty() || vence.equals(d.get("vencimiento")))
+        .toList());   // MOCK
+    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("categoriaElegida", categoria);
+    model.put("venceElegido", vence);
+
+    // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
+    String idVencida = ctx.queryParam("vencida");
+    enDeposito.stream()
+        .filter(d -> d.get("id").equals(idVencida))
+        .findFirst()
+        .ifPresent(d -> model.put("marcadaVencida", d));   // MOCK
+    return model;
+  }
+
+  public void marcarVencida(Context ctx) {
+    // Sin persistencia todavía: acá la donación ctx.pathParam("id") pasa a Vencida (cambio manual, queda en el historial)
+    ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
+  }
+
+  public Map<String, Object> misDonaciones(Context ctx) {
+    // Los filtros viajan en la URL: ?estado=...&categoria=...&subcategoria=...&subcategoria=...
+    String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
+    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    List<String> subcategorias = ctx.queryParams("subcategoria");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Mis donaciones");
+    model.put("rol", "donante");
+    model.put("seccion", "donaciones");
+
+    List<Donacion> propias = donacionesRepository.buscarPorUsuarioDonante(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
+    List<Map<String, String>> donaciones = propias.stream()
+        .map(this::donacionParaVista)
+        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
+        .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.get("subcategoria")))
+        .toList();
+    model.put("donaciones", donaciones);
+    model.put("total", donaciones.size());
+
+    model.put("estados", DatosMock.estados());   // MOCK
+    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("estadoElegido", estado);
+    model.put("categoriaElegida", categoria);
+    // Las subcategorías se muestran recién cuando se eligió una categoría
+    model.put("subcategorias", DatosMock.subcategorias(categoria).stream()
+        .map(s -> Map.of("valor", s.get("valor"), "texto", s.get("texto"), "elegida", subcategorias.contains(s.get("valor"))))
+        .toList());   // MOCK
+
+    // ?historial={id} muestra los cambios de estado de esa donación
+    String idHistorial = ctx.queryParam("historial");
+    propias.stream()
+        .filter(d -> d.getId().toString().equals(idHistorial))
+        .findFirst()
+        .ifPresent(d -> model.put("historial", Map.of(
+            "bien", d.getBien().getSubcategoria().nombre(),
+            "cantidad", d.getBien().getCantidad(),
+            "cambios", d.getHistorialEstados().stream()
+                .map(cambio -> Map.of(
+                    "fecha", Objects.toString(cambio.fecha(), ""),
+                    "descripcion", textoEstado(cambio.estadoNuevo()) + ": " + Objects.toString(cambio.justificacion(), "")))
+                .toList())));
+
+    return model;
+  }
+
+  public Map<String, Object> asignadasAEntidad(Context ctx) {
+    // El filtro viaja en la URL: ?estado=...
+    String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones asignadas");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+
+    model.put("donaciones", donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
+        .map(this::donacionParaVista)
+        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
+        .toList());
+    model.put("estadoElegido", estado);
+    // A la entidad solo le llegan donaciones ya asignadas: no tiene sentido filtrar por En depósito ni Vencida
+    model.put("estados", DatosMock.estados().stream()
+        .filter(e -> !List.of("EN_DEPOSITO", "VENCIDA").contains(e.get("valor")))
+        .toList());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> recepcion(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Confirmar recepción");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+
+    model.put("donacion", donacionParaVista(donacionDeLaEntidad(ctx)));
+    return model;
+  }
+
+  public void confirmarRecepcion(Context ctx) {
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
+    try {
+
+      // Simplemente notificamos a Logística por gRPC
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
+
+      if (!response.getExito()) {
+        ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
+        return;
+      }
+
+      ctx.redirect("/entidad/donaciones");
+    } catch (Exception e) {
+      ctx.status(500).result("Error al procesar la confirmación: " + e.getMessage());
+    }
+  }
+
+  public void informarNoRecibida(Context ctx) {
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
+    try {
+
+      // Simplemente notificamos a Logística por gRPC
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false);
+
+      if (!response.getExito()) {
+        ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
+        return;
+      }
+
+      ctx.redirect("/entidad/donaciones");
+    } catch (Exception e) {
+      ctx.status(500).result("Error al procesar el rechazo: " + e.getMessage());
+    }
+  }
+
+  private Donacion donacionDeLaEntidad(Context ctx) {
+    String id = ctx.pathParam("id");
+    return donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
+        .filter(d -> d.getId().toString().equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new);
+  }
+
+  private Map<String, String> donacionParaVista(Donacion donacion) {
+    Bien bien = donacion.getBien();
+    Map<String, String> fila = new HashMap<>();
+    fila.put("id", donacion.getId().toString());
+    fila.put("bien", bien.getSubcategoria().nombre());
+    fila.put("cantidad", (bien.getCantidad() + " " + Objects.toString(bien.getUnidad(), "")).trim());
+    fila.put("fecha", Objects.toString(donacion.getFecha(), ""));
+    fila.put("actualizado", donacion.getHistorialEstados().stream()
+        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.util.Date::compareTo)
+        .map(java.util.Date::toString).orElse(fila.get("fecha")));
+    fila.put("estado", donacion.getEstado().name());
+    fila.put("estadoTexto", textoEstado(donacion.getEstado()));
+    fila.put("categoria", bien.getSubcategoria().getCategoria().name());
+    fila.put("subcategoria", bien.getSubcategoria().name());
+    fila.put("donante", donacion.getDonante().getNombre());
+    var entidad = donacion.getEntidadBeneficiaria();
+    fila.put("entidad", entidad == null ? "—" : entidad.getRazonSocial());
+    return fila;
+  }
+
+  private String textoEstado(EstadoDonacion estado) {
+    return DatosMock.estados().stream().filter(e -> e.get("valor").equals(estado.name()))
+        .map(e -> e.get("texto")).findFirst().orElse(estado.name());
+  }
+
+  public Map<String, Object> entregadas() {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Donaciones entregadas");
+    model.put("seccion", "entregadas");
+    // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
+    model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    return model;
   }
 }

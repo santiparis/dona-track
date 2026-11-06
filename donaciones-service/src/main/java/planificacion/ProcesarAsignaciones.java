@@ -2,14 +2,15 @@ package planificacion;
 
 import donaciones.controller.AsignacionesController;
 import donaciones.controller.Notificador;
+import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.repository.NotificacionRepository;
-import donaciones.retrofit_client.RetrofitConfig;
+import donaciones.repository.SugerenciaAsignacionRepository;
 
 import java.util.List;
 
@@ -23,17 +24,25 @@ public class ProcesarAsignaciones {
         List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
     );
 
+    // Instanciar el cliente gRPC conectando al puerto de logistica-service (9090)
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+
     AsignacionesController controller = new AsignacionesController(
         donacionRepository,
         entidadRepository,
         sugerenciaRepository,
-        new RetrofitConfig().logisticaAPICalls(),
+        logisticaGrpcClient,
         new Notificador(new NotificacionRepository()),
         organizadorAsignaciones
     );
 
-    controller.limpiarSugerencias(); // TODO: Cuando tengamos persistencia esto no conviene, tenemos que revisar y actualizar las sugerencias que ya existan para no saturar la DB.
-    var sugerencias = controller.procesarDonacionesEnDeposito();
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+    try {
+      transaccion.withTransaction(controller::limpiarSugerencias);
+    } finally {
+      transaccion.perThreadEntityManagerAccess().dispose();
+    }
+    var sugerencias = controller.procesarDonacionesEnDepositoEnLotes(25);
 
     System.out.println("==== Inicio de procesamiento de asignaciones ====");
     if (sugerencias.isEmpty()) {
@@ -41,7 +50,7 @@ public class ProcesarAsignaciones {
       return;
     }
 
-    System.out.println("Total de sugerencias guardadas: " + controller.obtenerSugerenciasGuardadas().size());
+    System.out.println("Total de sugerencias guardadas: " + sugerencias.size());
     System.out.println("==== Fin de procesamiento de asignaciones ====");
   }
 }

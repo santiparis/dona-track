@@ -1,0 +1,99 @@
+{{#partial "contenido"}}
+    <h1>Necesidades materiales</h1>
+
+    {{!-- Con necesidad.id el formulario edita esa necesidad; sin id, da de alta una nueva --}}
+    <form class="card" action="/entidad/necesidades{{#if necesidad.id}}/{{necesidad.id}}{{/if}}" method="post">
+        <h2>{{#if necesidad.id}}Editar necesidad{{else}}Registrar necesidad{{/if}}</h2>
+
+        <nav class="tabs" aria-label="Tipo de necesidad">
+            <a class="tab {{#if (eq tipo "EXTRAORDINARIA")}}on{{/if}}" href="/entidad/necesidades?tipo=EXTRAORDINARIA{{#if necesidad.id}}&editar={{necesidad.id}}{{/if}}">Extraordinaria</a>
+            <a class="tab {{#if (eq tipo "RECURRENTE")}}on{{/if}}" href="/entidad/necesidades?tipo=RECURRENTE{{#if necesidad.id}}&editar={{necesidad.id}}{{/if}}">Recurrente</a>
+        </nav>
+        <input type="hidden" name="tipo" value="{{tipo}}">
+
+        {{#if (eq tipo "RECURRENTE")}}
+            <p class="hint">Consumo habitual: la cantidad objetivo se renueva cada período.</p>
+        {{else}}
+            <p class="hint">Situación excepcional (mudanza, inundación, incendio). Se satisface al alcanzar la cantidad, aunque llegue en partes.</p>
+        {{/if}}
+
+        <div class="f2">
+            <label>Subcategoría
+                <select name="subcategoria">
+                    {{#each categorias}}
+                        <optgroup label="{{texto}}">
+                            {{#each subcategorias}}
+                                <option value="{{valor}}" {{#if (eq valor ../../necesidad.subcategoria)}}selected{{/if}}>{{texto}}</option>
+                            {{/each}}
+                        </optgroup>
+                    {{/each}}
+                </select>
+            </label>
+            <label>Cantidad<input name="cantidad" type="number" min="1" value="{{necesidad.cantidad}}" required></label>
+        </div>
+        <label>Descripción breve<input name="descripcion" placeholder="Ej: reposición de bancos tras la inundación" value="{{necesidad.descripcion}}"></label>
+        <div class="f2">
+            <label>Desde<input name="fechaInicio" type="date"></label>
+            {{#if (eq tipo "RECURRENTE")}}
+                <label>Período
+                    <select name="periodo">
+                        <option value="SEMANAL" {{#if (eq necesidad.periodo "SEMANAL")}}selected{{/if}}>Semanal</option>
+                        <option value="MENSUAL" {{#if (eq necesidad.periodo "MENSUAL")}}selected{{/if}}>Mensual</option>
+                    </select>
+                </label>
+            {{else}}
+                <label>Hasta (opcional)<input name="fechaFin" type="date"></label>
+            {{/if}}
+        </div>
+        <div class="row acciones">
+            {{#if necesidad.id}}<a class="btn2" href="/entidad/necesidades">Cancelar</a>{{/if}}
+            <button class="btn" type="submit">Guardar necesidad</button>
+        </div>
+    </form>
+
+    {{!-- Mientras se edita una necesidad la tabla no se muestra, así queda claro qué se está editando --}}
+    {{#unless necesidad.id}}
+    {{#if necesidades}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Subcategoría</th>
+                        <th scope="col">Descripción</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Avance</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each necesidades}}
+                        <tr>
+                            <td>{{subcategoriaTexto}}</td>
+                            <td>{{descripcion}}</td>
+                            <td><span class="chip">{{tipoTexto}}</span></td>
+                            <td>
+                                <div class="avance">
+                                    <div class="bar" role="img" aria-label="{{avance}}"><span style="width: {{porcentaje}}%"></span></div>
+                                    <span>{{avance}}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="acciones-tabla">
+                                    <a class="btn2 chico" href="/entidad/necesidades?editar={{id}}">Editar</a>
+                                    <form action="/entidad/necesidades/{{id}}/eliminar" method="post">
+                                        <button class="btn2 chico peligro" type="submit">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{else}}
+        <p class="muted">Todavía no registraste necesidades.</p>
+    {{/if}}
+    {{/unless}}
+{{/partial}}
+
+{{> layout}}

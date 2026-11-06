@@ -5,7 +5,11 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitConfig {
 
-  private String logisticaBaseUrl = "http://localhost:7070/";
+  private String logisticaBaseUrl =
+      System.getenv().getOrDefault(
+          "LOGISTICA_URL",
+          "http://localhost:7070/"
+      );
 
   public void setLogisticaBaseUrl(String url) {
     this.logisticaBaseUrl = url;

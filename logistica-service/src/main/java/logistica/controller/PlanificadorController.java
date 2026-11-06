@@ -5,6 +5,7 @@ import logistica.domain.Camion;
 import logistica.domain.DonacionEncolada;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
@@ -28,15 +29,18 @@ public class PlanificadorController {
   private final RutasRepository rutasRepository;
   private final DonacionesRepository donacionesRepository;
   private final ClientePlanificador clientePlanificador;
+  private final NotificadorEntregas notificadorEntregas;
 
   public PlanificadorController(CamionesRepository camionesRepository,
                                 RutasRepository rutasRepository,
                                 DonacionesRepository donacionesRepository,
-                                ClientePlanificador clientePlanificador) {
+                                ClientePlanificador clientePlanificador,
+                                NotificadorEntregas notificadorEntregas) {
     this.camionesRepository = camionesRepository;
     this.rutasRepository = rutasRepository;
     this.donacionesRepository = donacionesRepository;
     this.clientePlanificador = clientePlanificador;
+    this.notificadorEntregas = notificadorEntregas;
   }
 
   public record MensajeResponse(String mensaje) { }
@@ -71,11 +75,12 @@ public class PlanificadorController {
     try {
       var body = ctx.bodyAsClass(PlanificacionCallbackRequest.class);
 
-      // se arman todas antes de guardar ninguna: el callback es un plan completo,
-      // guardarlo a medias dejaria donaciones fuera del pool y sin ruta
       List<Ruta> rutas = body.asignaciones().stream().map(this::armarRuta).toList();
       rutas.forEach(rutasRepository::agregar);
       donacionesRepository.agregarTodos(body.donacionesNoAsignadas());
+
+      // Recorremos las rutas recién planificadas y notificamos sus entregas a donaciones-service
+      rutas.forEach(ruta -> notificadorEntregas.avisarEnTraslado(ruta.getEntregas()));
 
       ctx.status(201).json(rutas);
     } catch (IllegalArgumentException e) {

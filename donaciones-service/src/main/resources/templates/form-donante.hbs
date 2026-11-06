@@ -1,0 +1,61 @@
+{{!-- Campos de una persona donante, compartidos por el registro público y el alta que hace el admin.
+      Usa "tipo" (HUMANA | JURIDICA) y "rol" del model de la página que lo incluye. --}}
+{{#if (eq tipo "HUMANA")}}
+    <div class="bloque">
+        <h2>Persona humana donante</h2>
+        <div class="f2">
+            <label>Nombre<input name="nombre" value="{{nombre}}" maxlength="255" required></label>
+            <label>Apellido<input name="apellido" value="{{apellido}}" maxlength="255" required></label>
+            <label>Tipo de documento<select name="tipoDoc"><option value="DNI">DNI</option></select></label>
+            <label>Número de documento<input name="documento" value="{{documento}}" maxlength="255" required></label>
+            <label>Edad<input name="edad" type="number" min="0" max="150" value="{{edad}}"></label>
+            <label>Género
+                <select name="genero">
+                    <option value="FEMENINO" {{#if (eq genero "FEMENINO")}}selected{{/if}}>Femenino</option>
+                    <option value="MASCULINO" {{#if (eq genero "MASCULINO")}}selected{{/if}}>Masculino</option>
+                    <option value="NO_BINARIO" {{#if (eq genero "NO_BINARIO")}}selected{{/if}}>No binario</option>
+                </select>
+            </label>
+        </div>
+        <label>Dirección<input name="direccion" value="{{direccion}}" maxlength="255"></label>
+    </div>
+{{/if}}
+
+{{#if (eq tipo "JURIDICA")}}
+    <div class="bloque">
+        <h2>Persona jurídica donante</h2>
+        <label>Razón social<input name="razonSocial" value="{{razonSocial}}" maxlength="255" required></label>
+        <div class="f2">
+            <label>Tipo
+                <select name="tipoJuridica">
+                    <option value="GUBERNAMENTAL" {{#if (eq tipoJuridica "GUBERNAMENTAL")}}selected{{/if}}>Gubernamental</option>
+                    <option value="ONG" {{#if (eq tipoJuridica "ONG")}}selected{{/if}}>ONG</option>
+                    <option value="EMPRESA" {{#if (eq tipoJuridica "EMPRESA")}}selected{{/if}}>Empresa</option>
+                    <option value="INSTITUCION" {{#if (eq tipoJuridica "INSTITUCION")}}selected{{/if}}>Institución</option>
+                </select>
+            </label>
+            <label>Rubro<input name="rubro" value="{{rubro}}" maxlength="255"></label>
+            <label>CUIT<input name="documento" value="{{documento}}" maxlength="255" placeholder="30-12345678-9" required></label>
+        </div>
+        {{#if (eq rol "admin")}}
+            <label>DNI de las personas representantes habilitadas<textarea name="representantes"></textarea><span class="hint">Uno por línea.</span></label>
+        {{else}}
+            <p class="hint">La administración gestiona las personas representantes habilitadas.</p>
+        {{/if}}
+    </div>
+{{/if}}
+
+<fieldset>
+    <legend>Medios de contacto</legend>
+    <div class="f2">
+        <label>Correo electrónico<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
+        <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="255"></label>
+        <label>WhatsApp (opcional)<input name="whatsapp" type="tel" value="{{whatsapp}}" maxlength="255"></label>
+    </div>
+    <p class="subtitulo">Medio predeterminado para las notificaciones</p>
+    <div class="row">
+        <label class="radio"><input type="radio" name="medio" value="EMAIL" {{#unless medio}}checked{{/unless}}{{#if (eq medio "EMAIL")}}checked{{/if}}>Correo</label>
+        <label class="radio"><input type="radio" name="medio" value="SMS" {{#if (eq medio "SMS")}}checked{{/if}}>SMS</label>
+        <label class="radio"><input type="radio" name="medio" value="WHATSAPP" {{#if (eq medio "WHATSAPP")}}checked{{/if}}>WhatsApp</label>
+    </div>
+</fieldset>

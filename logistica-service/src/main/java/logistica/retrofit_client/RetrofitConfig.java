@@ -5,8 +5,15 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitConfig {
 
-  private String donacionesBaseUrl = "http://localhost:8081/";
-  private String planificadorBaseUrl = "http://localhost:9090/";
+  private String donacionesBaseUrl =
+      System.getenv().getOrDefault(
+          "DONACIONES_URL", "http://localhost:8081/"
+      );
+
+  private String planificadorBaseUrl =
+      System.getenv().getOrDefault(
+          "PLANIFICADOR_URL", "http://localhost:9090/"
+      );
 
   public void setDonacionesBaseUrl(String url) {
     this.donacionesBaseUrl = url;

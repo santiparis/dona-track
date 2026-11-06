@@ -3,12 +3,16 @@ package logistica.controller;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import logistica.domain.Camion;
+import logistica.domain.EstadoCamion;
 import logistica.dto.CamionDTO;
 import logistica.dto.LocalizacionDTO;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 import logistica.repository.CamionesRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -31,14 +35,21 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @BeforeEach
   void setUp() {
+    setupTransaction();
+
     camionesRepository = new CamionesRepository();
     controller = new CamionesController(camionesRepository);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
 
-    camion = new Camion("AB123CD", 10, 2, 1000);
+    camion = new Camion("TEST-" + UUID.randomUUID(), 10, 2, 1000);
     camionesRepository.agregar(camion);
     // el id lo genera la base al insertar, no se puede asumir que es 1
     camionId = camion.getId();
+  }
+
+  @AfterEach
+  void tearDown() {
+    tearDownTransaction();
   }
 
   @Test
@@ -50,7 +61,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void postCamionesGuardaElCamionYDevuelveCreated() {
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, EstadoCamion.DISPONIBLE));
 
     controller.postCamiones(ctx);
 
@@ -79,7 +90,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
   @Test
   void putCamionActualizaLosDatosDelCamion() {
     when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, EstadoCamion.NO_DISPONIBLE));
 
     controller.putCamion(ctx);
 
@@ -89,12 +100,13 @@ public class CamionesControllerTest implements SimplePersistenceTest {
     assertEquals(12, actualizado.getVolumen());
     assertEquals(2.5, actualizado.getAltura());
     assertEquals(1500, actualizado.getCargaMax());
+    assertTrue(!actualizado.estaDisponible());
   }
 
   @Test
   void putCamionDevuelveNotFoundCuandoNoExiste() {
     when(ctx.pathParam("id")).thenReturn("999999");
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, EstadoCamion.DISPONIBLE));
 
     controller.putCamion(ctx);
 
@@ -122,7 +134,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionGuardaCoordenadasYVelocidad() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 47.5));
 
     controller.actualizarLocalizacion(ctx);
@@ -135,7 +147,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaCoordenadaEsInvalida() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(120, -58.42, 20));
 
     controller.actualizarLocalizacion(ctx);
@@ -146,7 +158,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaVelocidadEsNegativa() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, -5));
 
     controller.actualizarLocalizacion(ctx);
@@ -158,7 +170,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveNotFoundSiElCamionNoExiste() {
-    when(ctx.pathParam("id")).thenReturn("999999");
+    when(ctx.pathParam("patente")).thenReturn("ZZ999ZZ");
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 20));
 
     controller.actualizarLocalizacion(ctx);

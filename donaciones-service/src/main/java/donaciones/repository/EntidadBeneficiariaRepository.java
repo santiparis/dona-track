@@ -1,34 +1,49 @@
 package donaciones.repository;
 
 import donaciones.domain.EntidadBeneficiaria;
-import donaciones.persistence.JpaContext;
-import donaciones.persistence.JpaRepository;
-import javax.persistence.EntityManager;
+import donaciones.db.TransaccionPorRequest;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
+
 import java.util.List;
 import java.util.Optional;
 
-public class EntidadBeneficiariaRepository extends JpaRepository {
-  public EntidadBeneficiariaRepository() { this(JpaContext.INSTANCE.entityManager()); }
-  public EntidadBeneficiariaRepository(EntityManager entityManager) { super(entityManager); }
+public class EntidadBeneficiariaRepository implements WithSimplePersistenceUnit {
   public List<EntidadBeneficiaria> obtenerTodas() {
-    List<EntidadBeneficiaria> entidades = entityManager().createQuery("from EntidadBeneficiaria", EntidadBeneficiaria.class).getResultList();
-    entidades.forEach(this::reconstruirContactos);
-    return entidades;
+    return createQuery("from EntidadBeneficiaria", EntidadBeneficiaria.class).getResultList();
   }
-  public Optional<EntidadBeneficiaria> buscarPorId(Long id) {
-    EntidadBeneficiaria entidad = entityManager().find(EntidadBeneficiaria.class, id);
-    reconstruirContactos(entidad);
-    return Optional.ofNullable(entidad);
-  }
-  public Optional<EntidadBeneficiaria> obtenerPorId(Long id) { return buscarPorId(id); }
-  public void guardar(EntidadBeneficiaria entidad) { enTransaccion(() -> { if (entidad.getId() == null) entityManager().persist(entidad); else entityManager().merge(entidad); }); }
-  public void eliminarPorId(Long id) { enTransaccion(() -> { EntidadBeneficiaria e = entityManager().find(EntidadBeneficiaria.class, id); if (e != null) entityManager().remove(e); }); }
 
-  private void reconstruirContactos(EntidadBeneficiaria entidad) {
-    if (entidad != null && entidad.getId() != null) {
-      List<donaciones.domain.notificacion.Contacto> contactos = new ContactoRepository(entityManager())
-          .buscarPorNotificable(entidad.getId(), "ENTIDAD");
-      if (!contactos.isEmpty()) entidad.reconstruirContactos(contactos);
+    public Optional<EntidadBeneficiaria> buscarPorUsuario(Long usuarioId) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        return createQuery("from EntidadBeneficiaria p where p.usuario.id = :usuarioId", EntidadBeneficiaria.class)
+                .setParameter("usuarioId", usuarioId)
+                .getResultStream()
+                .findFirst();
     }
+
+
+  public Optional<EntidadBeneficiaria> buscarPorId(Long id) {
+    return Optional.ofNullable(find(EntidadBeneficiaria.class, id));
+  }
+
+  public Optional<EntidadBeneficiaria> buscarPorIdParaActualizar(Long id) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return Optional.ofNullable(find(EntidadBeneficiaria.class, id));
+  }
+
+  public Optional<EntidadBeneficiaria> obtenerPorId(Long id) { return buscarPorId(id); }
+
+  public void guardar(EntidadBeneficiaria entidad) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    if (entidad.getId() == null) persist(entidad);
+  }
+
+  public void eliminarPorId(Long id) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    buscarPorIdParaActualizar(id).ifPresent(this::remove);
+  }
+
+  public void eliminar(EntidadBeneficiaria entidad) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    remove(entidad);
   }
 }

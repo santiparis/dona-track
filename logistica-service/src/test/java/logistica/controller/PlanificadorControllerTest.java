@@ -5,6 +5,8 @@ import io.javalin.http.Context;
 import logistica.domain.Camion;
 import logistica.domain.DonacionEncolada;
 import logistica.domain.Ruta;
+import logistica.grpc.DonacionesGrpcClient;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
@@ -12,10 +14,12 @@ import logistica.repository.RutasRepository;
 import logistica.retrofit_client.PlanificacionCallbackRequest;
 import logistica.retrofit_client.PlanificacionCallbackRequest.AsignacionCamion;
 import logistica.retrofit_client.PlanificacionCallbackRequest.ParadaPlanificada;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,32 +34,43 @@ import static org.mockito.Mockito.when;
 // usa un CamionesRepository real, asi que necesita una transaccion: la abre el mixin
 public class PlanificadorControllerTest implements SimplePersistenceTest {
 
+  private static final AtomicLong IDS_DONACIONES = new AtomicLong();
+
   private CamionesRepository camionesRepository;
   private RutasRepository rutasRepository;
   private DonacionesRepository donacionesRepository;
   private ClientePlanificador clientePlanificador;
   private PlanificadorController controller;
+  private NotificadorEntregas notificadorEntregas;
   private Context ctx;
 
   @BeforeEach
   void setUp() {
+    setupTransaction();
+
     camionesRepository = new CamionesRepository();
     camionesRepository.agregar(new Camion("AB123CD", 10, 2, 1000));
     rutasRepository = new RutasRepository();
     donacionesRepository = new DonacionesRepository();
     clientePlanificador = mock(ClientePlanificador.class);
+    notificadorEntregas =  mock(NotificadorEntregas.class);
 
     controller = new PlanificadorController(
-        camionesRepository, rutasRepository, donacionesRepository, clientePlanificador);
+        camionesRepository, rutasRepository, donacionesRepository, clientePlanificador, notificadorEntregas);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
+  }
+
+  @AfterEach
+  void tearDown() {
+    tearDownTransaction();
   }
 
   // ---------- planificar ----------
 
   @Test
   void planificarEnviaLasPendientesYLasSacaDelPoolSiElPlanificadorConfirma() {
-    donacionesRepository.agregar(unaDonacion(1L));
-    donacionesRepository.agregar(unaDonacion(2L));
+    donacionesRepository.agregar(unaDonacion());
+    donacionesRepository.agregar(unaDonacion());
     when(clientePlanificador.enviarAPlanificar(anyList(), anyList())).thenReturn(true);
 
     controller.planificar(ctx);
@@ -66,7 +81,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
 
   @Test
   void planificarNoSacaNadaDelPoolSiElPlanificadorNoConfirma() {
-    donacionesRepository.agregar(unaDonacion(1L));
+    donacionesRepository.agregar(unaDonacion());
     when(clientePlanificador.enviarAPlanificar(anyList(), anyList())).thenReturn(false);
 
     controller.planificar(ctx);
@@ -85,7 +100,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
   @Test
   void planificarRespetaElLimiteDeCienDonacionesPorBatch() {
     for (int i = 0; i < 150; i++) {
-      donacionesRepository.agregar(unaDonacion((long) i));
+      donacionesRepository.agregar(unaDonacion());
     }
     when(clientePlanificador.enviarAPlanificar(anyList(), anyList())).thenReturn(true);
 
@@ -99,7 +114,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
 
   @Test
   void planificarDevuelveBadGatewaySiNoSePuedeContactarAlPlanificador() {
-    donacionesRepository.agregar(unaDonacion(1L));
+    donacionesRepository.agregar(unaDonacion());
     when(clientePlanificador.enviarAPlanificar(anyList(), anyList()))
         .thenThrow(new IllegalStateException("No se pudo contactar al planificador"));
 
@@ -115,7 +130,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
   @Test
   void obtenerRutasCreaLaRutaConSuEntregaYLaGuarda() {
     when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
-        .thenReturn(callbackCon("AB123CD", unaDonacion(1L)));
+        .thenReturn(callbackCon("AB123CD", unaDonacion()));
 
     controller.obtenerRutas(ctx);
 
@@ -128,7 +143,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
 
   @Test
   void obtenerRutasReencolaLasDonacionesNoAsignadas() {
-    var noAsignada = unaDonacion(2L);
+    var noAsignada = unaDonacion();
     when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
         .thenReturn(new PlanificacionCallbackRequest(List.of(), List.of(noAsignada)));
 
@@ -150,7 +165,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
   @Test
   void obtenerRutasDevuelveNotFoundCuandoElCamionNoExiste() {
     when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
-        .thenReturn(callbackCon("PATENTE-INEXISTENTE", unaDonacion(1L)));
+        .thenReturn(callbackCon("PATENTE-INEXISTENTE", unaDonacion()));
 
     controller.obtenerRutas(ctx);
 
@@ -159,8 +174,8 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
 
   @Test
   void obtenerRutasNoGuardaNadaSiUnCamionDelPlanNoExiste() {
-    var asignacionValida = new AsignacionCamion("AB123CD", List.of(new ParadaPlanificada(List.of(unaDonacion(1L)))));
-    var asignacionRota = new AsignacionCamion("NO-EXISTE", List.of(new ParadaPlanificada(List.of(unaDonacion(2L)))));
+    var asignacionValida = new AsignacionCamion("AB123CD", List.of(new ParadaPlanificada(List.of(unaDonacion()))));
+    var asignacionRota = new AsignacionCamion("NO-EXISTE", List.of(new ParadaPlanificada(List.of(unaDonacion()))));
     when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
         .thenReturn(new PlanificacionCallbackRequest(List.of(asignacionValida, asignacionRota), List.of()));
 
@@ -174,7 +189,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
   @Test
   void lasDonacionesQueQuedaronEnUnaRutaNoVuelvenAPlanificarse() {
     when(ctx.bodyAsClass(PlanificacionCallbackRequest.class))
-        .thenReturn(callbackCon("AB123CD", unaDonacion(1L)));
+        .thenReturn(callbackCon("AB123CD", unaDonacion()));
     controller.obtenerRutas(ctx);
 
     controller.planificar(ctx);
@@ -184,8 +199,8 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     verify(clientePlanificador, never()).enviarAPlanificar(anyList(), anyList());
   }
 
-  private DonacionEncolada unaDonacion(Long id) {
-    return new DonacionEncolada(id, 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
+  private DonacionEncolada unaDonacion() {
+    return new DonacionEncolada(IDS_DONACIONES.incrementAndGet(), 1, "kg", "Av. Siempre Viva 742", "Comedor Sol");
   }
 
   private PlanificacionCallbackRequest callbackCon(String patente, DonacionEncolada donacionEncolada) {

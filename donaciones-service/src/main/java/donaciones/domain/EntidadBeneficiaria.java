@@ -1,5 +1,7 @@
 package donaciones.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import donaciones.domain.donante.Usuario;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 
@@ -7,6 +9,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "entidad_beneficiaria")
@@ -16,12 +19,18 @@ public class EntidadBeneficiaria implements Notificable {
     @Column(name = "razon_social") private String razonSocial;
     @Column(name = "direccion") private String direccion;
     @Column(name = "telefono") private String telefono;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "usuario_id", unique = true)
+    private Usuario usuario;
     @ElementCollection @CollectionTable(name = "correo_representante", joinColumns = @JoinColumn(name = "entidad_id"))
     @Column(name = "correo") private List<String> correosRepresentantes = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "entidad_id")
     private List<Necesidad> necesidades = new ArrayList<>();
-    @Transient private List<Contacto> contactos = new ArrayList<>();
-    @Transient private Contacto medioPredeterminado;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "notificable_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "tipo_notificable = 'ENTIDAD'")
+    @OrderBy("id")
+    private List<Contacto> contactos = new ArrayList<>();
     @OneToMany(mappedBy = "entidadBeneficiaria") private List<Donacion> donacionesRecibidas = new ArrayList<>();
 
     protected EntidadBeneficiaria() { }
@@ -32,10 +41,22 @@ public class EntidadBeneficiaria implements Notificable {
             String telefono,
             List<String> correosRepresentantes
     ) {
+        this(razonSocial, direccion, telefono, correosRepresentantes, null);
+    }
+
+    public EntidadBeneficiaria(
+            String razonSocial,
+            String direccion,
+            String telefono,
+            List<String> correosRepresentantes,
+            Usuario usuario
+    ) {
         this.razonSocial = razonSocial;
         this.direccion = direccion;
         this.telefono = telefono;
         this.correosRepresentantes = correosRepresentantes;
+        this.usuario = usuario;
+        this.contactos.forEach(contacto -> contacto.identificarNotificable("ENTIDAD"));
     }
 
     public EntidadBeneficiaria(
@@ -46,11 +67,31 @@ public class EntidadBeneficiaria implements Notificable {
             List<Contacto> contactos,
             Contacto medioPredeterminado
     ) {
-        this(razonSocial, direccion, telefono, correosRepresentantes);
+        this(razonSocial, direccion, telefono, correosRepresentantes, contactos, medioPredeterminado, null);
+    }
+
+    public EntidadBeneficiaria(
+            String razonSocial,
+            String direccion,
+            String telefono,
+            List<String> correosRepresentantes,
+            List<Contacto> contactos,
+            Contacto medioPredeterminado,
+            Usuario usuario
+    ) {
+        this(razonSocial, direccion, telefono, correosRepresentantes, usuario);
         if (contactos != null) {
             this.contactos.addAll(contactos);
+            this.contactos.forEach(contacto -> contacto.identificarNotificable("ENTIDAD"));
         }
-        this.medioPredeterminado = medioPredeterminado;
+        if (medioPredeterminado != null) {
+            this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
+        }
+    }
+
+    @JsonIgnore
+    public Usuario getUsuario() {
+        return usuario;
     }
 
     public String getRazonSocial() {
@@ -99,23 +140,26 @@ public class EntidadBeneficiaria implements Notificable {
         return this.contactos;
     }
 
-    public void reconstruirContactos(List<Contacto> contactos) {
-        this.contactos = new ArrayList<>(contactos);
-        this.medioPredeterminado = this.contactos.isEmpty() ? null : this.contactos.get(0);
-    }
-
     @Override
     public Contacto getMedioPredeterminado() {
-        return this.medioPredeterminado;
+        return contactoPredeterminado();
     }
 
     public void registrarContacto(Contacto contacto, boolean predeterminado) {
         if (!this.contactos.contains(contacto)) {
+            contacto.identificarNotificable("ENTIDAD");
             this.contactos.add(contacto);
         }
-        if (predeterminado || this.medioPredeterminado == null) {
-            this.medioPredeterminado = contacto;
+        if (predeterminado || getMedioPredeterminado() == null) {
+            this.contactos.forEach(actual -> actual.marcarComoMedioPredeterminado(actual == contacto));
         }
+    }
+
+    private Contacto contactoPredeterminado() {
+        return this.contactos.stream()
+            .filter(Contacto::esMedioPredeterminado)
+            .findFirst()
+            .orElse(this.contactos.isEmpty() ? null : this.contactos.get(0));
     }
 
     public boolean satisfaceNecesidad(Donacion donacion) {
