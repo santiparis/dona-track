@@ -65,8 +65,25 @@ public class CamionesController {
     model.put("seccion", "seguimiento");
     model.put("usuario", DatosMock.admin());   // MOCK
     model.put("subtitulo", "Todos los camiones en ruta y el avance de sus entregas.");
-    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesEnRuta().execute().body();
-    model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
+    // Todas las donaciones en traslado: logística devuelve los camiones que las llevan
+    List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO)
+        .toList();
+
+    List<Long> idsDonaciones = donacionesEnTraslado.stream()
+        .map(Donacion::getId)
+        .toList();
+
+    List<Map<String, Object>> camiones = List.of();
+    if (!idsDonaciones.isEmpty()) {
+      UbicacionCamionesResponse response = logisticaGrpcClient.obtenerUbicacionCamiones(idsDonaciones);
+
+      camiones = response.getUbicacionesList().stream()
+          .map(u -> camionParaVista(u, donacionesEnTraslado))
+          .toList();
+    }
+
+    model.put("camiones", camiones);
     return model;
   }
 
@@ -100,9 +117,6 @@ public class CamionesController {
       camiones = response.getUbicacionesList().stream()
           .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
-    }
-    if (camiones.isEmpty()) {
-      camiones = DatosMock.camionesEnRuta();   // MOCK hasta que logística tenga rutas cargadas
     }
 
     model.put("camiones", camiones);
@@ -138,11 +152,6 @@ public class CamionesController {
       camiones = response.getUbicacionesList().stream()
           .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
-    }
-    if (camiones.isEmpty()) {
-      camiones = DatosMock.camionesEnRuta().stream()
-          .filter(c -> c.get("destino").equals(entidad.get("nombre")))
-          .toList();   // MOCK hasta que logística tenga rutas cargadas
     }
 
     model.put("camiones", camiones);

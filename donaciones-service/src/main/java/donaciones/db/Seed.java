@@ -177,7 +177,7 @@ public class Seed implements WithSimplePersistenceUnit {
     bancos.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     persist(bancos);
 
-    // Las dos en traslado de Ana coinciden con los camiones de DatosMock.camionesEnRuta()
+    // Las dos en traslado de Ana coinciden con las rutas del seed de logística (SeedCamiones)
     Donacion sillas = new Donacion(ana, new Bien(Subcategoria.SILLAS, 6, "unidades", "Sillas de madera", null, EstadoBien.USADO, null));
     sillas.asignarA(escuela);
     sillas.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
