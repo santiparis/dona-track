@@ -1,5 +1,6 @@
 package donaciones.domain;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -16,17 +17,26 @@ public class Necesidad {
     @ElementCollection @CollectionTable(name = "cantidad_suplida", joinColumns = @JoinColumn(name = "necesidad_id"))
     @MapKeyEnumerated(EnumType.STRING) @MapKeyColumn(name = "subcategoria_id") @Column(name = "cantidad_suplida")
     private Map<Subcategoria, Integer> cantidadesSuplidas = new HashMap<>();
-    @Transient private PoliticaDeRenovacion renovacion = new SinRenovacion();
+    @Column(name = "fecha_inicio") private LocalDate fechaInicio;
+    @Column(name = "fecha_fin") private LocalDate fechaFin;
+    @Enumerated(EnumType.STRING) @Column(name = "periodo") private Periodo periodo;
 
     protected Necesidad() { }
 
     public Necesidad(
             String descripcion,
-            PoliticaDeRenovacion renovacion,
+            boolean renovacion,
+            LocalDate fechaInicio,
+            Periodo periodo,
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
         this.descripcion = descripcion;
-        this.renovacion = renovacion == null ? new SinRenovacion() : renovacion;
+        if (renovacion && (fechaInicio == null || periodo == null)) {
+            throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+        }
+        this.periodo = renovacion ? periodo : null;
+        this.fechaInicio = renovacion ? fechaInicio : null;
+        this.fechaFin = calcularFechaFin();
         this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
         this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
@@ -40,61 +50,37 @@ public class Necesidad {
         this.id = id;
     }
 
-    public PoliticaDeRenovacion getRenovacion() {
-        return renovacion;
+    public boolean isRenovacion() {
+        return periodo != null;
     }
 
-    @Access(AccessType.PROPERTY)
-    @Column(name = "fecha_inicio")
-    public java.time.LocalDate getFechaInicio() {
-        return renovacion.getFechaInicio();
+    public boolean seRenueva() {
+        return isRenovacion();
     }
 
-    public void setFechaInicio(java.time.LocalDate fechaInicio) {
-        actualizarRenovacion(
-                fechaInicio,
-                renovacion.getFechaFin(),
-                renovacion.getPeriodo()
-        );
+    public boolean estaVencida() {
+        return isRenovacion() && fechaFin.isBefore(LocalDate.now());
     }
 
-    @Access(AccessType.PROPERTY)
-    @Column(name = "fecha_fin")
-    public java.time.LocalDate getFechaFin() {
-        return renovacion.getFechaFin();
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
     }
 
-    public void setFechaFin(java.time.LocalDate fechaFin) {
-        actualizarRenovacion(
-                renovacion.getFechaInicio(),
-                fechaFin,
-                renovacion.getPeriodo()
-        );
+    public LocalDate getFechaFin() {
+        return fechaFin;
     }
 
-    @Access(AccessType.PROPERTY)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "periodo")
     public Periodo getPeriodo() {
-        return renovacion.getPeriodo();
+        return periodo;
     }
 
-    public void setPeriodo(Periodo periodo) {
-        actualizarRenovacion(
-                renovacion.getFechaInicio(),
-                renovacion.getFechaFin(),
-                periodo
-        );
-    }
-
-    private void actualizarRenovacion(
-            java.time.LocalDate fechaInicio,
-            java.time.LocalDate fechaFin,
-            Periodo periodo
-    ) {
-        renovacion = fechaInicio == null && fechaFin == null && periodo == null
-                ? new SinRenovacion()
-                : new RenovacionPeriodica(fechaInicio, fechaFin, periodo);
+    private LocalDate calcularFechaFin() {
+        if (periodo == null || fechaInicio == null) {
+            return null;
+        }
+        return periodo == Periodo.SEMANAL
+                ? fechaInicio.plusDays(7)
+                : fechaInicio.plusMonths(1);
     }
 
     public void registrarSuplido(Bien bien) {

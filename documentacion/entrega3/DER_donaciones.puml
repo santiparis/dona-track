@@ -19,10 +19,16 @@ entity Necesidad {
     entidad_id (FK)
     descripcion: nvarchar(255)
     ---
-    fecha_inicio: date
-    fecha_fin: date
-    periodo: nvarchar(255)
+    fecha_inicio: date (nullable)
+    fecha_fin: date (nullable, calculada)
+    periodo: nvarchar(255) (nullable)
 }
+
+note right of Necesidad
+  La renovación se representa en estas columnas
+  de la misma fila. Sin periodo no se renueva.
+  No existe una tabla de política de renovación.
+end note
 
 entity CantidadRequerida {
     necesidad_id (PK, FK)
@@ -95,10 +101,17 @@ entity Persona {
     nombre: nvarchar(255)
     usuario_id (FK)
     ultima_interaccion: datetime
+}
+
+entity PersonaJuridica {
+    persona_id (PK, FK)
     ---
-    tipo: nvarchar(255)
     razon_social: nvarchar(255)
     rubro: nvarchar(255)
+}
+
+entity PersonaHumana {
+    persona_id (PK, FK)
     ---
     apellido: nvarchar(255)
     edad: int
@@ -128,6 +141,18 @@ entity SugerenciaAsignacion {
     donacion_id (PK, FK)
 }
 
+entity SugerenciaAlgoritmo {
+    sugerencia_algoritmo_id (PK)
+    ---
+    sugerencia_id (FK)
+    algoritmo: nvarchar(255)
+}
+
+entity SugerenciaAlgoritmoEntidad {
+    sugerencia_algoritmo_id (PK, FK)
+    entidad_id (PK, FK)
+}
+
 Persona ||--o{ Contacto
 EntidadBeneficiaria ||--o{ Contacto
 PersonaAdministradora ||--o{ Contacto
@@ -150,5 +175,10 @@ Persona ||--o{ Donacion
 Donacion ||--o{ RegistroCambioEstado
 Persona }o--o{ Persona
 Donacion ||--o| SugerenciaAsignacion
-SugerenciaAsignacion }o--o{ EntidadBeneficiaria
+SugerenciaAsignacion ||--o{ SugerenciaAlgoritmo
+SugerenciaAlgoritmo ||--o{ SugerenciaAlgoritmoEntidad
+EntidadBeneficiaria ||--o{ SugerenciaAlgoritmoEntidad
+SugerenciaAsignacion }o--o{ EntidadBeneficiaria 
+Persona ||--o| PersonaHumana
+Persona ||--o| PersonaJuridica
 @enduml
