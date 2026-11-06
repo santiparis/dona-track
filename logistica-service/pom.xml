@@ -156,7 +156,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+                        <descriptor>${project.basedir}/../assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
@@ -206,9 +206,6 @@
                                     <mainClass>logistica.mock.MockGps</mainClass>
                                 </manifest>
                             </archive>
-                            <descriptors>
-                                <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
-                            </descriptors>
                         </configuration>
                     </execution>
 
@@ -226,9 +223,6 @@
                                     <mainClass>logistica.mock.MockPlanificador</mainClass>
                                 </manifest>
                             </archive>
-                            <descriptors>
-                                <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
-                            </descriptors>
                         </configuration>
                     </execution>
                 </executions>

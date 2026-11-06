@@ -138,3 +138,10 @@ fieldset.sin-borde legend { padding: 0; margin-bottom: 8px; }
 button.btn, button.btn2 { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: 0.5; }
 .centrado { text-align: center; }
+
+.error-form {
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--color-error-fondo);
+    color: var(--color-error-texto);
+}

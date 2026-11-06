@@ -1,6 +1,6 @@
 # Justificaciones de Diseño — Entrega 4: Cliente liviano
 
-Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`donaciones-service`), en Donaciones entregadas (pública) y en el Seguimiento de entregas del donante, de la entidad y del admin.
+Este documento explica las decisiones sobre los mapas de la UI de **Donaciones** y el despliegue de DonaTrack en **Azure**.
 
 ## Mapas: MapLibre GL + OpenFreeMap
 
@@ -48,3 +48,13 @@ Alcance de este documento por ahora: los mapas de la UI de **Donaciones** (`dona
 * `EntidadBeneficiaria` no tiene coordenadas en el dominio, solo dirección. Falta decidir cómo se obtienen para el mapa público.
 * La ubicación real de los camiones vive en Logística; falta definir cómo la pide Donaciones y cómo se sabe qué camiones llevan donaciones de un donante o de una entidad.
 * El seguimiento se actualiza recargando la página (botón Actualizar).
+
+## Despliegue en Azure
+
+Preparamos los dos microservicios para correr con Docker Compose. La configuración de Azure contempla una máquina virtual para **Donaciones**, con su base MySQL, y otra para **Logística**, con su base PostgreSQL. El navegador entra a la interfaz de Donaciones por el puerto `8081`. Logística atiende su API en el puerto `7070` y conserva los simuladores de GPS y del planificador como contenedores separados.
+
+* **Imágenes reproducibles.** Los Dockerfiles compilan los servicios con Maven y Java 17. La imagen que arranca en cada VM lleva el JAR y el entorno de Java necesario para ejecutarlo. El mismo proceso de construcción sirve en local y en Azure.
+* **Un Compose base y un archivo para Azure.** `compose.yaml` define los servicios, sus dependencias y sus volúmenes. En local, Donaciones y Logística se encuentran por el nombre del contenedor. `docker-compose.azure.yaml` se aplica encima y cambia esas direcciones para que los servicios se comuniquen entre VMs. Donaciones usa `LOGISTICA_IP` y Logística usa `DONACIONES_IP`. Así se puede cambiar la dirección de una VM sin recompilar ni editar el código Java.
+* **Una base por servicio.** Compose guarda los datos en volúmenes de Docker para que sobrevivan al reemplazo del contenedor. También espera a que cada base esté lista antes de iniciar su API. En Azure se quita la publicación de los puertos `3306` y `5432`, porque solo los contenedores de cada servicio necesitan conectarse a su base.
+
+La separación en dos VMs mantiene la división del TP también en el despliegue. Cada servicio puede arrancarse y actualizarse por separado, y la comunicación entre ellos sigue siendo por HTTP.

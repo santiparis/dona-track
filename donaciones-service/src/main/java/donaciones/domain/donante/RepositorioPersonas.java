@@ -8,6 +8,15 @@ import java.util.Optional;
 
 /** Repositorio JPA de personas. */
 public class RepositorioPersonas implements WithSimplePersistenceUnit {
+    public Optional<Persona> buscarPorUsuario(Long usuarioId) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        return createQuery("from Persona p where p.usuario.id = :usuarioId", Persona.class)
+                .setParameter("usuarioId", usuarioId)
+                .getResultStream()
+                .findFirst();
+    }
+
+
     public Optional<Persona> buscarPorId(Long id) {
         return Optional.ofNullable(find(Persona.class, id));
     }

@@ -8,6 +8,7 @@ import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.RazonSocial;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
+import donaciones.domain.donante.Rol;
 import donaciones.dto.ContactoResponseDTO;
 import donaciones.dto.DonantePatchDTO;
 import donaciones.dto.DonanteRequestDTO;
@@ -215,7 +216,6 @@ public class DonanteController {
     model.put("titulo", "Registrar donante");
     model.put("rol", "admin");
     model.put("seccion", "donante-nuevo");
-    model.put("usuario", DatosMock.admin());   // MOCK
     // La pestaña viaja en la URL: /admin/donantes/nuevo?tipo=HUMANA|JURIDICA
     model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), "HUMANA"));
     return model;
@@ -234,7 +234,7 @@ public class DonanteController {
         .filter(contacto -> contacto.getEstrategia().contains(ctx.formParam("medio")))
         .findFirst()
         .orElse(contactos.get(0));
-    Usuario usuario = new Usuario(ctx.formParam("email"), "password_provisoria");
+    Usuario usuario = new Usuario(ctx.formParam("email"), "password_provisoria", Rol.DONANTE);
 
     Persona donante = "HUMANA".equals(ctx.formParam("tipo"))
         ? new PersonaHumana(ctx.formParam("nombre"), ctx.formParam("apellido"),
@@ -260,7 +260,6 @@ public class DonanteController {
     model.put("titulo", "Importar donantes");
     model.put("rol", "admin");
     model.put("seccion", "importacion");
-    model.put("usuario", DatosMock.admin());   // MOCK
     // Después de importar se vuelve con ?importado para mostrar el resultado
     if (ctx.queryParam("importado") != null) {
       model.put("resultado", DatosMock.resultadoImportacion());   // MOCK

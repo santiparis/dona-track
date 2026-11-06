@@ -46,10 +46,6 @@ public class Necesidad {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getDescripcion() {
         return descripcion;
     }
@@ -60,6 +56,10 @@ public class Necesidad {
 
     public Map<Subcategoria, Integer> getCantidadesSuplidas() {
         return Map.copyOf(cantidadesSuplidas);
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public boolean isRenovacion() {

@@ -1,9 +1,12 @@
 package donaciones.controller;
 
 import donaciones.repository.NotificacionRepository;
-import donaciones.web.DatosMock;
+import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.repository.EntidadBeneficiariaRepository;
+import donaciones.web.SesionUsuario;
+import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class NotificacionesController {
@@ -14,31 +17,22 @@ public class NotificacionesController {
     this.notificacionRepository = notificacionRepository;
   }
 
-  public Map<String, Object> notificacionesDonante() {
-    Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Notificaciones");
-    model.put("rol", "donante");
-    model.put("seccion", "notificaciones");
-    model.put("usuario", DatosMock.donante());   // MOCK
-    model.put("aviso", "También te llegan por tu medio preferido: correo.");   // MOCK
-    // List<Notificacion> notificaciones = notificacionRepository.obtenerTodas().stream().filter(n -> n.getReceptorId().equals(idDonante)).toList();
-    model.put("notificaciones", DatosMock.notificaciones().stream()
-        .filter(n -> "donante".equals(n.get("destinatario")))
-        .toList());   // MOCK
-    return model;
+  public Map<String, Object> notificacionesDonante(Context ctx) {
+    var donante = new RepositorioPersonas().buscarPorUsuario(ctx.sessionAttribute(SesionUsuario.USUARIO_ID))
+        .orElseThrow(NotFoundResponse::new);
+    return bandeja("donante", "PERSONA", donante.getId());
   }
 
-  public Map<String, Object> notificacionesEntidad() {
-    Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Notificaciones");
-    model.put("rol", "entidad");
-    model.put("seccion", "notificaciones");
-    model.put("usuario", DatosMock.entidad());   // MOCK
-    model.put("aviso", "También llegan a los correos de los representantes.");
-    // List<Notificacion> notificaciones = notificacionRepository.obtenerTodas().stream().filter(n -> n.getReceptorId().equals(idEntidad)).toList();
-    model.put("notificaciones", DatosMock.notificaciones().stream()
-        .filter(n -> "entidad".equals(n.get("destinatario")))
-        .toList());   // MOCK
-    return model;
+  public Map<String, Object> notificacionesEntidad(Context ctx) {
+    var entidad = new EntidadBeneficiariaRepository().buscarPorUsuario(ctx.sessionAttribute(SesionUsuario.USUARIO_ID))
+        .orElseThrow(NotFoundResponse::new);
+    return bandeja("entidad", "ENTIDAD", entidad.getId());
+  }
+
+  private Map<String, Object> bandeja(String rol, String tipo, Long id) {
+    return Map.of("titulo", "Notificaciones", "rol", rol, "seccion", "notificaciones",
+        "notificaciones", notificacionRepository.buscarPorReceptor(tipo, id).stream()
+            .map(n -> Map.of("fecha", n.getFecha().toString(), "mensaje", n.getMensaje()))
+            .toList());
   }
 }

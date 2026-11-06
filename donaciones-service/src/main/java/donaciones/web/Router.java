@@ -9,6 +9,8 @@ import donaciones.controller.NotificacionesController;
 import donaciones.controller.PublicoController;
 import donaciones.controller.SesionController;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
+import java.util.Map;
 
 public class Router {
 
@@ -36,21 +38,39 @@ public class Router {
   }
 
   public void configure(Javalin app) {
+    app.beforeMatched(SesionUsuario::verificarAcceso);
+    AccesoApi accesoApi = new AccesoApi();
+    app.beforeMatched(accesoApi::verificar);
+    app.error(403, "html", ctx -> ctx.render("sesion/sin-permiso",
+        Map.of("titulo", "Acceso denegado")));
 
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
     app.get("/donaciones-entregadas", ctx -> ctx.render("publico/entregadas", donacionController.entregadas()));
     app.error(404, "html", ctx -> ctx.render("publico/404", publicoController.noEncontrada()));
 
-    app.get("/login", ctx -> ctx.render("sesion/login", sesionController.login()));
+    app.get("/login", ctx -> {
+      ctx.header("Cache-Control", "no-store");
+      var usuario = SesionUsuario.actual(ctx);
+      if (usuario == null) {
+        ctx.render("sesion/login", sesionController.login(ctx));
+      } else {
+        ctx.redirect(SesionUsuario.destino(usuario.getRol()), HttpStatus.SEE_OTHER);
+      }
+    });
     app.post("/login", sesionController::ingresar);
+    app.post("/logout", ctx -> {
+      SesionUsuario.cerrar(ctx);
+      ctx.header("Cache-Control", "no-store");
+      ctx.redirect("/login", HttpStatus.SEE_OTHER);
+    });
     app.get("/usuarios/nuevo", ctx -> ctx.render("sesion/registro", sesionController.registro(ctx)));
     app.post("/usuarios", sesionController::registrar);
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
-    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante()));
+    app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante(ctx)));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante(ctx)));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
@@ -61,7 +81,7 @@ public class Router {
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", donacionController.recepcion(ctx)));
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
-    app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad()));
+    app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad(ctx)));
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad(ctx)));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));

@@ -22,13 +22,10 @@ public class DonacionesServiceImpl extends DonacionesServiceGrpc.DonacionesServi
     String nuevoEstadoStr = request.getNuevoEstado();
 
     try {
-      // Acá no hay request HTTP que abra la transacción: sin esto el cambio de estado no se guarda
       donacionRepository.withTransaction(() -> {
         Donacion donacion = donacionRepository.buscarPorIdParaActualizar(idDonacion)
             .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación con ID: " + idDonacion));
-
         donacion.cambiarEstado(EstadoDonacion.valueOf(nuevoEstadoStr), "Petición de cambio de Estado");
-        donacionRepository.guardar(donacion);
       });
 
       CambiarEstadoResponse response = CambiarEstadoResponse.newBuilder()
@@ -58,6 +55,10 @@ public class DonacionesServiceImpl extends DonacionesServiceGrpc.DonacionesServi
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
+    } finally {
+      if (donacionRepository.perThreadEntityManagerAccess().isAttached()) {
+        donacionRepository.perThreadEntityManagerAccess().dispose();
+      }
     }
   }
 }

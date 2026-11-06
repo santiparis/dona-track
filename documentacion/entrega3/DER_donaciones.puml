@@ -178,7 +178,7 @@ Donacion ||--o| SugerenciaAsignacion
 SugerenciaAsignacion ||--o{ SugerenciaAlgoritmo
 SugerenciaAlgoritmo ||--o{ SugerenciaAlgoritmoEntidad
 EntidadBeneficiaria ||--o{ SugerenciaAlgoritmoEntidad
-SugerenciaAsignacion }o--o{ EntidadBeneficiaria 
+SugerenciaAsignacion }o--o{ EntidadBeneficiaria
 Persona ||--o| PersonaHumana
 Persona ||--o| PersonaJuridica
 @enduml

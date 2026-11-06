@@ -160,6 +160,10 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
+    } finally {
+      if (rutasRepository.perThreadEntityManagerAccess().isAttached()) {
+        rutasRepository.perThreadEntityManagerAccess().dispose();
+      }
     }
   }
 }

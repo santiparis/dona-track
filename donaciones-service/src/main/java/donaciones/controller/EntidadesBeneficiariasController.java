@@ -6,6 +6,7 @@ import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -246,7 +247,6 @@ public class EntidadesBeneficiariasController {
     model.put("titulo", "Entidades beneficiarias");
     model.put("rol", "donante");
     model.put("seccion", "entidades");
-    model.put("usuario", DatosMock.donante());   // MOCK
 
     model.put("entidades", entidadesRepository.obtenerTodas().stream()
         .filter(e -> e.getRazonSocial().toLowerCase().contains(busqueda.toLowerCase()))
@@ -301,7 +301,6 @@ public class EntidadesBeneficiariasController {
     Map<String, Object> model = new HashMap<>();
     model.put("rol", "donante");
     model.put("seccion", "entidades");
-    model.put("usuario", DatosMock.donante());   // MOCK
 
     Map<String, Object> entidad = entidadConNecesidades(entidadesRepository.buscarPorId(Long.valueOf(id))
         .orElseThrow(NotFoundResponse::new));
@@ -315,31 +314,11 @@ public class EntidadesBeneficiariasController {
     model.put("titulo", "Necesidades");
     model.put("rol", "entidad");
     model.put("seccion", "necesidades");
-    model.put("usuario", DatosMock.entidad());   // MOCK
 
-    // Entidad fija del seed hasta que esté el login
-    EntidadBeneficiaria entidad = entidadesRepository.obtenerTodas().stream()
-        .filter(e -> e.getRazonSocial().equals("Escuela Rural N°10"))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new);
-    List<Map<String, String>> necesidades = new ArrayList<>();
-    for (Necesidad necesidad : entidad.getNecesidades()) {
-      necesidad.getCantidadesRequeridas().forEach((subcategoria, requerido) -> {
-        int suplido = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
-        Periodo periodo = necesidad.getPeriodo();
-        necesidades.add(Map.of(
-            "id", necesidad.getId().toString(),
-            "subcategoria", subcategoria.name(),
-            "subcategoriaTexto", subcategoria.nombre(),
-            "descripcion", Objects.requireNonNullElse(necesidad.getDescripcion(), ""),
-            "tipo", periodo == null ? "EXTRAORDINARIA" : "RECURRENTE",
-            "tipoTexto", periodo == null ? "Extraordinaria" : "Recurrente · " + periodo.name().toLowerCase(),
-            "periodo", periodo == null ? "" : periodo.name(),
-            "cantidad", requerido.toString(),
-            "avance", suplido + " / " + requerido,
-            "porcentaje", String.valueOf(suplido * 100 / requerido)));
-      });
-    }
+    List<Map<String, String>> necesidades = entidadDeLaSesion(ctx).getNecesidades().stream()
+        .flatMap(necesidad -> necesidad.getCantidadesRequeridas().entrySet().stream()
+            .map(cantidad -> necesidadParaVista(necesidad, cantidad.getKey(), cantidad.getValue())))
+        .toList();
     model.put("necesidades", necesidades);
 
     // ?editar={id} carga esa necesidad en el formulario; si no, el formulario queda vacío para dar de alta
@@ -347,7 +326,10 @@ public class EntidadesBeneficiariasController {
     Map<String, String> enEdicion = necesidades.stream()
         .filter(n -> n.get("id").equals(idEditar))
         .findFirst()
-        .orElse(Map.of());
+        .orElseGet(() -> {
+          if (idEditar != null) throw new io.javalin.http.NotFoundResponse();
+          return Map.of();
+        });
     model.put("necesidad", enEdicion);
 
     // La pestaña viaja en la URL (?tipo=EXTRAORDINARIA|RECURRENTE); al editar arranca en el tipo de la necesidad
@@ -371,12 +353,42 @@ public class EntidadesBeneficiariasController {
   }
 
   public void modificarNecesidad(Context ctx) {
+    verificarNecesidadPropia(ctx);
     // Sin persistencia todavía: acá se busca la necesidad ctx.pathParam("id") y se actualiza con los datos del form
     ctx.redirect("/entidad/necesidades");
   }
 
   public void eliminarNecesidad(Context ctx) {
+    verificarNecesidadPropia(ctx);
     // Sin persistencia todavía: acá va la baja de la necesidad ctx.pathParam("id")
     ctx.redirect("/entidad/necesidades");
+  }
+
+  private EntidadBeneficiaria entidadDeLaSesion(Context ctx) {
+    return entidadesRepository.buscarPorUsuario(ctx.sessionAttribute(SesionUsuario.USUARIO_ID))
+        .orElseThrow(io.javalin.http.NotFoundResponse::new);
+  }
+
+  private void verificarNecesidadPropia(Context ctx) {
+    String id = ctx.pathParam("id");
+    if (entidadDeLaSesion(ctx).getNecesidades().stream().noneMatch(n -> n.getId().toString().equals(id))) {
+      throw new io.javalin.http.NotFoundResponse();
+    }
+  }
+
+  private Map<String, String> necesidadParaVista(Necesidad necesidad, Subcategoria subcategoria, int cantidad) {
+    int suplida = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
+    boolean recurrente = necesidad.getPeriodo() != null;
+    return Map.of(
+        "id", necesidad.getId().toString(),
+        "descripcion", Objects.toString(necesidad.getDescripcion(), ""),
+        "subcategoria", subcategoria.name(),
+        "subcategoriaTexto", subcategoria.nombre(),
+        "cantidad", Integer.toString(cantidad),
+        "tipo", recurrente ? "RECURRENTE" : "EXTRAORDINARIA",
+        "tipoTexto", recurrente ? "Recurrente" : "Extraordinaria",
+        "periodo", Objects.toString(necesidad.getPeriodo(), ""),
+        "avance", suplida + " / " + cantidad,
+        "porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0));
   }
 }

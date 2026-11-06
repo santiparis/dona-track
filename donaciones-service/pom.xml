@@ -195,10 +195,8 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--<appendAssemblyId>false</appendAssemblyId>-->
                     <descriptors>
-                        <!-- Esto indica que genere un paquete que incluya las dependencias -->
-                        <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+                        <descriptor>${project.basedir}/../assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
 

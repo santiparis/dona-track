@@ -14,6 +14,7 @@ import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.PersonaJuridica;
 import donaciones.domain.donante.RazonSocial;
+import donaciones.domain.donante.Rol;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
 import donaciones.domain.notificacion.Contacto;
@@ -42,32 +43,33 @@ public class Seed implements WithSimplePersistenceUnit {
   private void cargar() {
     // Administradora
     Contacto correoLaura = new ContactoPorEmail("laura.admin@donatrack.org");
-    persist(new PersonaAdministradora("Laura Méndez", List.of(correoLaura), correoLaura));
+    persist(new PersonaAdministradora("Laura Méndez", List.of(correoLaura), correoLaura,
+        new Usuario("laura.admin@donatrack.org", "laura123", Rol.ADMINISTRADORA)));
 
     // Donantes
     Contacto correoAna = new ContactoPorEmail("ana@mail.com");
     PersonaHumana ana = new PersonaHumana("Ana", "Pérez", 34, TipoDoc.DNI, "12345678", Genero.FEMENINO,
         "Av. Corrientes 1234, CABA",
         List.of(correoAna, new ContactoPorWhatsApp("+54 11 5555-5555")), correoAna,
-        new Usuario("ana@mail.com", "ana123"));
+        new Usuario("ana@mail.com", "ana123", Rol.DONANTE));
 
     Contacto correoJuan = new ContactoPorEmail("juan.gomez@mail.com");
     PersonaHumana juan = new PersonaHumana("Juan", "Gómez", 52, TipoDoc.DNI, "20111222", Genero.MASCULINO,
         "Belgrano 450, Escobar",
         List.of(correoJuan), correoJuan,
-        new Usuario("juan.gomez@mail.com", "juan123"));
+        new Usuario("juan.gomez@mail.com", "juan123", Rol.DONANTE));
 
     Contacto correoArcos = new ContactoPorEmail("contacto@empresa.com");
     PersonaJuridica arcos = new PersonaJuridica(TipoDoc.CUIT, "30-12345678-9", "Arcos Plateados S.A.",
         RazonSocial.EMPRESA, "Mueblería", new ArrayList<>(List.of(juan)),
         List.of(correoArcos, new ContactoPorWhatsApp("+54 11 4444-4444")), correoArcos,
-        new Usuario("contacto@empresa.com", "arcos123"));
+        new Usuario("contacto@empresa.com", "arcos123", Rol.DONANTE));
 
     Contacto correoPastas = new ContactoPorEmail("ventas@pastasdelsur.com");
     PersonaJuridica pastas = new PersonaJuridica(TipoDoc.CUIT, "30-87654321-0", "Pastas del Sur",
         RazonSocial.EMPRESA, "Alimentos", new ArrayList<>(),
         List.of(correoPastas), correoPastas,
-        new Usuario("ventas@pastasdelsur.com", "pastas123"));
+        new Usuario("ventas@pastasdelsur.com", "pastas123", Rol.DONANTE));
 
     persist(ana);
     persist(juan);
@@ -82,7 +84,8 @@ public class Seed implements WithSimplePersistenceUnit {
     EntidadBeneficiaria escuela = new EntidadBeneficiaria("Escuela Rural N°10", "Ruta 5 km 32, San Andrés de Giles",
         "(02325) 44-1234",
         new ArrayList<>(List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar")),
-        List.of(correoEscuela), correoEscuela);
+        List.of(correoEscuela), correoEscuela,
+        new Usuario("direccion@escuelarural10.edu.ar", "escuela123", Rol.ENTIDAD));
     Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.BANCOS, 30));
     bancosEscuela.registrarSuplido(new Bien(Subcategoria.BANCOS, 10, "unidades", null, null, EstadoBien.NUEVO, null));
     Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.SILLAS, 30));

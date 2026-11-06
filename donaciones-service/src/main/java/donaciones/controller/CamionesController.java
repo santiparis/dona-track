@@ -5,6 +5,7 @@ import donaciones.domain.EstadoDonacion;
 import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 
 import java.util.HashMap;
@@ -28,7 +29,6 @@ public class CamionesController {
     model.put("titulo", "Camiones");
     model.put("rol", "admin");
     model.put("seccion", "camiones");
-    model.put("usuario", DatosMock.admin());   // MOCK
 
     var camiones = DatosMock.camiones();   // MOCK
     model.put("camiones", camiones);
@@ -63,7 +63,6 @@ public class CamionesController {
     model.put("titulo", "Seguimiento de camiones");
     model.put("rol", "admin");
     model.put("seccion", "seguimiento");
-    model.put("usuario", DatosMock.admin());   // MOCK
     model.put("subtitulo", "Todos los camiones en ruta y el avance de sus entregas.");
     // Todas las donaciones en traslado: logística devuelve los camiones que las llevan
     List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
@@ -93,18 +92,15 @@ public class CamionesController {
     model.put("rol", "donante");
     model.put("seccion", "seguimiento");
 
-    Map<String, Object> donante = DatosMock.donante();
-    model.put("usuario", donante);
     model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
     model.put("textoMapa", "Un marcador por camión y los destinos de tus donaciones");
 
-    // 1. Buscar donaciones en traslado del donante (donante fijo del seed hasta que esté el login)
-    List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
-        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO && d.getDonante().getEmail().equals("ana@mail.com"))
-        .toList();
+    // 1. Buscar donaciones en traslado del donante
+    List<Donacion> donacionesEnTraslado = donacionRepository.buscarPorUsuarioDonante(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
 
     // 2. Extraer los IDs de las donaciones
     List<Long> idsDonaciones = donacionesEnTraslado.stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO)
         .map(Donacion::getId)
         .toList();
 
@@ -115,6 +111,7 @@ public class CamionesController {
 
       // 4. Mapear la respuesta de Protobuf a la estructura que espera la vista
       camiones = response.getUbicacionesList().stream()
+          .filter(u -> idsDonaciones.contains(u.getIdDonacion()))
           .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
     }
@@ -129,19 +126,14 @@ public class CamionesController {
     model.put("rol", "entidad");
     model.put("seccion", "seguimiento");
 
-    Map<String, Object> entidad = DatosMock.entidad();
-    model.put("usuario", entidad);
-    model.put("entidad", entidad);
     model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
     model.put("textoMapa", "Un marcador por camión y la ubicación de tu entidad");
+    model.put("entidad", DatosMock.entidad());   // MOCK: EntidadBeneficiaria todavía no tiene coordenadas
 
-    // Entidad fija del seed hasta que esté el login
-    List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
-        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO
-            && d.getEntidadBeneficiaria().getRazonSocial().equals("Escuela Rural N°10"))
-        .toList();
+    List<Donacion> donacionesEnTraslado = donacionRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
 
     List<Long> idsDonaciones = donacionesEnTraslado.stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO)
         .map(Donacion::getId)
         .toList();
 
@@ -150,6 +142,7 @@ public class CamionesController {
       UbicacionCamionesResponse response = logisticaGrpcClient.obtenerUbicacionCamiones(idsDonaciones);
 
       camiones = response.getUbicacionesList().stream()
+          .filter(u -> idsDonaciones.contains(u.getIdDonacion()))
           .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
     }
