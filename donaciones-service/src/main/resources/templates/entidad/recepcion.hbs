@@ -2,7 +2,14 @@
     <nav class="migas" aria-label="Ruta de navegación">
         <a href="/entidad/donaciones">Donaciones asignadas</a> / Confirmar recepción
     </nav>
-    <h1>Confirmar recepción</h1>
+    <h1>Recepción de la donación</h1>
+    {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
+    {{#if fotos}}
+        <section class="card">
+            <h2>Fotos de recepción</h2>
+            {{#each fotos}}<a href="{{url}}">Ver foto</a>{{/each}}
+        </section>
+    {{/if}}
 
     {{#with donacion}}
         <section class="card">
@@ -14,14 +21,15 @@
             </div>
         </section>
 
-        {{!-- multipart para poder mandar las fotos junto con el formulario --}}
+        {{#if ../puedeConfirmar}}
+        {{#if ../storageDisponible}}
         <form class="card" action="/entidad/donaciones/{{id}}/recepcion" method="post" enctype="multipart/form-data">
             <h2>¿Recibiste la donación?</h2>
             <div class="carga-archivo">
                 <label class="subtitulo">Subí fotos de lo que recibiste
-                    <input type="file" name="fotos" accept="image/*" multiple required>
+                    <input type="file" name="fotos" accept="image/jpeg,image/png" multiple required>
                 </label>
-                <p class="hint">JPG o PNG. Al menos una foto.</p>
+                <p class="hint">De una a tres fotos JPG o PNG, de hasta 5 MB y 16 megapíxeles cada una.</p>
             </div>
             <label>Comentario (opcional)<textarea name="comentario"></textarea></label>
             <div class="row acciones">
@@ -29,6 +37,9 @@
                 <button class="btn" type="submit">Confirmar recepción</button>
             </div>
         </form>
+        {{else}}
+        <p>El almacenamiento de fotos no está disponible.</p>
+        {{/if}}
 
         <form class="card" action="/entidad/donaciones/{{id}}/no-recibida" method="post">
             <h2>No la recibí</h2>
@@ -38,6 +49,7 @@
                 <button class="btn2 peligro" type="submit">Informar entrega no recibida</button>
             </div>
         </form>
+        {{/if}}
     {{/with}}
 {{/partial}}
 

@@ -68,6 +68,7 @@ public class Router {
     app.post("/usuarios", sesionController::registrar);
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
+    app.get("/donante/donaciones/{id}/fotos/{foto}", donacionController::fotoDonante);
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante(ctx)));
@@ -79,6 +80,7 @@ public class Router {
     app.post("/entidad/necesidades/{id}/eliminar", entidadesController::eliminarNecesidad);
     app.get("/entidad/donaciones", ctx -> ctx.render("entidad/donaciones", donacionController.asignadasAEntidad(ctx)));
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", donacionController.recepcion(ctx)));
+    app.get("/entidad/donaciones/{id}/fotos/{foto}", donacionController::fotoEntidad);
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad(ctx)));

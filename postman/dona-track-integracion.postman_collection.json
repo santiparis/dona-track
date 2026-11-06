@@ -6,6 +6,8 @@
   },
   "variable": [
     { "key": "donacionesBaseUrl", "value": "http://localhost:8081/api" },
+    { "key": "adminUsuario", "value": "admin" },
+    { "key": "adminPassword", "value": "admin", "type": "secret" },
     { "key": "logisticaBaseUrl", "value": "http://localhost:7070/api" },
     { "key": "documento", "value": "" },
     { "key": "razonSocial", "value": "" },
@@ -16,6 +18,36 @@
     { "key": "entregaId", "value": "" }
   ],
   "item": [
+    {
+      "name": "Inicio - Sesión de administración",
+      "item": [
+        {
+          "name": "Iniciar sesión como admin",
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "pm.variables.set('donacionesWebUrl', pm.variables.replaceIn('{{donacionesBaseUrl}}').replace(/\\/api\\/?$/, ''));"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Login de admin aceptado', () => {",
+              "  pm.response.to.have.status(303);",
+              "  pm.expect(pm.response.headers.get('Location')).to.match(/\\/admin\\/donaciones$/);",
+              "  pm.expect(pm.response.headers.get('Set-Cookie')).to.include('JSESSIONID=');",
+              "});"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{donacionesWebUrl}}/login",
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "usuario", "value": "{{adminUsuario}}", "type": "text" },
+              { "key": "password", "value": "{{adminPassword}}", "type": "text" }
+            ] },
+            "description": "Completá adminUsuario y adminPassword con los valores locales de tu cuenta administradora. Postman guarda JSESSIONID y la envía a la API cuando usás el mismo host."
+          }
+        }
+      ]
+    },
     {
       "name": "0 - Chequeo de servicios",
       "item": [
@@ -362,6 +394,27 @@
             "url": "{{logisticaBaseUrl}}/rutas/{{rutaId}}",
             "description": "Al no quedar entregas en traslado, la ruta se completa y el camión se libera."
           }
+        }
+      ]
+    },
+    {
+      "name": "Fin - Cerrar sesión",
+      "item": [
+        {
+          "name": "Cerrar sesión",
+          "protocolProfileBehavior": { "followRedirects": false },
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "pm.variables.set('donacionesWebUrl', pm.variables.replaceIn('{{donacionesBaseUrl}}').replace(/\\/api\\/?$/, ''));"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Logout redirige al login', () => {",
+              "  pm.response.to.have.status(303);",
+              "  pm.expect(pm.response.headers.get('Location')).to.match(/\\/login$/);",
+              "});"
+            ] } }
+          ],
+          "request": { "method": "POST", "url": "{{donacionesWebUrl}}/logout" }
         }
       ]
     }

@@ -45,6 +45,9 @@ services:
       LOGISTICA_URL: http://logistica-api:7070/
       LOGISTICA_GRPC_HOST: logistica-api
       DB_URL: jdbc:mysql://mysql:3306/donaciones
+      AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
+      AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
+
     depends_on:
       mysql:
         condition: service_healthy
