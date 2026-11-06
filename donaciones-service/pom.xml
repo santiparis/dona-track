@@ -19,9 +19,30 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protobuf.plugin.version>0.6.1</protobuf.plugin.version>
+        <os.plugin.version>1.7.1</os.plugin.version>
+        <protobuf.version>3.25.1</protobuf.version>
     </properties>
 
     <dependencies>
+        <!-- Dependencias gRPC (Heredadas del POM Padre) -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
@@ -129,7 +150,36 @@
     </dependencies>
 
     <build>
+        <!-- Plugin para detectar el SO -->
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>${os.plugin.version}</version>
+            </extension>
+        </extensions>
+
         <plugins>
+            <!-- Plugin para compilar archivos .proto a código Java -->
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf.plugin.version}</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -137,17 +187,17 @@
                 <configuration>
                     <!-- Una JVM por clase: cada suite usa una base HSQLDB limpia. -->
                     <reuseForks>false</reuseForks>
+                    <systemPropertyVariables>
+                        <donaciones.persistence.unit>simple-persistence-unit</donaciones.persistence.unit>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Este plugin permite empaquetar nuestras aplicaciones utilizando distintos formatos -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--<appendAssemblyId>false</appendAssemblyId>-->
-                    <descriptorRefs>
-                        <!-- Esto indica que genere un paquete que incluya las dependencias -->
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>${project.basedir}/../assembly.xml</descriptor>
+                    </descriptors>
                 </configuration>
 
                 <executions>

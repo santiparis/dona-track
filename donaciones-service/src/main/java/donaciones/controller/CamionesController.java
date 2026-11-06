@@ -1,19 +1,26 @@
 package donaciones.controller;
 
-import donaciones.retrofit_client.LogisticaAPICalls;
+import donaciones.domain.Donacion;
+import donaciones.domain.EstadoDonacion;
+import donaciones.grpc.LogisticaGrpcClient;
+import donaciones.repository.DonacionRepository;
 import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import logistica.grpc.UbicacionCamionesResponse;
 
 public class CamionesController {
 
-  private final LogisticaAPICalls logisticaAPICalls;
+  private final LogisticaGrpcClient logisticaGrpcClient;
+  private final DonacionRepository donacionRepository;
 
-  public CamionesController(LogisticaAPICalls logisticaAPICalls) {
-    this.logisticaAPICalls = logisticaAPICalls;
+  public CamionesController(LogisticaGrpcClient logisticaGrpcClient, DonacionRepository donacionRepository) {
+    this.logisticaGrpcClient = logisticaGrpcClient;
+    this.donacionRepository = donacionRepository;
   }
 
   public Map<String, Object> camiones(Context ctx) {
@@ -22,9 +29,7 @@ public class CamionesController {
     model.put("rol", "admin");
     model.put("seccion", "camiones");
 
-    // Los camiones son de logistica-service: se piden por HTTP a GET /api/camiones (falta sumarlo a LogisticaAPICalls)
-    // List<CamionDTO> camiones = logisticaAPICalls.getCamiones().execute().body();
-    List<Map<String, String>> camiones = DatosMock.camiones();   // MOCK
+    var camiones = DatosMock.camiones();   // MOCK
     model.put("camiones", camiones);
 
     // ?editar={id} carga ese camión en el formulario; si no, el formulario queda vacío para dar de alta
@@ -63,21 +68,81 @@ public class CamionesController {
     return model;
   }
 
-  public Map<String, Object> seguimientoDonante() {
+  public Map<String, Object> seguimientoDonante(Context ctx) {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Seguimiento de entregas");
     model.put("rol", "donante");
     model.put("seccion", "seguimiento");
-    model.put("seguimientoNoDisponible", true);
+
+    model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
+    model.put("textoMapa", "Un marcador por camión y los destinos de tus donaciones");
+
+    // 1. Buscar donaciones en traslado del donante
+    List<Donacion> donacionesEnTraslado = donacionRepository.buscarPorUsuarioDonante(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
+
+    // 2. Extraer los IDs de las donaciones
+    List<Long> idsDonaciones = donacionesEnTraslado.stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO)
+        .map(Donacion::getId)
+        .toList();
+
+    // 3. Consultar vía gRPC la ubicación de los camiones
+    List<Map<String, Object>> camiones = List.of();
+    if (!idsDonaciones.isEmpty()) {
+      UbicacionCamionesResponse response = logisticaGrpcClient.obtenerUbicacionCamiones(idsDonaciones);
+
+      // 4. Mapear la respuesta de Protobuf a la estructura que espera la vista
+      camiones = response.getUbicacionesList().stream()
+          .filter(u -> idsDonaciones.contains(u.getIdDonacion()))
+          .map(u -> Map.<String, Object>of(
+              "idDonacion", u.getIdDonacion(),
+              "patente", u.getPatente(),
+              "latitud", u.getLatitud(),
+              "longitud", u.getLongitud(),
+              "velocidad", u.getVelocidad(),
+              "actualizacion", u.getUltimaActualizacion()
+          ))
+          .toList();
+    }
+
+    model.put("camiones", camiones);
     return model;
   }
 
-  public Map<String, Object> seguimientoEntidad() {
+  public Map<String, Object> seguimientoEntidad(Context ctx) {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Seguimiento de entregas");
     model.put("rol", "entidad");
     model.put("seccion", "seguimiento");
-    model.put("seguimientoNoDisponible", true);
+
+    model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
+    model.put("textoMapa", "Un marcador por camión y la ubicación de tu entidad");
+
+    List<Donacion> donacionesEnTraslado = donacionRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
+
+    List<Long> idsDonaciones = donacionesEnTraslado.stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO)
+        .map(Donacion::getId)
+        .toList();
+
+    List<Map<String, Object>> camiones = List.of();
+    if (!idsDonaciones.isEmpty()) {
+      UbicacionCamionesResponse response = logisticaGrpcClient.obtenerUbicacionCamiones(idsDonaciones);
+
+      camiones = response.getUbicacionesList().stream()
+          .filter(u -> idsDonaciones.contains(u.getIdDonacion()))
+          .map(u -> Map.<String, Object>of(
+              "idDonacion", u.getIdDonacion(),
+              "patente", u.getPatente(),
+              "latitud", u.getLatitud(),
+              "longitud", u.getLongitud(),
+              "velocidad", u.getVelocidad(),
+              "actualizacion", u.getUltimaActualizacion()
+          ))
+          .toList();
+    }
+
+    model.put("camiones", camiones);
     return model;
   }
 }

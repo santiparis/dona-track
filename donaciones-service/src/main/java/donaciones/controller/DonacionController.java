@@ -20,6 +20,7 @@ import donaciones.dto.DonacionRequestDTO;
 import donaciones.dto.DonacionResponseDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.RegistroCambioEstadoDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.web.DatosMock;
@@ -27,6 +28,7 @@ import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import logistica.grpc.ReportarEntregaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,17 +48,20 @@ public class DonacionController {
   private final RepositorioPersonas personasRepository;
   private final PersonasAdministradorasRepository administradorasRepository;
   private final Notificador notificador;
+  private final LogisticaGrpcClient logisticaGrpcClient;
 
   public DonacionController(
       DonacionRepository donacionesRepository,
       RepositorioPersonas personasRepository,
       PersonasAdministradorasRepository administradorasRepository,
-      Notificador notificador
+      Notificador notificador,
+      LogisticaGrpcClient logisticaGrpcClient
   ) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
     this.administradorasRepository = administradorasRepository;
     this.notificador = notificador;
+    this.logisticaGrpcClient = logisticaGrpcClient;
   }
 
   public void listar(Context ctx) {
@@ -548,15 +553,39 @@ public class DonacionController {
   }
 
   public void confirmarRecepcion(Context ctx) {
-    donacionDeLaEntidad(ctx);
-    // Sin persistencia todavía: acá la donación pasa a Entregada y se guardan las fotos de ctx.uploadedFiles("fotos")
-    ctx.redirect("/entidad/donaciones");
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
+    try {
+
+      // Simplemente notificamos a Logística por gRPC
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
+
+      if (!response.getExito()) {
+        ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
+        return;
+      }
+
+      ctx.redirect("/entidad/donaciones");
+    } catch (Exception e) {
+      ctx.status(500).result("Error al procesar la confirmación: " + e.getMessage());
+    }
   }
 
   public void informarNoRecibida(Context ctx) {
-    donacionDeLaEntidad(ctx);
-    // Sin persistencia todavía: acá la entrega se marca No recibida con el motivo, para que la revise la administración
-    ctx.redirect("/entidad/donaciones");
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
+    try {
+
+      // Simplemente notificamos a Logística por gRPC
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false);
+
+      if (!response.getExito()) {
+        ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
+        return;
+      }
+
+      ctx.redirect("/entidad/donaciones");
+    } catch (Exception e) {
+      ctx.status(500).result("Error al procesar el rechazo: " + e.getMessage());
+    }
   }
 
   private Donacion donacionDeLaEntidad(Context ctx) {

@@ -71,7 +71,8 @@ public class SesionController {
       if (!List.of("HUMANA", "JURIDICA", "ENTIDAD").contains(tipo)) {
         throw new IllegalArgumentException("Elegí un tipo de cuenta válido.");
       }
-      String email = validarEmail(obligatorio(ctx, "email", "El correo electrónico"));
+      String email = validarEmail(obligatorio(ctx, "email", "El correo electrónico"),
+          "Ingresá un correo válido para la cuenta.");
       String password = ctx.formParam("password");
       if (password == null || password.isBlank() || password.length() < 8 || password.length() > 128) {
         throw new IllegalArgumentException("La contraseña debe tener entre 8 y 128 caracteres.");
@@ -164,7 +165,9 @@ public class SesionController {
     String representantes = Objects.requireNonNullElse(ctx.formParam("correos"), "");
     if (representantes.length() > 5000) throw new IllegalArgumentException("La lista de correos es demasiado larga.");
     for (String correo : representantes.split("\\R")) {
-      if (!correo.isBlank()) correos.add(validarEmail(correo.trim()));
+      if (!correo.isBlank()) {
+        correos.add(validarEmail(correo.trim(), "Revisá los correos de representantes. Ingresá uno válido por línea."));
+      }
     }
     Contacto contacto = new ContactoPorEmail(email);
     EntidadBeneficiaria entidad = new EntidadBeneficiaria(obligatorio(ctx, "razonSocial", "La razón social"),
@@ -199,9 +202,9 @@ public class SesionController {
     return valor;
   }
 
-  private String validarEmail(String email) {
+  private String validarEmail(String email, String mensajeError) {
     if (email.length() > 254 || !email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
-      throw new IllegalArgumentException("Ingresá un correo electrónico válido.");
+      throw new IllegalArgumentException(mensajeError);
     }
     return email.toLowerCase(Locale.ROOT);
   }

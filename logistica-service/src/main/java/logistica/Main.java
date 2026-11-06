@@ -1,19 +1,25 @@
 package logistica;
 
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
 import logistica.controller.CamionesController;
-import logistica.db.TransaccionPorRequest;
 import logistica.controller.DonacionesAPIController;
 import logistica.controller.EntregasController;
 import logistica.controller.PlanificadorController;
 import logistica.controller.RutasController;
-import logistica.retrofit_client.RetrofitConfig;
+import logistica.db.TransaccionPorRequest;
+import logistica.grpc.DonacionesGrpcClient;
+import logistica.grpc.LogisticaServiceImpl;
+import logistica.notificacion.NotificadorEntregas;
+import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
-import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.SeedCamiones;
-import logistica.planificacion.ClientePlanificador;
+import logistica.retrofit_client.RetrofitConfig;
+
+import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) {
@@ -23,23 +29,43 @@ public class Main {
     var retrofitConfig = new RetrofitConfig();
     var transaccion = new TransaccionPorRequest();
 
-    var notificadorEntregas = new NotificadorEntregas(retrofitConfig.donacionesAPICalls());
+    // 1. Cliente gRPC hacia donaciones-service (puerto 9091)
+    var donacionesGrpcClient = new DonacionesGrpcClient(
+        System.getenv().getOrDefault("DONACIONES_GRPC_HOST", "localhost"), 9091);
+
+    var notificadorEntregas = new NotificadorEntregas(donacionesGrpcClient);
     var donacionesController = new DonacionesAPIController(repositorioDonaciones);
     var rutasController = new RutasController(repositorioRutas, notificadorEntregas);
     var entregasController = new EntregasController(repositorioRutas, notificadorEntregas);
     var camionesController = new CamionesController(repositorioCamiones);
 
     var clientePlanificador = new ClientePlanificador(retrofitConfig.planificadorAPICalls());
-    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador);
+    var planificadorController = new PlanificadorController(repositorioCamiones, repositorioRutas, repositorioDonaciones, clientePlanificador, notificadorEntregas);
 
-    // la flota ya no vive en memoria: si la base la tiene, cargarla de nuevo duplicaria
-    // camiones y romperia el unique de la patente
+    // 2. Servidor gRPC propio de logistica-service (puerto 9090)
+    try {
+      Server gRpcServer = ServerBuilder.forPort(9090)
+          .addService(new LogisticaServiceImpl(repositorioRutas))
+          .build();
+      gRpcServer.start();
+      System.out.println("Servidor gRPC de logistica-service escuchando en el puerto 9090...");
+
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        System.out.println("Apagando servidor gRPC de logistica-service...");
+        gRpcServer.shutdown();
+      }));
+    } catch (IOException e) {
+      System.err.println("Error al iniciar el servidor gRPC de logistica-service: " + e.getMessage());
+    }
+
+    // Carga de flota inicial
     transaccion.withTransaction(() -> {
       if (repositorioCamiones.obtenerTodos().isEmpty()) {
         repositorioCamiones.agregarTodos(SeedCamiones.camiones());
       }
     });
 
+    // 3. Servidor Web Javalin/HTTP (puerto 7070)
     var app = Javalin.create(config -> {
       // una transaccion por pedido: se abre antes del handler y se cierra despues
       config.routes.before(ctx -> transaccion.abrir());
@@ -56,7 +82,7 @@ public class Main {
       config.routes.put("/api/camiones/{id}", camionesController::putCamion);
 
       // Actualización de la localización de un camión
-      config.routes.patch("/api/camiones/{id}/localizacion", camionesController::actualizarLocalizacion);
+      config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
       config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);

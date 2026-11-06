@@ -7,7 +7,7 @@ services:
   logistica-api:
     environment:
       DONACIONES_URL: http://${DONACIONES_IP}:8081/
-      PLANIFICADOR_URL: http://mock-planificador:9090/
+      PLANIFICADOR_URL: http://mock-planificador:9092/
 
   mysql:
     ports: !reset []

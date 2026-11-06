@@ -9,22 +9,23 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.dto.AsignacionRequestDTO;
 import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.dto.EntidadRankingDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class AsignacionesController {
   private static final Logger logger = LoggerFactory.getLogger(AsignacionesController.class);
@@ -33,46 +34,70 @@ public class AsignacionesController {
   private final EntidadBeneficiariaRepository entidadRepository;
   private final SugerenciaAsignacionRepository sugerenciaRepository;
   private final OrganizadorAsignaciones organizadorAsignaciones;
-  private final LogisticaAPICalls logisticaAPICalls;
+  private final LogisticaGrpcClient logisticaGrpcClient;
   private final Notificador notificador;
 
   public AsignacionesController(
       DonacionRepository donacionRepository,
       EntidadBeneficiariaRepository entidadRepository,
       SugerenciaAsignacionRepository sugerenciaRepository,
-      LogisticaAPICalls logisticaAPICalls,
+      LogisticaGrpcClient logisticaGrpcClient,
       Notificador notificador,
       OrganizadorAsignaciones organizadorAsignaciones
   ) {
     this.donacionRepository = donacionRepository;
     this.entidadRepository = entidadRepository;
     this.sugerenciaRepository = sugerenciaRepository;
-    this.logisticaAPICalls = logisticaAPICalls;
+    this.logisticaGrpcClient = logisticaGrpcClient;
     this.notificador = notificador;
     this.organizadorAsignaciones = organizadorAsignaciones;
   }
 
   public List<SugerenciaAsignacion> procesarDonacionesEnDeposito() {
-    List<Donacion> donacionesEnDeposito = donacionRepository.obtenerTodas().stream()
-        .filter(donacion -> donacion.getEstado() == EstadoDonacion.EN_DEPOSITO)
-        .toList();
+    List<Donacion> donacionesEnDeposito = donacionRepository.obtenerEnDeposito();
 
     List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
         .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
         .toList();
 
-    List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
+    List<SugerenciaAsignacion> sugerenciasGeneradas = donacionesEnDeposito.stream()
+        .map(donacion -> organizadorAsignaciones.procesarMatchmaking(donacion, entidadesConNecesidadesActivas))
+        .toList();
+    sugerenciasGeneradas.forEach(sugerenciaRepository::guardar);
 
-    for (Donacion donacion : donacionesEnDeposito) {
-      SugerenciaAsignacion sugerencia = organizadorAsignaciones.procesarMatchmaking(
-          donacion,
-          entidadesConNecesidadesActivas
-      );
+    return sugerenciasGeneradas;
+  }
 
-      sugerenciaRepository.guardar(sugerencia);
-      sugerenciasGeneradas.add(sugerencia);
+  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamañoLote) {
+    if (tamañoLote < 1) {
+      throw new IllegalArgumentException("El tamaño del lote debe ser positivo");
     }
 
+    List<Long> idsDonaciones = donacionRepository.obtenerEnDeposito().stream()
+        .map(Donacion::getId)
+        .toList();
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+    transaccion.perThreadEntityManagerAccess().dispose();
+
+    List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
+    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamañoLote) {
+      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamañoLote, idsDonaciones.size()));
+      try {
+        List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
+            .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
+            .toList();
+        List<SugerenciaAsignacion> sugerenciasLote = idsLote.stream()
+            .map(donacionRepository::buscarPorId)
+            .flatMap(Optional::stream)
+            .filter(donacion -> donacion.getEstado() == EstadoDonacion.EN_DEPOSITO)
+            .map(donacion -> organizadorAsignaciones.procesarMatchmaking(donacion, entidadesConNecesidadesActivas))
+            .toList();
+        transaccion.withTransaction(() -> sugerenciasLote.forEach(sugerenciaRepository::guardar));
+        sugerenciasGeneradas.addAll(sugerenciasLote);
+      } finally {
+        transaccion.perThreadEntityManagerAccess().dispose();
+      }
+    }
     return sugerenciasGeneradas;
   }
 
@@ -156,7 +181,7 @@ public class AsignacionesController {
   ) {
     donacion.asignarA(entidad);
     if (notificador != null) notificador.donacionAsignada(donacion);
-    if (logisticaAPICalls == null) return;
+    if (logisticaGrpcClient == null) return;
 
     DonacionLogisticaDTO dto = new DonacionLogisticaDTO(
         donacion.getId(), donacion.getBien().getCantidad(), donacion.getBien().getUnidad(),
@@ -174,12 +199,19 @@ public class AsignacionesController {
 
   private void enviarAsignacionALogistica(DonacionLogisticaDTO dto) {
     try {
-      Response<String> response = logisticaAPICalls.enviarDonaciones(List.of(dto)).execute();
-      if (!response.isSuccessful()) {
-        throw new IllegalStateException("Logística respondió con HTTP " + response.code());
+      // Origen predetermindo.
+      String origen = "DEPOSITO_CENTRAL";
+
+      TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(
+          String.valueOf(dto.donacionID()),
+          origen,
+          dto.destino()
+      );
+      if (!response.getExito()) {
+        throw new IllegalStateException("Error reportado por gRPC");
       }
     } catch (Exception e) {
-      throw new IllegalStateException("No se pudo informar la asignación a logística", e);
+      throw new IllegalStateException("No se pudo informar la asignación a logística vía gRPC", e);
     }
   }
 

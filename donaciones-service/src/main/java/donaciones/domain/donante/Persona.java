@@ -11,8 +11,7 @@ import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "persona")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Persona implements Notificable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_id") private Long id;
     @Enumerated(EnumType.STRING) @Column(name = "tipo_doc") private TipoDoc tipoDoc;
@@ -23,8 +22,6 @@ public abstract class Persona implements Notificable {
     @Where(clause = "tipo_notificable = 'PERSONA'")
     @OrderBy("id")
     private List<Contacto> contactos = new ArrayList<>();
-    // Aclaración: Es @Transient porque la entidad Contacto tiene un campo que indica si es el medio predeterminado de la persona
-    @Transient private Contacto medioPredeterminado;
     @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "usuario_id") private Usuario usuario;
     @Column(name = "ultima_interaccion") private LocalDateTime ultimaInteraccion = LocalDateTime.now();
 
@@ -84,10 +81,7 @@ public abstract class Persona implements Notificable {
     }
 
     public Contacto getMedioPredeterminado() {
-        if (medioPredeterminado == null) {
-            medioPredeterminado = contactoPredeterminado();
-        }
-        return medioPredeterminado;
+        return contactoPredeterminado();
     }
 
     public void setMedioPredeterminado(Contacto medioPredeterminado) {
@@ -95,7 +89,6 @@ public abstract class Persona implements Notificable {
             throw new IllegalArgumentException("El medio predeterminado debe existir en la lista de contactos.");
         }
         this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
-        this.medioPredeterminado = medioPredeterminado;
     }
 
     private Contacto contactoPredeterminado() {

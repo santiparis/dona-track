@@ -130,26 +130,16 @@ class Necesidad {
     descripcion: String
     cantidadesRequeridas: Map<Subcategoria, Integer>
     cantidadesSuplidas: Map<Subcategoria, Integer>
-    renovacion: PoliticaDeRenovacion
-    ---
-    registrarSuplido(bien)
-    estaSatisfecha()
-    seSatisfaceCon(bien)
-}
-
-interface PoliticaDeRenovacion {
-    seRenueva()
-    estaVencida()
-}
-
-class SinRenovacion 
-
-class RenovacionPeriodica {
     fechaInicio: LocalDate
     fechaFin: LocalDate
     periodo: Periodo
     ---
-    calcularVencimiento()
+    registrarSuplido(bien)
+    estaSatisfecha()
+    seSatisfaceCon(bien)
+    seRenueva()
+    estaVencida()
+    calcularFechaFin()
 }
 
 enum Periodo {
@@ -208,13 +198,8 @@ Bien --> EstadoBien
 Subcategoria --> Categoria
 
 Necesidad --> "*" Subcategoria
-Necesidad --> PoliticaDeRenovacion
+Necesidad --> Periodo
 Necesidad ..> Bien
-
-SinRenovacion .up.|> PoliticaDeRenovacion
-RenovacionPeriodica .up.|> PoliticaDeRenovacion
-
-RenovacionPeriodica --> Periodo
 
 EntidadBeneficiaria --> "*" Necesidad
 EntidadBeneficiaria --> "*" Donacion

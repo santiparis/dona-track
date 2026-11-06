@@ -1,27 +1,26 @@
 package logistica.notificacion;
 
-import java.io.IOException;
 import java.util.List;
 import logistica.domain.DonacionEncolada;
 import logistica.domain.Entrega;
-import logistica.dto.CambioEstadoDTO;
-import logistica.retrofit_client.DonacionesAPICalls;
+import logistica.grpc.DonacionesGrpcClient;
+import logistica.grpc.CambiarEstadoResponse;
 
-// Unico punto del servicio que le habla a donaciones-service.
-// Traduce los hechos de logistica a los estados que entiende la otra API.
+// Único punto del servicio que le habla a donaciones-service.
+// Traduce los hechos de logística a los estados que entiende el servicio de donaciones mediante gRPC.
 public class NotificadorEntregas {
 
   private static final String EN_TRASLADO = "EN_TRASLADO";
   private static final String ENTREGADA = "ENTREGADA";
   private static final String ENTREGA_FALLIDA = "ENTREGA_FALLIDA";
 
-  private final DonacionesAPICalls donacionesApi;
+  private final DonacionesGrpcClient donacionesGrpcClient;
 
-  public NotificadorEntregas(DonacionesAPICalls donacionesApi) {
-    this.donacionesApi = donacionesApi;
+  public NotificadorEntregas(DonacionesGrpcClient donacionesGrpcClient) {
+    this.donacionesGrpcClient = donacionesGrpcClient;
   }
 
-  //TODO: Modificar el string de estos 3 metodos
+  // TODO: Modificar el string de estos 3 métodos según corresponda
   public void avisarEnTraslado(List<Entrega> entregas) {
     entregas.forEach(entrega -> this.notificarEstado(entrega, EN_TRASLADO, "https://miratuenvio.com/ABC123"));
   }
@@ -34,19 +33,23 @@ public class NotificadorEntregas {
     this.notificarEstado(entrega, ENTREGA_FALLIDA, "porque si");
   }
 
-  // donaciones cambia el estado por donacion; una entrega puede agrupar varias
+  // donaciones cambia el estado por donación; una entrega puede agrupar varias
   private void notificarEstado(Entrega entrega, String nuevoEstado, String datosAdicionales) {
     try {
       for (DonacionEncolada donacion : entrega.getListaDonaciones()) {
-        var respuesta = donacionesApi.cambiarEstado(
-            donacion.getDonacionID(), new CambioEstadoDTO(nuevoEstado, datosAdicionales)).execute();
-        if (!respuesta.isSuccessful()) {
-          if (respuesta.errorBody() != null) respuesta.errorBody().close();
-          throw new IllegalStateException("Donaciones rechazó el aviso: HTTP " + respuesta.code());
+        CambiarEstadoResponse response = donacionesGrpcClient.cambiarEstadoDonacion(
+            donacion.getDonacionID(),
+            nuevoEstado,
+            datosAdicionales
+        );
+
+        if (!response.getExito()) {
+          System.err.printf("Error al notificar donación ID %d a donaciones-service: %s%n",
+              donacion.getDonacionID(), response.getMensaje());
         }
       }
-    } catch (IOException e) {
-      throw new IllegalStateException("No se pudo notificar a donaciones-service", e);
+    } catch (Exception e) {
+      throw new IllegalStateException("No se pudo notificar a donaciones-service vía gRPC", e);
     }
   }
 }

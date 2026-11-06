@@ -11,19 +11,17 @@ import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.dto.AsignacionRequestDTO;
+import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
-import retrofit2.Call;
-import retrofit2.Response;
-
-import java.io.IOException;
 import io.javalin.http.Context;
+import logistica.grpc.TrazarRutaResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +29,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,7 +41,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
   private EntidadBeneficiariaRepository entidadRepository;
   private SugerenciaAsignacionRepository sugerenciaRepository;
   private OrganizadorAsignaciones organizadorAsignaciones;
-  private LogisticaAPICalls logisticaAPICalls;
+  private LogisticaGrpcClient logisticaGrpcClient;
   private Notificador notificador;
   private AsignacionesController controller;
 
@@ -55,16 +53,26 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     organizadorAsignaciones = new OrganizadorAsignaciones(
         List.of(new CompatibilidadSemantica(), new PrioridadSubAtendidos())
     );
-    logisticaAPICalls = mock(LogisticaAPICalls.class);
+
+    // Mock del cliente gRPC en lugar de Retrofit
+    logisticaGrpcClient = mock(LogisticaGrpcClient.class);
     notificador = mock(Notificador.class);
-    Call<String> llamadaLogistica = mock(Call.class);
-    when(logisticaAPICalls.enviarDonaciones(anyList())).thenReturn(llamadaLogistica);
-    when(llamadaLogistica.execute()).thenReturn(Response.success("ok"));
+
+    // Mock de la respuesta gRPC al trazar ruta
+    TrazarRutaResponse respuestaExitosa = TrazarRutaResponse.newBuilder()
+        .setIdRuta("RUTA-TEST-123")
+        .setExito(true)
+        .setMensaje("OK")
+        .build();
+
+    when(logisticaGrpcClient.trazarRuta(anyString(), anyString(), anyString()))
+        .thenReturn(respuestaExitosa);
+
     controller = new AsignacionesController(
         donacionRepository,
         entidadRepository,
         sugerenciaRepository,
-        logisticaAPICalls,
+        logisticaGrpcClient,
         notificador,
         organizadorAsignaciones
     );
@@ -202,7 +210,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     assertEquals(entidadCoincidente.getId(), donacionEnDeposito.getEntidadBeneficiaria().getId());
     assertTrue(controller.obtenerSugerenciasGuardadas().isEmpty());
     verify(notificador).donacionAsignada(donacionEnDeposito);
-    verify(logisticaAPICalls).enviarDonaciones(anyList());
+    verify(logisticaGrpcClient).trazarRuta(anyString(), anyString(), anyString());
   }
 
   @Test
@@ -294,7 +302,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     EntidadBeneficiaria entidad = new EntidadBeneficiaria(razonSocial, direccion, telefono, Collections.emptyList());
     Map<Subcategoria, Integer> cantidadesRequeridas = new HashMap<>();
     cantidadesRequeridas.put(subcategoria, cantidadRequerida);
-    Necesidad necesidad = new Necesidad(subcategoria.name() + " de cualquier tipo", new SinRenovacion(), cantidadesRequeridas);
+    Necesidad necesidad = new Necesidad(subcategoria.name() + " de cualquier tipo", false, null, null, cantidadesRequeridas);
     entidad.registrarNecesidad(necesidad);
     return entidad;
   }

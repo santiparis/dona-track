@@ -40,20 +40,17 @@ Los nombres de usuario son únicos. En una base existente, revisar `donaciones-s
 
 `web/AccesoApi.java` exige una sesión administradora para `/api/*`: sin sesión devuelve JSON con 401; con un rol distinto, 403. Para usar Postman, primero enviar el formulario a `POST /login` y conservar la cookie en las siguientes peticiones.
 
-Logística necesita avisar cambios de estado sin iniciar una sesión de persona. Esa única llamada, `PATCH /api/donaciones/{id}`, admite el encabezado `X-Token-Interno`. Ambos servicios leen la misma clave de `DONACIONES_TOKEN_INTERNO`. El cliente Retrofit la adjunta solo a las llamadas a Donaciones, nunca al planificador. La clave no habilita el resto del CRUD.
-
-Si la variable no está configurada, el acceso con clave interna queda deshabilitado. Los errores HTTP al avisar un estado se informan como fallos, en lugar de dar el aviso por exitoso. La autenticación de las otras APIs de Logística queda fuera de este cambio.
+Logística informa los cambios de estado por gRPC. La API REST de Donaciones exige una sesión administradora también para PATCH.
 
 ## Probar con Docker
 
-En PowerShell, desde la raíz del repositorio, generar una clave local y levantar los servicios en esa misma terminal:
+Desde la raíz del repositorio, levantar los servicios con Docker Compose:
 
 ```powershell
-$env:DONACIONES_TOKEN_INTERNO = [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
 docker compose up --build -d
 ```
 
-Para conservar la clave entre terminales, se puede definir en un `.env` local, que está ignorado por Git. En Azure, configurar exactamente el mismo valor en los dos hosts. No compartir ni subir ese archivo.
+En Docker local, los servicios se comunican por gRPC usando el nombre del contenedor. El despliegue entre VMs requiere configurar los hosts y la conectividad privada gRPC entre ellas.
 
 Entrar a `http://localhost:8081/usuarios/nuevo`, crear una cuenta e ingresar con su correo. Probar una contraseña incorrecta, visitar una sección de otro rol y cerrar sesión. Después de salir, volver a una URL privada debe llevar al login.
 
@@ -75,7 +72,7 @@ El comando guarda la cuenta y la persona administradora en una transacción. Si 
 mvn test
 ```
 
-Las pruebas de sesión usan HTTP real y una base HSQLDB en memoria. Cubren credenciales, registro de los tres tipos, validaciones, permisos, cierre de sesión, cookies anteriores, cambio de rol y acceso a la API. Las pruebas de integración con Logística verifican el encabezado interno y las respuestas de error.
+Las pruebas de sesión usan HTTP real y una base HSQLDB en memoria. Cubren credenciales, registro de los tres tipos, validaciones, permisos, cierre de sesión, cookies anteriores, cambio de rol y acceso a la API.
 
 Las pantallas privadas de donaciones, necesidades y notificaciones muestran datos de la cuenta autenticada. El historial del donante y la recepción de una entidad también comprueban la pertenencia del registro. Una cuenta recién creada muestra listas vacías hasta que tenga datos en la base.
 
@@ -87,6 +84,6 @@ mvn -pl donaciones-service "-Dtest=RegistroHttpTest#cadaCuentaVeSusDatosYSoloAbr
 
 La prueba registra dos donantes y dos entidades, carga datos distintos en una base en memoria y verifica que los listados no se mezclen. También intenta abrir la recepción y la edición de una necesidad de la otra entidad.
 
-El seguimiento privado queda pendiente de una consulta a Logística por titular. El listado general de entidades y otras pantallas de la entrega todavía usan datos de ejemplo. Los formularios web de necesidades y recepción siguen pendientes de persistencia. Las cuentas antiguas que tuvieran contraseñas en texto plano necesitan una contraseña almacenada con el formato actual para ingresar.
+El seguimiento privado consulta a Logística por las donaciones en traslado de la cuenta. El listado general de entidades y otras pantallas de la entrega todavía usan datos de ejemplo. Los formularios web de necesidades siguen pendientes de persistencia. Las cuentas antiguas que tuvieran contraseñas en texto plano necesitan una contraseña almacenada con el formato actual para ingresar.
 
 Referencia del filtro de acceso: [documentación de Javalin 6](https://javalin.io/archive/docs/v6.X.html#access-management).

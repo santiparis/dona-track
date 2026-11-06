@@ -1,6 +1,5 @@
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.Necesidad;
-import donaciones.domain.SinRenovacion;
 import donaciones.domain.Subcategoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ public class EntidadBeneficiariaTest {
     @BeforeEach
     void setUp() {
         entidad = new EntidadBeneficiaria("Comedor Sol", "Calle 1", "1111-1111", List.of("sol@comedor.org"));
-        necesidad = new Necesidad("necesitan fideos", new SinRenovacion(), Map.of(Subcategoria.FIDEOS, 10));
+        necesidad = new Necesidad("necesitan fideos", false, null, null, Map.of(Subcategoria.FIDEOS, 10));
     }
 
     @Test
@@ -36,7 +35,7 @@ public class EntidadBeneficiariaTest {
 
     @Test
     void registraMultiplesNecesidadesDistintas() {
-        Necesidad otra = new Necesidad("necesitan ropa", new SinRenovacion(), Map.of(Subcategoria.REMERAS, 5));
+        Necesidad otra = new Necesidad("necesitan ropa", false, null, null, Map.of(Subcategoria.REMERAS, 5));
         entidad.registrarNecesidad(necesidad);
         entidad.registrarNecesidad(otra);
         assertEquals(2, entidad.getNecesidades().size());

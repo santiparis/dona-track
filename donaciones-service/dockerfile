@@ -4,6 +4,7 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 
 COPY pom.xml ./pom.xml
+COPY assembly.xml ./assembly.xml
 COPY donaciones-service/pom.xml ./donaciones-service/pom.xml
 COPY donaciones-service/src ./donaciones-service/src
 

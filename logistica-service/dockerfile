@@ -5,6 +5,7 @@ FROM maven:3.9-eclipse-temurin-17 AS constructor
 WORKDIR /workdir
 
 COPY pom.xml .
+COPY assembly.xml .
 COPY logistica-service/pom.xml ./logistica-service/pom.xml
 COPY logistica-service/src ./logistica-service/src
 

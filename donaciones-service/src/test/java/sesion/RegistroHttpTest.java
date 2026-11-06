@@ -51,11 +51,11 @@ class RegistroHttpTest {
         });
         app.before(ctx -> transaccion.abrir());
         app.after(ctx -> transaccion.cerrar(ctx.statusCode()));
-        new Router(new DonacionController(new DonacionRepository(), new RepositorioPersonas(), null, null),
+        new Router(new DonacionController(new DonacionRepository(), new RepositorioPersonas(), null, null, null),
                 org.mockito.Mockito.mock(donaciones.controller.DonanteController.class),
                 new EntidadesBeneficiariasController(new EntidadBeneficiariaRepository()),
                 org.mockito.Mockito.mock(donaciones.controller.AsignacionesController.class),
-                new donaciones.controller.CamionesController(null),
+                new donaciones.controller.CamionesController(null, new DonacionRepository()),
                 new NotificacionesController(new NotificacionRepository()), new PublicoController(), controller).configure(app);
         app.start(0);
     }
@@ -218,7 +218,7 @@ class RegistroHttpTest {
                 donacion.asignarA(entidad);
                 donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, "Historial privado " + i);
                 new DonacionRepository().guardar(donacion);
-                entidad.registrarNecesidad(new Necesidad("Necesidad privada " + i, null, Map.of(bien.getSubcategoria(), 5)));
+                entidad.registrarNecesidad(new Necesidad("Necesidad privada " + i, false, null, null, Map.of(bien.getSubcategoria(), 5)));
                 new NotificacionRepository().guardar(new Notificacion(donante, "Aviso donante " + i));
                 new NotificacionRepository().guardar(new Notificacion(entidad, "Aviso entidad " + i));
                 usuarios.entityManager().flush();

@@ -4,14 +4,11 @@ import donaciones.domain.EntidadBeneficiaria;
 import donaciones.db.TransaccionPorRequest;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
-import javax.persistence.LockModeType;
-import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
 public class EntidadBeneficiariaRepository implements WithSimplePersistenceUnit {
   public List<EntidadBeneficiaria> obtenerTodas() {
-    TransaccionPorRequest.iniciarSiEsNecesario();
     return createQuery("from EntidadBeneficiaria", EntidadBeneficiaria.class).getResultList();
   }
 
@@ -25,19 +22,12 @@ public class EntidadBeneficiariaRepository implements WithSimplePersistenceUnit 
 
 
   public Optional<EntidadBeneficiaria> buscarPorId(Long id) {
-    TransaccionPorRequest.iniciarSiEsNecesario();
     return Optional.ofNullable(find(EntidadBeneficiaria.class, id));
   }
 
   public Optional<EntidadBeneficiaria> buscarPorIdParaActualizar(Long id) {
     TransaccionPorRequest.iniciarSiEsNecesario();
-    entityManager().flush();
-    return Optional.ofNullable(entityManager().find(
-        EntidadBeneficiaria.class,
-        id,
-        LockModeType.PESSIMISTIC_WRITE,
-        Map.of("javax.persistence.lock.timeout", 2000)
-    ));
+    return Optional.ofNullable(find(EntidadBeneficiaria.class, id));
   }
 
   public Optional<EntidadBeneficiaria> obtenerPorId(Long id) { return buscarPorId(id); }

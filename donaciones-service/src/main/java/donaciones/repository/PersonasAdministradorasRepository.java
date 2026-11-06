@@ -19,7 +19,6 @@ public class PersonasAdministradorasRepository implements WithSimplePersistenceU
 
 
     public List<PersonaAdministradora> obtenerTodos() {
-        TransaccionPorRequest.iniciarSiEsNecesario();
         return createQuery("from PersonaAdministradora", PersonaAdministradora.class).getResultList();
     }
 

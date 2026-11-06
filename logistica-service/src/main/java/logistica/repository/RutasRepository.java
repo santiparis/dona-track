@@ -1,11 +1,17 @@
 package logistica.repository;
 
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
+import java.util.NoSuchElementException;
+import logistica.domain.Camion;
+import logistica.domain.Coordenadas;
 import logistica.domain.Entrega;
+import logistica.domain.EstadoEntrega;
 import logistica.domain.Ruta;
+import logistica.domain.EstadoRuta;
 
 import java.util.List;
 import java.util.Optional;
+import logistica.grpc.UbicacionCamion;
 
 public class RutasRepository implements WithSimplePersistenceUnit {
 
@@ -30,5 +36,78 @@ public class RutasRepository implements WithSimplePersistenceUnit {
         .setParameter("entregaId", entregaId)
         .getResultStream()
         .findFirst();
+  }
+
+  public Optional<Entrega> buscarEntregaPorDonacionId(Long donacionId) {
+    return createQuery(
+        "select e from Ruta r join r.entregas e join e.listaDonaciones d where d.donacionId = :donacionId",
+        Entrega.class
+    )
+        .setParameter("donacionId", donacionId)
+        .getResultStream()
+        .findFirst();
+  }
+
+  public List<UbicacionCamion> obtenerUbicacionCamionesPorIdsDonaciones(List<Long> idsDonaciones) {
+    if (idsDonaciones == null || idsDonaciones.isEmpty()) {
+      return List.of();
+    }
+
+    List<Ruta> rutasEnCurso = createQuery(
+        "select distinct r from Ruta r " +
+            "join r.entregas e " +
+            "join e.listaDonaciones d " +
+            "where r.estado = :estado " +
+            "and d.donacionID in :idsDonaciones", Ruta.class)
+        .setParameter("estado", EstadoRuta.EN_CURSO)
+        .setParameter("idsDonaciones", idsDonaciones)
+        .getResultList();
+
+    return rutasEnCurso.stream()
+        .flatMap(ruta -> ruta.getEntregas().stream()
+            .flatMap(entrega -> entrega.getListaDonaciones().stream())
+            .filter(donacion -> idsDonaciones.contains(donacion.getDonacionID()))
+            .map(donacion -> {
+              Camion camion = ruta.getCamion();
+              Coordenadas coords = (camion != null) ? camion.getLocalizacion() : null;
+
+              String fechaIso = (camion != null && camion.getUltimaActualizacion() != null)
+                  ? camion.getUltimaActualizacion().toString()
+                  : "";
+
+              return UbicacionCamion.newBuilder()
+                  .setIdDonacion(donacion.getDonacionID())
+                  .setPatente(camion != null ? camion.getPatente() : "")
+                  .setLatitud(coords != null ? coords.getLatitud() : 0.0)
+                  .setLongitud(coords != null ? coords.getLongitud() : 0.0)
+                  .setVelocidad(camion != null ? camion.getVelocidad() : 0.0)
+                  .setUltimaActualizacion(fechaIso)
+                  .build();
+            }))
+        .toList();
+  }
+
+  public void actualizarEstadoEntregaPorDonacion(Long donacionId, EstadoEntrega nuevoEstado) {
+    Entrega entrega = buscarEntregaPorDonacionId(donacionId)
+        .orElseThrow(() -> new NoSuchElementException("No se encontró entrega para la donación: " + donacionId));
+
+    if (nuevoEstado == EstadoEntrega.ENTREGADA) {
+      entrega.marcarEntregada();
+    } else if (nuevoEstado == EstadoEntrega.NO_RECIBIDA) {
+      entrega.marcarNoRecibida();
+    }
+  }
+
+  public void actualizarEstadoEntrega(Long entregaId, EstadoEntrega nuevoEstado) {
+    withTransaction(() -> {
+      Entrega entrega = buscarEntregaPorId(entregaId)
+          .orElseThrow(() -> new NoSuchElementException("No se encontró entrega con ID: " + entregaId));
+
+      if (nuevoEstado == EstadoEntrega.ENTREGADA) {
+        entrega.marcarEntregada();
+      } else if (nuevoEstado == EstadoEntrega.NO_RECIBIDA) {
+        entrega.marcarNoRecibida();
+      }
+    });
   }
 }

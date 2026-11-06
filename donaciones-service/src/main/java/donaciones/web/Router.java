@@ -39,7 +39,7 @@ public class Router {
 
   public void configure(Javalin app) {
     app.beforeMatched(SesionUsuario::verificarAcceso);
-    AccesoApi accesoApi = new AccesoApi(System.getenv("DONACIONES_TOKEN_INTERNO"));
+    AccesoApi accesoApi = new AccesoApi();
     app.beforeMatched(accesoApi::verificar);
     app.error(403, "html", ctx -> ctx.render("sesion/sin-permiso",
         Map.of("titulo", "Acceso denegado")));
@@ -71,7 +71,7 @@ public class Router {
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante(ctx)));
-    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante()));
+    app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante(ctx)));
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
     app.post("/entidad/necesidades", entidadesController::registrarNecesidad);
@@ -82,7 +82,7 @@ public class Router {
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad(ctx)));
-    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad()));
+    app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad(ctx)));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
     app.post("/admin/donantes", donanteController::registrarDonante);
@@ -140,5 +140,9 @@ public class Router {
     app.get("/api/sugerencias/{id}/coincidencias", asignacionesController::getCoincidencias);
     app.get("/api/sugerencias/{id}/algoritmos", asignacionesController::getEntidadesPorAlgoritmo);
     app.patch("/api/sugerencias/{id}/asignaciones", asignacionesController::asignarDonacion);
+
+    // Entregas
+    app.post("/api/entregas/{id}/confirmacion", donacionController::confirmarRecepcion);
+    app.post("/api/entregas/{id}/rechazo", donacionController::informarNoRecibida);
   }
 }
