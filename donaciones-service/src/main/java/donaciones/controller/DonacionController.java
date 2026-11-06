@@ -469,7 +469,7 @@ public class DonacionController {
   }
 
   public Map<String, Object> deposito(Context ctx) {
-    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA|PROXIMA
+    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA
     String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
     String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
 
@@ -481,9 +481,10 @@ public class DonacionController {
 
     DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     model.put("donaciones", donacionesRepository.obtenerTodas().stream()
-        .filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO)
+        // Las vencidas siguen en el depósito, marcadas: las marca a mano la administradora
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO || d.getEstado() == EstadoDonacion.VENCIDA)
         .filter(d -> categoria.isEmpty() || categoria.equals(d.getBien().getSubcategoria().getCategoria().name()))
-        .filter(d -> vence.isEmpty() || vence.equals(d.getBien().estadoVencimiento().name()))
+        .filter(d -> vence.isEmpty() || d.getEstado() == EstadoDonacion.VENCIDA)
         .map(d -> Map.of(
             "id", d.getId().toString(),
             "bien", d.getBien().getSubcategoria().nombre(),
@@ -491,7 +492,9 @@ public class DonacionController {
             "donante", d.getDonante().getNombre(),
             "ingreso", d.getFecha().format(formatoFecha),
             "vence", d.getBien().getVencimiento() == null ? "—" : d.getBien().getVencimiento().format(formatoFecha),
-            "vencimiento", d.getBien().estadoVencimiento().name()))
+            // VENCIDA: ya marcada; NO_APLICA: no es perecedero; vacío: se puede marcar
+            "vencimiento", d.getEstado() == EstadoDonacion.VENCIDA ? "VENCIDA"
+                : d.getBien().getVencimiento() == null ? "NO_APLICA" : ""))
         .toList());
     model.put("categorias", Arrays.stream(Categoria.values())
         .map(c -> Map.of("valor", c.name(), "texto", c.nombre()))

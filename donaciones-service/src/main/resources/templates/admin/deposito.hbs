@@ -21,7 +21,6 @@
             <select name="vence">
                 <option value="">Cualquiera</option>
                 <option value="VENCIDA" {{#if (eq venceElegido "VENCIDA")}}selected{{/if}}>Vencidas</option>
-                <option value="PROXIMA" {{#if (eq venceElegido "PROXIMA")}}selected{{/if}}>Vencen esta semana</option>
             </select>
         </label>
         <button class="btn2" type="submit">Filtrar</button>
@@ -56,9 +55,11 @@
                                     {{vence}}
                                 {{/if}}
                             </td>
-                            {{!-- Solo las perecederas se pueden marcar como vencidas --}}
+                            {{!-- Solo las perecederas que no están vencidas se pueden marcar --}}
                             <td>
                                 {{#if (eq vencimiento "NO_APLICA")}}
+                                    <span class="muted">—</span>
+                                {{else if (eq vencimiento "VENCIDA")}}
                                     <span class="muted">—</span>
                                 {{else}}
                                     <form action="/admin/donaciones/{{id}}/vencida" method="post">
