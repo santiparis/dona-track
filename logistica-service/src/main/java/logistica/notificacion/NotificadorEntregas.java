@@ -38,7 +38,12 @@ public class NotificadorEntregas {
   private void notificarEstado(Entrega entrega, String nuevoEstado, String datosAdicionales) {
     try {
       for (DonacionEncolada donacion : entrega.getListaDonaciones()) {
-        donacionesApi.cambiarEstado(donacion.getDonacionID(), new CambioEstadoDTO(nuevoEstado, datosAdicionales)).execute();
+        var respuesta = donacionesApi.cambiarEstado(
+            donacion.getDonacionID(), new CambioEstadoDTO(nuevoEstado, datosAdicionales)).execute();
+        if (!respuesta.isSuccessful()) {
+          if (respuesta.errorBody() != null) respuesta.errorBody().close();
+          throw new IllegalStateException("Donaciones rechazó el aviso: HTTP " + respuesta.code());
+        }
       }
     } catch (IOException e) {
       throw new IllegalStateException("No se pudo notificar a donaciones-service", e);

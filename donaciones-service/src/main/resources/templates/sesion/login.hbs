@@ -3,6 +3,9 @@
         <form class="card" action="/login" method="post">
             <h1>Iniciar sesión</h1>
             <p class="muted">Para donantes, entidades beneficiarias y personas administradoras.</p>
+            {{#if registroExitoso}}
+                <p class="aviso" role="status">Tu cuenta fue creada. Ya podés iniciar sesión con tu correo electrónico.</p>
+            {{/if}}
             {{#if error}}
                 <p class="error-form" role="alert">{{error}}</p>
             {{/if}}

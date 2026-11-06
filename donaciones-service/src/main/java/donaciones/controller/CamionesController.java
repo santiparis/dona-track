@@ -21,7 +21,6 @@ public class CamionesController {
     model.put("titulo", "Camiones");
     model.put("rol", "admin");
     model.put("seccion", "camiones");
-    model.put("usuario", DatosMock.admin());   // MOCK
 
     // Los camiones son de logistica-service: se piden por HTTP a GET /api/camiones (falta sumarlo a LogisticaAPICalls)
     // List<CamionDTO> camiones = logisticaAPICalls.getCamiones().execute().body();
@@ -58,7 +57,6 @@ public class CamionesController {
     model.put("titulo", "Seguimiento de camiones");
     model.put("rol", "admin");
     model.put("seccion", "seguimiento");
-    model.put("usuario", DatosMock.admin());   // MOCK
     model.put("subtitulo", "Todos los camiones en ruta y el avance de sus entregas.");
     // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesEnRuta().execute().body();
     model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
@@ -70,11 +68,7 @@ public class CamionesController {
     model.put("titulo", "Seguimiento de entregas");
     model.put("rol", "donante");
     model.put("seccion", "seguimiento");
-    model.put("usuario", DatosMock.donante());   // MOCK
-    model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
-    // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
-    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDonacionesDe(idDonante).execute().body();
-    model.put("camiones", DatosMock.camionesEnRuta());   // MOCK
+    model.put("seguimientoNoDisponible", true);
     return model;
   }
 
@@ -83,15 +77,7 @@ public class CamionesController {
     model.put("titulo", "Seguimiento de entregas");
     model.put("rol", "entidad");
     model.put("seccion", "seguimiento");
-    Map<String, Object> entidad = DatosMock.entidad();   // MOCK
-    model.put("usuario", entidad);
-    model.put("entidad", entidad);   // su ubicación también va en el mapa
-    model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
-    // Las ubicaciones vienen de logistica-service por HTTP (endpoint a definir en LogisticaAPICalls):
-    // List<UbicacionCamionDTO> camiones = logisticaAPICalls.camionesConDestino(idEntidad).execute().body();
-    model.put("camiones", DatosMock.camionesEnRuta().stream()
-        .filter(c -> c.get("destino").equals(entidad.get("nombre")))
-        .toList());   // MOCK
+    model.put("seguimientoNoDisponible", true);
     return model;
   }
 }

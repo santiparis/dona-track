@@ -3,12 +3,13 @@ package donaciones.domain.donante;
 import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
+import java.util.Locale;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario", uniqueConstraints = @UniqueConstraint(name = "uk_usuario_nombre", columnNames = "nombre_usuario"))
 public class Usuario {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "usuario_id") private Long id;
-    @Column(name = "nombre_usuario")
+    @Column(name = "nombre_usuario", nullable = false)
     private String nombreUsuario;
     @Column(name = "contrasenia")
     @JsonIgnore
@@ -20,7 +21,10 @@ public class Usuario {
     protected Usuario() { }
 
     public Usuario(String nombreUsuario, String password, Rol rol) {
-        this.nombreUsuario = nombreUsuario;
+        if (nombreUsuario == null || nombreUsuario.isBlank() || nombreUsuario.trim().length() > 255) {
+            throw new IllegalArgumentException("El nombre de usuario es obligatorio y admite hasta 255 caracteres.");
+        }
+        this.nombreUsuario = nombreUsuario.trim().toLowerCase(Locale.ROOT);
         this.rol = Objects.requireNonNull(rol, "El rol del usuario es obligatorio.");
         this.passwordHash = HashContrasenia.generar(password);
     }

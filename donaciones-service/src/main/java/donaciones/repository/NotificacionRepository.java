@@ -25,4 +25,12 @@ public class NotificacionRepository implements WithSimplePersistenceUnit {
         TransaccionPorRequest.iniciarSiEsNecesario();
         return createQuery("from Notificacion order by fecha", Notificacion.class).getResultList();
     }
+
+    public List<Notificacion> buscarPorReceptor(String tipo, Long id) {
+        TransaccionPorRequest.iniciarSiEsNecesario();
+        return createQuery("from Notificacion n where n.tipoReceptor = :tipo and n.receptorId = :id order by n.fecha desc", Notificacion.class)
+                .setParameter("tipo", tipo)
+                .setParameter("id", id)
+                .getResultList();
+    }
 }

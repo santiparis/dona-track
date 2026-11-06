@@ -197,7 +197,6 @@ public class AsignacionesController {
     model.put("titulo", "Asignaciones pendientes");
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
-    model.put("usuario", DatosMock.admin());   // MOCK
     model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
     // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
     model.put("sugerencias", DatosMock.sugerencias());   // MOCK
@@ -214,7 +213,6 @@ public class AsignacionesController {
     model.put("titulo", "Elegir entidad final");
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
-    model.put("usuario", DatosMock.admin());   // MOCK
 
     // SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
     model.put("donacion", DatosMock.sugerencias().stream()

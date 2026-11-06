@@ -4,12 +4,13 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.donante.Usuario;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import java.util.Optional;
+import java.util.Locale;
 
 public class UsuarioRepository implements WithSimplePersistenceUnit {
     public Optional<Usuario> buscarPorNombreUsuario(String nombreUsuario) {
         TransaccionPorRequest.iniciarSiEsNecesario();
-        return createQuery("from Usuario u where u.nombreUsuario = :nombreUsuario", Usuario.class)
-                .setParameter("nombreUsuario", nombreUsuario)
+        return createQuery("from Usuario u where lower(u.nombreUsuario) = :nombreUsuario", Usuario.class)
+                .setParameter("nombreUsuario", nombreUsuario.trim().toLowerCase(Locale.ROOT))
                 .getResultStream()
                 .findFirst();
     }
