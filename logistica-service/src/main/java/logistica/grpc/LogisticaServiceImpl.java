@@ -3,6 +3,7 @@ package logistica.grpc;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import logistica.domain.Entrega;
+import logistica.domain.EstadoEntrega;
 import logistica.domain.Ruta;
 import logistica.repository.RutasRepository;
 
@@ -108,6 +109,33 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
               .withDescription("Error al obtener las ubicaciones de los camiones: " + e.getMessage())
               .asRuntimeException()
       );
+    }
+  }
+
+  @Override
+  public void reportarEntrega(ReportarEntregaRequest request, StreamObserver<ReportarEntregaResponse> responseObserver) {
+    try {
+      Long donacionId = request.getEntregaId();
+      EstadoEntrega nuevoEstado = request.getExito() ? EstadoEntrega.ENTREGADA : EstadoEntrega.NO_RECIBIDA;
+
+      // Llama al repo que usa buscarEntregaPorDonacionId y ejecuta marcarEntregada() / marcarNoRecibida()
+      rutasRepository.actualizarEstadoEntregaPorDonacion(donacionId, nuevoEstado);
+
+      ReportarEntregaResponse response = ReportarEntregaResponse.newBuilder()
+          .setExito(true)
+          .setMensaje("Entrega " + donacionId + " actualizada correctamente en Logística")
+          .build();
+
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ReportarEntregaResponse response = ReportarEntregaResponse.newBuilder()
+          .setExito(false)
+          .setMensaje("Error al actualizar la entrega: " + e.getMessage())
+          .build();
+
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     }
   }
 }

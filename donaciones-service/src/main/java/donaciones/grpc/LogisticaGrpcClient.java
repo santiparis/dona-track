@@ -4,6 +4,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 import logistica.grpc.LogisticaServiceGrpc;
+import logistica.grpc.ReportarEntregaRequest;
+import logistica.grpc.ReportarEntregaResponse;
 import logistica.grpc.RutaRequest;
 import logistica.grpc.RutaResponse;
 import logistica.grpc.TrazarRutaRequest;
@@ -18,7 +20,7 @@ public class LogisticaGrpcClient {
   public LogisticaGrpcClient(String host, int port) {
     // Canal de red hacia logistica-service (ej. localhost:9090)
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext() // En desarrollo sin SSL/TLS
+        .usePlaintext()
         .build();
 
     this.blockingStub = LogisticaServiceGrpc.newBlockingStub(channel);
@@ -52,5 +54,13 @@ public class LogisticaGrpcClient {
         .build();
 
     return blockingStub.obtenerUbicacionCamiones(request);
+  }
+
+  public ReportarEntregaResponse reportarEntrega(Long entregaId, boolean exito) {
+    ReportarEntregaRequest request = ReportarEntregaRequest.newBuilder()
+        .setEntregaId(entregaId)
+        .setExito(exito)
+        .build();
+    return blockingStub.reportarEntrega(request);
   }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 /** Repositorio JPA de administradoras. */
 public class PersonasAdministradorasRepository implements WithSimplePersistenceUnit {
     public List<PersonaAdministradora> obtenerTodos() {
-        TransaccionPorRequest.iniciarSiEsNecesario();
         return createQuery("from PersonaAdministradora", PersonaAdministradora.class).getResultList();
     }
 

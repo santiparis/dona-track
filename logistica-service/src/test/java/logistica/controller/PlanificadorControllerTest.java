@@ -5,6 +5,8 @@ import io.javalin.http.Context;
 import logistica.domain.Camion;
 import logistica.domain.DonacionEncolada;
 import logistica.domain.Ruta;
+import logistica.grpc.DonacionesGrpcClient;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;
 import logistica.repository.DonacionesRepository;
@@ -39,6 +41,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
   private DonacionesRepository donacionesRepository;
   private ClientePlanificador clientePlanificador;
   private PlanificadorController controller;
+  private NotificadorEntregas notificadorEntregas;
   private Context ctx;
 
   @BeforeEach
@@ -50,9 +53,10 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     rutasRepository = new RutasRepository();
     donacionesRepository = new DonacionesRepository();
     clientePlanificador = mock(ClientePlanificador.class);
+    notificadorEntregas =  mock(NotificadorEntregas.class);
 
     controller = new PlanificadorController(
-        camionesRepository, rutasRepository, donacionesRepository, clientePlanificador);
+        camionesRepository, rutasRepository, donacionesRepository, clientePlanificador, notificadorEntregas);
     ctx = mock(Context.class, RETURNS_DEEP_STUBS);
   }
 

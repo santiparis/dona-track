@@ -3,6 +3,7 @@ import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.Contacto;
+import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class NotificacionTest {
 
@@ -28,11 +30,11 @@ public class NotificacionTest {
 
     @BeforeEach
     void setUp() {
-        contactoQueEnvia = mock(Contacto.class);
-        when(contactoQueEnvia.enviar(anyString())).thenReturn(true);
+        contactoQueEnvia = spy(new ContactoPorEmail("envia@example.org"));
+        doReturn(true).when(contactoQueEnvia).enviar(anyString());
 
-        contactoQueFalla = mock(Contacto.class);
-        when(contactoQueFalla.enviar(anyString())).thenReturn(false);
+        contactoQueFalla = spy(new ContactoPorEmail("falla@example.org"));
+        doReturn(false).when(contactoQueFalla).enviar(anyString());
     }
 
     private PersonaHumana personaCon(List<Contacto> contactos, Contacto medioPredeterminado) {

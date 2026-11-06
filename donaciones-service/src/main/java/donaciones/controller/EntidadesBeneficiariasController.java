@@ -214,15 +214,17 @@ public class EntidadesBeneficiariasController {
   private Necesidad crearNecesidad(NecesidadDTO dto) {
     Map<Subcategoria, Integer> cantidades = new HashMap<>();
     dto.cantidadesRequeridas().forEach((subcategoria, cantidad) -> cantidades.put(parsearSubcategoria(subcategoria), cantidad));
-    return new Necesidad(dto.descripcion(), parsearRenovacion(dto), cantidades);
-  }
-
-  private PoliticaDeRenovacion parsearRenovacion(NecesidadDTO dto) {
-    if (!dto.renovacion()) return new SinRenovacion();
-    if (dto.fechaInicio() == null || dto.periodo() == null) {
-      throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+    boolean renovacion = dto.renovacion();
+    LocalDate fechaInicio = null;
+    Periodo periodo = null;
+    if (renovacion) {
+      if (dto.fechaInicio() == null || dto.periodo() == null) {
+        throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
+      }
+      fechaInicio = LocalDate.parse(dto.fechaInicio());
+      periodo = parsearPeriodo(dto.periodo());
     }
-    return new RenovacionPeriodica(LocalDate.parse(dto.fechaInicio()), parsearPeriodo(dto.periodo()));
+    return new Necesidad(dto.descripcion(), renovacion, fechaInicio, periodo, cantidades);
   }
 
   private Subcategoria parsearSubcategoria(String subcategoria) {

@@ -18,7 +18,6 @@ public class PersonaAdministradora implements Notificable {
     @Where(clause = "tipo_notificable = 'ADMINISTRADORA'")
     @OrderBy("id")
     private List<Contacto> contactos = new ArrayList<>();
-    @Transient private Contacto medioPredeterminado;
 
     protected PersonaAdministradora() { }
 
@@ -30,7 +29,6 @@ public class PersonaAdministradora implements Notificable {
         }
         if (medioPredeterminado != null) {
             this.contactos.forEach(contacto -> contacto.marcarComoMedioPredeterminado(contacto == medioPredeterminado));
-            this.medioPredeterminado = medioPredeterminado;
         }
     }
 
@@ -47,10 +45,7 @@ public class PersonaAdministradora implements Notificable {
 
     @Override
     public Contacto getMedioPredeterminado() {
-        if (medioPredeterminado == null) {
-            medioPredeterminado = contactoPredeterminado();
-        }
-        return medioPredeterminado;
+        return contactoPredeterminado();
     }
 
     private Contacto contactoPredeterminado() {

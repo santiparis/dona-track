@@ -18,6 +18,7 @@
     <class>donaciones.domain.notificacion.ContactoPorWhatsApp</class>
     <class>donaciones.domain.notificacion.Notificacion</class>
     <class>donaciones.domain.algoritmos.SugerenciaAsignacion</class>
+    <class>donaciones.domain.algoritmos.SugerenciaAlgoritmo</class>
     <properties>
       <property name="hibernate.archive.autodetection" value="class"/>
       <property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/>

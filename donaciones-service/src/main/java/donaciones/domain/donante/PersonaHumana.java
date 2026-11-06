@@ -5,7 +5,8 @@ import java.util.List;
 import javax.persistence.*;
 
 @Entity
-@DiscriminatorValue("HUMANA")
+@Table(name = "persona_humana")
+@PrimaryKeyJoinColumn(name = "persona_id")
 public class PersonaHumana extends Persona {
     @Column(name = "apellido") private String apellido;
     @Column(name = "edad") private Integer edad;
