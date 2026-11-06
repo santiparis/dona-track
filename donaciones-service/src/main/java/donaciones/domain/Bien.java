@@ -84,4 +84,21 @@ public class Bien {
     public String getFoto() {
         return foto;
     }
+
+    public enum Vencimiento { VENCIDA, PROXIMA, LEJANA, NO_APLICA }
+
+    // Próxima: vence en los próximos 7 días
+    public Vencimiento estadoVencimiento() {
+        if (this.vencimiento == null) {
+            return Vencimiento.NO_APLICA;
+        }
+        LocalDate hoy = LocalDate.now();
+        if (this.vencimiento.isBefore(hoy)) {
+            return Vencimiento.VENCIDA;
+        }
+        if (!this.vencimiento.isAfter(hoy.plusDays(7))) {
+            return Vencimiento.PROXIMA;
+        }
+        return Vencimiento.LEJANA;
+    }
 }

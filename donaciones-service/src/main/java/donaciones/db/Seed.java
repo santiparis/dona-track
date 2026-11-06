@@ -118,11 +118,18 @@ public class Seed implements WithSimplePersistenceUnit {
     bancos.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     persist(bancos);
 
-    Donacion sillas = new Donacion(arcos, new Bien(Subcategoria.SILLAS, 6, "unidades", "Sillas de madera", null, EstadoBien.USADO, null));
+    // Las dos en traslado de Ana coinciden con los camiones de DatosMock.camionesEnRuta()
+    Donacion sillas = new Donacion(ana, new Bien(Subcategoria.SILLAS, 6, "unidades", "Sillas de madera", null, EstadoBien.USADO, null));
     sillas.asignarA(escuela);
     sillas.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     sillas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     persist(sillas);
+
+    Donacion fideosEnTraslado = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 100, "paquetes", "Fideos mostachol 500 g", null, null, null));
+    fideosEnTraslado.asignarA(comedor);
+    fideosEnTraslado.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    fideosEnTraslado.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    persist(fideosEnTraslado);
 
     Donacion fideosEntregados = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 40, "paquetes", "Fideos spaghetti", null, null, null));
     fideosEntregados.asignarA(comedor);

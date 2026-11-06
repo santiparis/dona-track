@@ -38,41 +38,6 @@ public class DatosMock {
     return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
   }
 
-  public static List<Map<String, String>> donacionesDelDonante() {
-    return List.of(
-        Map.of("id", "1", "fecha", "20/10/2026", "bien", "Sillas · usadas", "cantidad", "6 unidades",
-            "categoria", "MUEBLES", "subcategoria", "SILLAS",
-            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "entidad", "Escuela Rural N°10"),
-        Map.of("id", "2", "fecha", "20/10/2026", "bien", "Mesas · usada", "cantidad", "1 unidad",
-            "categoria", "MUEBLES", "subcategoria", "MESAS",
-            "estado", "ASIGNADA", "estadoTexto", "Asignación realizada", "entidad", "Escuela Rural N°10"),
-        Map.of("id", "3", "fecha", "02/09/2026", "bien", "Fideos", "cantidad", "40 paquetes",
-            "categoria", "ALIMENTOS", "subcategoria", "FIDEOS",
-            "estado", "ENTREGADA", "estadoTexto", "Entregada", "entidad", "Comedor Escobar Sonrisas")
-    );
-  }
-
-  public static List<Map<String, Object>> historialDeEstados() {
-    return List.of(
-        Map.of("fecha", "20/10/2026 09:12", "descripcion", "En depósito"),
-        Map.of("fecha", "21/10/2026 03:00", "descripcion", "Asignación realizada a Escuela Rural N°10"),
-        Map.of("fecha", "22/10/2026 03:00", "descripcion", "Lista para entregar"),
-        Map.of("fecha", "23/10/2026 08:30", "descripcion", "En traslado (camión AB123CD)")
-    );
-  }
-
-  public static List<Map<String, String>> estados() {
-    return List.of(
-        Map.of("valor", "EN_DEPOSITO", "texto", "En depósito"),
-        Map.of("valor", "ASIGNADA", "texto", "Asignación realizada"),
-        Map.of("valor", "LISTA_PARA_ENTREGAR", "texto", "Lista para entregar"),
-        Map.of("valor", "EN_TRASLADO", "texto", "En traslado"),
-        Map.of("valor", "ENTREGADA", "texto", "Entregada"),
-        Map.of("valor", "ENTREGA_FALLIDA", "texto", "Entrega fallida"),
-        Map.of("valor", "VENCIDA", "texto", "Vencida")
-    );
-  }
-
   public static List<Map<String, String>> categorias() {
     return List.of(
         Map.of("valor", "ALIMENTOS", "texto", "Alimentos"),
@@ -150,39 +115,11 @@ public class DatosMock {
     );
   }
 
-  public static List<Map<String, String>> donacionesAsignadas() {
-    return List.of(
-        Map.of("id", "12", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
-            "estado", "EN_TRASLADO", "estadoTexto", "En traslado", "actualizado", "Hoy 08:30", "camion", "AB123CD"),
-        Map.of("id", "13", "bien", "Mesas · usada", "cantidad", "1 unidad", "donante", "Arcos Plateados S.A.",
-            "estado", "LISTA_PARA_ENTREGAR", "estadoTexto", "Lista para entregar", "actualizado", "Ayer 03:00", "camion", "AE456FG"),
-        Map.of("id", "7", "bien", "Bancos · nuevos", "cantidad", "10 unidades", "donante", "Ana Pérez",
-            "estado", "ENTREGADA", "estadoTexto", "Entregada", "actualizado", "02/09/2026", "camion", "AB123CD"),
-        Map.of("id", "5", "bien", "Bancos · usados", "cantidad", "4 unidades", "donante", "Ana Pérez",
-            "estado", "ENTREGA_FALLIDA", "estadoTexto", "Entrega fallida", "actualizado", "28/08/2026", "camion", "AE456FG")
-    );
-  }
-
   // Subcategorías agrupadas por categoría, para los <select> con <optgroup>
   public static List<Map<String, Object>> categoriasConSubcategorias() {
     return categorias().stream()
         .map(c -> Map.of("texto", c.get("texto"), "subcategorias", subcategorias(c.get("valor"))))
         .toList();
-  }
-
-    public static List<Map<String, String>> donacionesEnDeposito() {
-    return List.of(
-        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
-            "ingreso", "25/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ALIMENTOS"),
-        Map.of("id", "22", "bien", "Leche", "cantidad", "30 litros", "donante", "Pastas del Sur",
-            "ingreso", "25/10/2026", "vence", "26/10/2026", "vencimiento", "VENCIDA", "categoria", "ALIMENTOS"),
-        Map.of("id", "23", "bien", "Leche", "cantidad", "20 litros", "donante", "Ana Pérez",
-            "ingreso", "26/10/2026", "vence", "01/01/2027", "vencimiento", "LEJANA", "categoria", "ALIMENTOS"),
-        Map.of("id", "25", "bien", "Tomate", "cantidad", "50 tetra-packs", "donante", "Pastas del Sur",
-            "ingreso", "27/10/2026", "vence", "01/11/2026", "vencimiento", "PROXIMA", "categoria", "ALIMENTOS"),
-        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
-            "ingreso", "27/10/2026", "vence", "—", "vencimiento", "NO_APLICA", "categoria", "ROPA")
-    );
   }
 
   // Una sugerencia por donación en depósito: lo que propusieron los dos algoritmos para esa donación

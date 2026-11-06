@@ -107,6 +107,9 @@ public class CamionesController {
           ))
           .toList();
     }
+    if (camiones.isEmpty()) {
+      camiones = DatosMock.camionesEnRuta();   // MOCK hasta que logística tenga rutas cargadas
+    }
 
     model.put("camiones", camiones);
     return model;
@@ -146,6 +149,11 @@ public class CamionesController {
               "ultimaActualizacion", u.getUltimaActualizacion()
           ))
           .toList();
+    }
+    if (camiones.isEmpty()) {
+      camiones = DatosMock.camionesEnRuta().stream()
+          .filter(c -> c.get("destino").equals(entidad.get("nombre")))
+          .toList();   // MOCK hasta que logística tenga rutas cargadas
     }
 
     model.put("camiones", camiones);

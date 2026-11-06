@@ -29,7 +29,9 @@ import io.javalin.http.NotFoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -446,27 +448,42 @@ public class DonacionController {
     model.put("seccion", "deposito");
     model.put("usuario", DatosMock.admin());   // MOCK
 
-    // List<Donacion> enDeposito = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO).toList();
-    List<Map<String, String>> enDeposito = DatosMock.donacionesEnDeposito();   // MOCK
-    model.put("donaciones", enDeposito.stream()
-        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
-        .filter(d -> vence.isEmpty() || vence.equals(d.get("vencimiento")))
-        .toList());   // MOCK
-    model.put("categorias", DatosMock.categorias());   // MOCK
+    DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    model.put("donaciones", donacionesRepository.obtenerTodas().stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO)
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.getBien().getSubcategoria().getCategoria().name()))
+        .filter(d -> vence.isEmpty() || vence.equals(d.getBien().estadoVencimiento().name()))
+        .map(d -> Map.of(
+            "id", d.getId().toString(),
+            "bien", d.getBien().getSubcategoria().nombre(),
+            "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad(),
+            "donante", d.getDonante().getNombre(),
+            "ingreso", d.getFecha().format(formatoFecha),
+            "vence", d.getBien().getVencimiento() == null ? "—" : d.getBien().getVencimiento().format(formatoFecha),
+            "vencimiento", d.getBien().estadoVencimiento().name()))
+        .toList());
+    model.put("categorias", Arrays.stream(Categoria.values())
+        .map(c -> Map.of("valor", c.name(), "texto", c.nombre()))
+        .toList());
     model.put("categoriaElegida", categoria);
     model.put("venceElegido", vence);
 
     // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
     String idVencida = ctx.queryParam("vencida");
-    enDeposito.stream()
-        .filter(d -> d.get("id").equals(idVencida))
-        .findFirst()
-        .ifPresent(d -> model.put("marcadaVencida", d));   // MOCK
+    if (idVencida != null) {
+      donacionesRepository.buscarPorId(Long.parseLong(idVencida))
+          .ifPresent(d -> model.put("marcadaVencida", Map.of(
+              "id", idVencida,
+              "bien", d.getBien().getSubcategoria().nombre(),
+              "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad())));
+    }
     return model;
   }
 
   public void marcarVencida(Context ctx) {
-    // Sin persistencia todavía: acá la donación ctx.pathParam("id") pasa a Vencida (cambio manual, queda en el historial)
+    Donacion donacion = donacionesRepository.buscarPorId(Long.parseLong(ctx.pathParam("id")))
+        .orElseThrow(NotFoundResponse::new);
+    donacion.cambiarEstado(EstadoDonacion.VENCIDA, null);
     ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
   }
 
@@ -482,34 +499,54 @@ public class DonacionController {
     model.put("seccion", "donaciones");
     model.put("usuario", DatosMock.donante());   // MOCK
 
-    // List<Donacion> donaciones = donacionesRepository.buscarPorDonante(idDonante, estado, categoria, subcategorias);
-    List<Map<String, String>> donaciones = DatosMock.donacionesDelDonante().stream()
-        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
-        .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
-        .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.get("subcategoria")))
-        .toList();   // MOCK
+    // Donante fijo del seed hasta que esté el login
+    Persona donante = personasRepository.buscarPorEmail("ana@mail.com").orElseThrow(NotFoundResponse::new);
+    List<Map<String, String>> donaciones = donacionesRepository.obtenerTodas().stream()
+        .filter(d -> d.getDonante().getId().equals(donante.getId()))
+        .filter(d -> estado.isEmpty() || estado.equals(d.getEstado().name()))
+        .filter(d -> categoria.isEmpty() || categoria.equals(d.getBien().getSubcategoria().getCategoria().name()))
+        .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.getBien().getSubcategoria().name()))
+        .map(d -> Map.of(
+            "id", d.getId().toString(),
+            "fecha", d.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            "bien", d.getBien().getSubcategoria().nombre(),
+            "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad(),
+            "estado", d.getEstado().name(),
+            "estadoTexto", d.getEstado().nombre(),
+            "entidad", d.getEntidadBeneficiaria() == null ? "—" : d.getEntidadBeneficiaria().getRazonSocial()))
+        .toList();
     model.put("donaciones", donaciones);
     model.put("total", donaciones.size());
 
-    model.put("estados", DatosMock.estados());   // MOCK
-    model.put("categorias", DatosMock.categorias());   // MOCK
+    model.put("estados", Arrays.stream(EstadoDonacion.values())
+        .map(e -> Map.of("valor", e.name(), "texto", e.nombre()))
+        .toList());
+    model.put("categorias", Arrays.stream(Categoria.values())
+        .map(c -> Map.of("valor", c.name(), "texto", c.nombre()))
+        .toList());
     model.put("estadoElegido", estado);
     model.put("categoriaElegida", categoria);
     // Las subcategorías se muestran recién cuando se eligió una categoría
-    model.put("subcategorias", DatosMock.subcategorias(categoria).stream()
-        .map(s -> Map.of("valor", s.get("valor"), "texto", s.get("texto"), "elegida", subcategorias.contains(s.get("valor"))))
-        .toList());   // MOCK
+    model.put("subcategorias", Arrays.stream(Subcategoria.values())
+        .filter(s -> s.getCategoria().name().equals(categoria))
+        .map(s -> Map.of("valor", s.name(), "texto", s.nombre(), "elegida", subcategorias.contains(s.name())))
+        .toList());
 
     // ?historial={id} muestra los cambios de estado de esa donación
     String idHistorial = ctx.queryParam("historial");
-    DatosMock.donacionesDelDonante().stream()
-        .filter(d -> d.get("id").equals(idHistorial))
-        .findFirst()
-        .ifPresent(d -> model.put("historial", Map.of(
-            "bien", d.get("bien"),
-            "cantidad", d.get("cantidad"),
-            // donacion.getHistorialEstados()
-            "cambios", DatosMock.historialDeEstados())));   // MOCK
+    if (idHistorial != null) {
+      donacionesRepository.buscarPorId(Long.parseLong(idHistorial))
+          .ifPresent(d -> model.put("historial", Map.of(
+              "bien", d.getBien().getSubcategoria().nombre(),
+              "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad(),
+              "cambios", d.getHistorialEstados().stream()
+                  .map(cambio -> Map.of(
+                      "fecha", new SimpleDateFormat("dd/MM/yyyy HH:mm").format(cambio.fecha()),
+                      "descripcion", cambio.justificacion() == null
+                          ? cambio.estadoNuevo().nombre()
+                          : cambio.estadoNuevo().nombre() + ": " + cambio.justificacion()))
+                  .toList())));
+    }
 
     return model;
   }
@@ -524,15 +561,30 @@ public class DonacionController {
     model.put("seccion", "donaciones");
     model.put("usuario", DatosMock.entidad());   // MOCK
 
-    // List<Donacion> donaciones = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEntidadBeneficiaria() == entidad).toList();
-    model.put("donaciones", DatosMock.donacionesAsignadas().stream()
-        .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
-        .toList());   // MOCK
+    // Entidad fija del seed hasta que esté el login
+    model.put("donaciones", donacionesRepository.obtenerTodas().stream()
+        .filter(d -> d.getEntidadBeneficiaria() != null
+            && d.getEntidadBeneficiaria().getRazonSocial().equals("Escuela Rural N°10"))
+        .filter(d -> estado.isEmpty() || estado.equals(d.getEstado().name()))
+        .map(d -> {
+          List<RegistroCambioEstado<EstadoDonacion>> historial = d.getHistorialEstados();
+          return Map.of(
+              "id", d.getId().toString(),
+              "bien", d.getBien().getSubcategoria().nombre(),
+              "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad(),
+              "donante", d.getDonante().getNombre(),
+              "estado", d.getEstado().name(),
+              "estadoTexto", d.getEstado().nombre(),
+              // "Actualizado" es la fecha del último cambio de estado
+              "actualizado", new SimpleDateFormat("dd/MM/yyyy HH:mm").format(historial.get(historial.size() - 1).fecha()));
+        })
+        .toList());
     model.put("estadoElegido", estado);
     // A la entidad solo le llegan donaciones ya asignadas: no tiene sentido filtrar por En depósito ni Vencida
-    model.put("estados", DatosMock.estados().stream()
-        .filter(e -> !List.of("EN_DEPOSITO", "VENCIDA").contains(e.get("valor")))
-        .toList());   // MOCK
+    model.put("estados", Arrays.stream(EstadoDonacion.values())
+        .filter(e -> e != EstadoDonacion.EN_DEPOSITO && e != EstadoDonacion.VENCIDA)
+        .map(e -> Map.of("valor", e.name(), "texto", e.nombre()))
+        .toList());
     return model;
   }
 
@@ -545,11 +597,13 @@ public class DonacionController {
     model.put("seccion", "donaciones");
     model.put("usuario", DatosMock.entidad());   // MOCK
 
-    // Donacion donacion = donacionesRepository.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
-    model.put("donacion", DatosMock.donacionesAsignadas().stream()
-        .filter(d -> d.get("id").equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new));   // MOCK
+    Donacion donacion = donacionesRepository.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", Map.of(
+        "id", id,
+        "bien", donacion.getBien().getSubcategoria().nombre(),
+        "cantidad", donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad(),
+        "donante", donacion.getDonante().getNombre(),
+        "camion", "—"));   // La patente la tiene logística (E5)
     return model;
   }
 
