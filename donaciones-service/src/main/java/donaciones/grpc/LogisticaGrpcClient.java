@@ -61,6 +61,6 @@ public class LogisticaGrpcClient {
         .setEntregaId(entregaId)
         .setExito(exito)
         .build();
-    return blockingStub.reportarEntrega(request);
+    return blockingStub.withDeadlineAfter(10, java.util.concurrent.TimeUnit.SECONDS).reportarEntrega(request);
   }
 }

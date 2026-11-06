@@ -5,6 +5,8 @@ import donaciones.domain.donante.Persona;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.time.LocalDate;
 import javax.persistence.*;
 
@@ -18,6 +20,20 @@ public class Donacion {
     @Enumerated(EnumType.STRING) @Column(name = "donacion_estado", nullable = false) private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "donacion_id") private List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();
     private LocalDate fecha;
+    @ElementCollection
+    @CollectionTable(name = "foto_recepcion", joinColumns = @JoinColumn(name = "donacion_id"))
+    @MapKeyColumn(name = "blob_id", length = 36)
+    @Column(name = "tipo_contenido", length = 16, nullable = false)
+    private Map<String, String> fotosRecepcion = new HashMap<>();
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Map<String, String> getFotosRecepcion() {
+        return Map.copyOf(fotosRecepcion);
+    }
+
+    public void agregarFotoRecepcion(String id, String tipo) {
+        fotosRecepcion.put(id, tipo);
+    }
 
     protected Donacion() { }
 

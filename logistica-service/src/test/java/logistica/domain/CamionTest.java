@@ -1,5 +1,6 @@
 package logistica.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,15 @@ public class CamionTest {
     assertEquals(-34.60, camion.getLocalizacion().getLatitud());
     assertEquals(-58.42, camion.getLocalizacion().getLongitud());
     assertEquals(47.5, camion.getVelocidad());
+  }
+
+  @Test
+  void serializaLaFechaDeUnCamionConDatosDeGps() throws Exception {
+    camion.actualizarLocalizacion(new Coordenadas(-34.60, -58.42), 47.5);
+
+    var jackson = new ObjectMapper();
+    var json = jackson.readTree(jackson.writeValueAsString(java.util.List.of(camion)));
+    assertEquals(camion.getUltimaActualizacion().toString(), json.get(0).get("ultimaActualizacion").asText());
   }
 
   @Test

@@ -29,6 +29,11 @@ public class TransaccionPorRequest implements WithSimplePersistenceUnit {
     }
   }
 
+  public static void despuesDelRollback(Runnable accion) {
+    ContextoRequest contexto = CONTEXTO_REQUEST.get();
+    if (contexto != null) contexto.accionesDespuesDelRollback.add(accion);
+  }
+
   public void cerrar(int statusCode) {
     ContextoRequest contexto = CONTEXTO_REQUEST.get();
     boolean confirmado = false;
@@ -62,6 +67,10 @@ public class TransaccionPorRequest implements WithSimplePersistenceUnit {
       }
     }
 
+    if (!confirmado && contexto != null) {
+      contexto.accionesDespuesDelRollback.forEach(Runnable::run);
+    }
+
     if (error != null) {
       throw error;
     }
@@ -87,6 +96,7 @@ public class TransaccionPorRequest implements WithSimplePersistenceUnit {
 
   private static final class ContextoRequest {
     private final List<Runnable> accionesDespuesDelCommit = new ArrayList<>();
+    private final List<Runnable> accionesDespuesDelRollback = new ArrayList<>();
     private boolean transaccionIniciada;
   }
 }

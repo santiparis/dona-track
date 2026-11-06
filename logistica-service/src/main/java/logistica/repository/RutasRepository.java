@@ -91,6 +91,9 @@ public class RutasRepository implements WithSimplePersistenceUnit {
     Entrega entrega = buscarEntregaPorDonacionId(donacionId)
         .orElseThrow(() -> new NoSuchElementException("No se encontró entrega para la donación: " + donacionId));
 
+    // El mismo aviso puede repetirse si se perdió la respuesta del primer intento.
+    if (entrega.getEstado() == nuevoEstado) return;
+
     if (nuevoEstado == EstadoEntrega.ENTREGADA) {
       entrega.marcarEntregada();
     } else if (nuevoEstado == EstadoEntrega.NO_RECIBIDA) {

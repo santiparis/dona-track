@@ -58,3 +58,20 @@ Preparamos los dos microservicios para correr con Docker Compose. La configuraci
 * **Una base por servicio.** Compose guarda los datos en volúmenes de Docker para que sobrevivan al reemplazo del contenedor. También espera a que cada base esté lista antes de iniciar su API. En Azure se quita la publicación de los puertos `3306` y `5432`, porque solo los contenedores de cada servicio necesitan conectarse a su base.
 
 La separación en dos VMs mantiene la división del TP también en el despliegue. Cada servicio puede arrancarse y actualizarse por separado, y la comunicación entre ellos sigue siendo por HTTP.
+
+## Fotos de recepción
+
+La entidad destinataria adjunta de una a tres fotos JPG o PNG al confirmar una donación en traslado. El servidor revisa que cada archivo sea una imagen legible de hasta 5 MB y 16 megapíxeles. Azure guarda los archivos en un contenedor privado. MySQL guarda la relación entre el ID de la donación, el identificador de cada archivo y su tipo en `foto_recepcion`. La tabla se crea con el esquema de Hibernate.
+
+El donante puede abrir las fotos desde su historial y la entidad desde «Ver fotos» en Donaciones asignadas. Donaciones comprueba el titular antes de pedir el archivo a Azure. El navegador recibe la imagen a través de DonaTrack y la credencial de Azure queda en el servidor.
+
+Si falla la carga o Logística rechaza la confirmación, Donaciones revierte la transacción y pide borrar los archivos que pudo subir. Una falla de red también puede impedir esa limpieza. Logística acepta que se reintente una confirmación que ya recibió.
+
+### Configuración y prueba
+
+1. En Azure, crear un contenedor de blobs con acceso anónimo deshabilitado. Generar un SAS para ese contenedor con permisos de lectura, creación, escritura y eliminación, vigencia limitada y protocolo HTTPS.
+2. Configurar `AZURE_STORAGE_CONTAINER_URL` con la URL del contenedor, sin el signo de interrogación ni el SAS. Configurar `AZURE_STORAGE_SAS` con el token en el entorno de Donaciones. El Compose base ya pasa ambas variables al contenedor. Guardar el token fuera del repo.
+3. Reconstruir y levantar los servicios con `docker compose up -d --build` o con los dos Compose en el entorno de Azure. Para confirmar, la donación tiene que estar en traslado y asociada a una entrega real en Logística.
+4. Iniciar sesión como la entidad destinataria, abrir «Confirmar recepción», adjuntar una foto y confirmar. Abrir «Ver fotos» y repetir desde el historial del donante. La misma URL debe quedar bloqueada para otra cuenta. Reiniciar Donaciones y comprobar que la foto siga disponible.
+
+La prueba automatizada usa HTTP y MySQL se sustituye por HSQLDB en memoria. Las respuestas de Blob Storage y Logística se simulan localmente. Se ejecuta con `mvn -pl donaciones-service "-Dtest=RegistroHttpTest" test`.

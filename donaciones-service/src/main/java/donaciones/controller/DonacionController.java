@@ -25,6 +25,8 @@ import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.web.DatosMock;
 import donaciones.web.SesionUsuario;
+import donaciones.db.TransaccionPorRequest;
+import donaciones.storage.FotosRecepcion;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -49,6 +51,7 @@ public class DonacionController {
   private final PersonasAdministradorasRepository administradorasRepository;
   private final Notificador notificador;
   private final LogisticaGrpcClient logisticaGrpcClient;
+  private final FotosRecepcion fotosRecepcion;
 
   public DonacionController(
       DonacionRepository donacionesRepository,
@@ -57,11 +60,19 @@ public class DonacionController {
       Notificador notificador,
       LogisticaGrpcClient logisticaGrpcClient
   ) {
+    this(donacionesRepository, personasRepository, administradorasRepository, notificador,
+        logisticaGrpcClient, new FotosRecepcion(null, null));
+  }
+
+  public DonacionController(DonacionRepository donacionesRepository, RepositorioPersonas personasRepository,
+      PersonasAdministradorasRepository administradorasRepository, Notificador notificador,
+      LogisticaGrpcClient logisticaGrpcClient, FotosRecepcion fotosRecepcion) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
     this.administradorasRepository = administradorasRepository;
     this.notificador = notificador;
     this.logisticaGrpcClient = logisticaGrpcClient;
+    this.fotosRecepcion = fotosRecepcion;
   }
 
   public void listar(Context ctx) {
@@ -403,7 +414,12 @@ public class DonacionController {
   public void eliminarDonacion(Long id) {
     Optional<Donacion> donacionOpt = donacionesRepository.buscarPorIdParaActualizar(id);
     if (donacionOpt.isPresent()) {
-      donacionesRepository.eliminar(donacionOpt.get());
+      Donacion donacion = donacionOpt.get();
+      var idsFotos = donacion.getFotosRecepcion().keySet();
+      donacionesRepository.eliminar(donacion);
+      if (!idsFotos.isEmpty()) {
+        TransaccionPorRequest.despuesDelCommit(() -> idsFotos.forEach(this::retirarFoto));
+      }
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
     }
@@ -516,7 +532,8 @@ public class DonacionController {
                 .map(cambio -> Map.of(
                     "fecha", Objects.toString(cambio.fecha(), ""),
                     "descripcion", textoEstado(cambio.estadoNuevo()) + ": " + Objects.toString(cambio.justificacion(), "")))
-                .toList())));
+                .toList(),
+            "fotos", enlacesFotos(d, "donante"))));
 
     return model;
   }
@@ -548,26 +565,114 @@ public class DonacionController {
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
 
-    model.put("donacion", donacionParaVista(donacionDeLaEntidad(ctx)));
+    Donacion donacion = donacionDeLaEntidad(ctx);
+    model.put("donacion", donacionParaVista(donacion));
+    model.put("fotos", enlacesFotos(donacion, "entidad"));
+    model.put("puedeConfirmar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
+    model.put("storageDisponible", fotosRecepcion.configurado());
     return model;
   }
 
   public void confirmarRecepcion(Context ctx) {
-    Long donacionId = donacionDeLaEntidad(ctx).getId();
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    Donacion donacion = donacionDeLaEntidad(ctx);
+    // Serializa confirmaciones de la misma donación, incluso con dos pestañas.
+    donacionesRepository.entityManager().refresh(donacion, javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+    if (!perteneceAEntidad(donacion, ctx.sessionAttribute(SesionUsuario.USUARIO_ID))) throw new NotFoundResponse();
+    if (donacion.getEstado() != EstadoDonacion.EN_TRASLADO) {
+      errorRecepcion(ctx, 409, "Solo podés confirmar donaciones en traslado.");
+      return;
+    }
+    if (!fotosRecepcion.configurado()) {
+      errorRecepcion(ctx, 503, "El almacenamiento de fotos no está disponible.");
+      return;
+    }
+    if (ctx.req().getContentLengthLong() > 16L * 1024 * 1024) {
+      errorRecepcion(ctx, 413, "La carga completa supera el límite de 16 MB.");
+      return;
+    }
+    List<FotosRecepcion.Foto> fotos;
+    if (!ctx.isMultipartFormData()) {
+      errorRecepcion(ctx, 400, "Adjuntá las fotos con el formulario de recepción.");
+      return;
+    }
+    ctx.req().setAttribute("org.eclipse.jetty.multipartConfig", new jakarta.servlet.MultipartConfigElement(
+        System.getProperty("java.io.tmpdir"), FotosRecepcion.MAX_BYTES, 16L * 1024 * 1024, 0));
     try {
-
-      // Simplemente notificamos a Logística por gRPC
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
-
+      fotos = fotosRecepcion.validar(ctx.uploadedFiles("fotos"));
+    } catch (IllegalStateException e) {
+      errorRecepcion(ctx, 413, "La carga supera el tamaño permitido.");
+      return;
+    } catch (IllegalArgumentException e) {
+      errorRecepcion(ctx, 400, e.getMessage());
+      return;
+    }
+    try {
+      for (var foto : fotos) {
+        TransaccionPorRequest.despuesDelRollback(() -> retirarFoto(foto.id()));
+        fotosRecepcion.guardar(foto);
+        donacion.agregarFotoRecepcion(foto.id(), foto.tipo());
+      }
+      donacion.cambiarEstado(EstadoDonacion.ENTREGADA, "Recepción confirmada por la entidad");
+      donacionesRepository.entityManager().flush();
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacion.getId(), true);
       if (!response.getExito()) {
-        ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
+        ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
         return;
       }
-
-      ctx.redirect("/entidad/donaciones");
-    } catch (Exception e) {
-      ctx.status(500).result("Error al procesar la confirmación: " + e.getMessage());
+      ctx.redirect("/entidad/donaciones", HttpStatus.SEE_OTHER);
+    } catch (RuntimeException e) {
+      logger.warn("Falló la confirmación de recepción de la donación {} ({})",
+          donacion.getId(), e.getClass().getSimpleName());
+      ctx.status(502).result("No se pudo guardar la recepción. Volvé a intentarlo.");
     }
+  }
+
+  private void errorRecepcion(Context ctx, int status, String mensaje) {
+    var modelo = recepcion(ctx);
+    modelo.put("error", mensaje);
+    ctx.status(status).render("entidad/recepcion", modelo);
+  }
+
+  private void retirarFoto(String id) {
+    try {
+      fotosRecepcion.borrar(id);
+    } catch (RuntimeException e) {
+      logger.warn("Quedó pendiente retirar la foto {}", id);
+    }
+  }
+
+  public void fotoEntidad(Context ctx) {
+    mostrarFoto(ctx, donacionDeLaEntidad(ctx));
+  }
+
+  public void fotoDonante(Context ctx) {
+    Long usuarioId = ctx.sessionAttribute(SesionUsuario.USUARIO_ID);
+    Donacion donacion = buscarDonacionDeRuta(ctx);
+    var usuario = donacion.getDonante().getUsuario();
+    if (usuario == null || !usuario.getId().equals(usuarioId)) throw new NotFoundResponse();
+    mostrarFoto(ctx, donacion);
+  }
+
+  private void mostrarFoto(Context ctx, Donacion donacion) {
+    String id = ctx.pathParam("foto");
+    String tipo = donacion.getFotosRecepcion().get(id);
+    if (tipo == null) throw new NotFoundResponse();
+    try {
+      byte[] bytes = fotosRecepcion.leer(id);
+      if (bytes == null) throw new NotFoundResponse();
+      ctx.header("Cache-Control", "no-store");
+      ctx.header("X-Content-Type-Options", "nosniff");
+      ctx.contentType(tipo).result(bytes);
+    } catch (IllegalStateException e) {
+      ctx.status(502).result("La foto no está disponible por el momento.");
+    }
+  }
+
+  private List<Map<String, String>> enlacesFotos(Donacion donacion, String rol) {
+    return donacion.getFotosRecepcion().keySet().stream().sorted()
+        .map(id -> Map.of("url", "/" + rol + "/donaciones/" + donacion.getId() + "/fotos/" + id))
+        .toList();
   }
 
   public void informarNoRecibida(Context ctx) {
@@ -589,11 +694,22 @@ public class DonacionController {
   }
 
   private Donacion donacionDeLaEntidad(Context ctx) {
-    String id = ctx.pathParam("id");
-    return donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
-        .filter(d -> d.getId().toString().equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new);
+    Donacion donacion = buscarDonacionDeRuta(ctx);
+    if (!perteneceAEntidad(donacion, ctx.sessionAttribute(SesionUsuario.USUARIO_ID))) throw new NotFoundResponse();
+    return donacion;
+  }
+
+  private boolean perteneceAEntidad(Donacion donacion, Long usuarioId) {
+    var entidad = donacion.getEntidadBeneficiaria();
+    return entidad != null && entidad.getUsuario() != null && entidad.getUsuario().getId().equals(usuarioId);
+  }
+
+  private Donacion buscarDonacionDeRuta(Context ctx) {
+    try {
+      return donacionesRepository.buscarPorId(Long.valueOf(ctx.pathParam("id"))).orElseThrow(NotFoundResponse::new);
+    } catch (NumberFormatException e) {
+      throw new NotFoundResponse();
+    }
   }
 
   private Map<String, String> donacionParaVista(Donacion donacion) {
@@ -607,6 +723,7 @@ public class DonacionController {
         .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.util.Date::compareTo)
         .map(java.util.Date::toString).orElse(fila.get("fecha")));
     fila.put("estado", donacion.getEstado().name());
+    if (!donacion.getFotosRecepcion().isEmpty()) fila.put("tieneFotos", "true");
     fila.put("estadoTexto", textoEstado(donacion.getEstado()));
     fila.put("categoria", bien.getSubcategoria().getCategoria().name());
     fila.put("subcategoria", bien.getSubcategoria().name());

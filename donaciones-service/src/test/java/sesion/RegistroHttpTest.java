@@ -9,6 +9,9 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.*;
 import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Notificacion;
+import donaciones.grpc.LogisticaGrpcClient;
+import donaciones.storage.FotosRecepcion;
+import logistica.grpc.ReportarEntregaResponse;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.NotificacionRepository;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.*;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.*;
@@ -30,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -37,11 +42,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegistroHttpTest {
     private static Javalin app;
+    private static com.sun.net.httpserver.HttpServer blob;
+    private static final Map<String, byte[]> archivos = new ConcurrentHashMap<>();
+    private static final LogisticaGrpcClient logistica = org.mockito.Mockito.mock(LogisticaGrpcClient.class);
     private HttpClient cliente;
     private static final UsuarioRepository usuarios = new UsuarioRepository();
 
     @BeforeAll
-    static void iniciar() {
+    static void iniciar() throws Exception {
+        blob = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        blob.createContext("/privado/", intercambio -> {
+            try (intercambio) {
+                String id = intercambio.getRequestURI().getPath();
+                if (!"sig=prueba".equals(intercambio.getRequestURI().getQuery())) {
+                    intercambio.sendResponseHeaders(403, -1);
+                } else if ("PUT".equals(intercambio.getRequestMethod())) {
+                    archivos.put(id, intercambio.getRequestBody().readAllBytes());
+                    intercambio.sendResponseHeaders(201, -1);
+                } else if ("DELETE".equals(intercambio.getRequestMethod())) {
+                    archivos.remove(id);
+                    intercambio.sendResponseHeaders(202, -1);
+                } else {
+                    byte[] bytes = archivos.get(id);
+                    intercambio.sendResponseHeaders(bytes == null ? 404 : 200, bytes == null ? -1 : bytes.length);
+                    if (bytes != null) intercambio.getResponseBody().write(bytes);
+                }
+            }
+        });
+        blob.start();
+        var fotos = new FotosRecepcion("http://127.0.0.1:" + blob.getAddress().getPort() + "/privado", "sig=prueba");
         SesionController controller = new SesionController(usuarios);
         TransaccionPorRequest transaccion = new TransaccionPorRequest();
         app = Javalin.create(config -> {
@@ -51,7 +80,7 @@ class RegistroHttpTest {
         });
         app.before(ctx -> transaccion.abrir());
         app.after(ctx -> transaccion.cerrar(ctx.statusCode()));
-        new Router(new DonacionController(new DonacionRepository(), new RepositorioPersonas(), null, null, null),
+        new Router(new DonacionController(new DonacionRepository(), new RepositorioPersonas(), null, null, logistica, fotos),
                 org.mockito.Mockito.mock(donaciones.controller.DonanteController.class),
                 new EntidadesBeneficiariasController(new EntidadBeneficiariaRepository()),
                 org.mockito.Mockito.mock(donaciones.controller.AsignacionesController.class),
@@ -63,6 +92,7 @@ class RegistroHttpTest {
     @AfterAll
     static void detener() {
         if (app != null) app.stop();
+        if (blob != null) blob.stop(0);
     }
 
     @BeforeEach
@@ -249,6 +279,61 @@ class RegistroHttpTest {
             assertEquals(404, get("/entidad/donaciones/" + ids[otro] + "/recepcion").statusCode());
             assertEquals(404, post("/entidad/donaciones/" + ids[otro] + "/no-recibida", Map.of()).statusCode());
         }
+
+        verificarFotosRecepcion(emails, ids);
+    }
+
+    private void verificarFotosRecepcion(String[] emails, long[] ids) throws Exception {
+        String recepcion = "/entidad/donaciones/" + ids[0] + "/recepcion";
+        clienteNuevo();
+        assertEquals(303, post("/login", Map.of("usuario", emails[2], "password", "clave-segura")).statusCode());
+        assertTrue(get(recepcion).body().contains("name=\"fotos\""));
+        assertEquals(400, subirFoto(recepcion, "no es una imagen".getBytes(StandardCharsets.UTF_8)).statusCode());
+        assertTrue(archivos.isEmpty());
+        org.mockito.Mockito.verifyNoInteractions(logistica);
+
+        var salida = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_RGB), "png", salida);
+        byte[] png = salida.toByteArray();
+        org.mockito.Mockito.when(logistica.reportarEntrega(ids[0], true))
+                .thenReturn(ReportarEntregaResponse.getDefaultInstance(),
+                        ReportarEntregaResponse.newBuilder().setExito(true).build());
+        assertEquals(502, subirFoto(recepcion, png).statusCode());
+        assertTrue(archivos.isEmpty(), "El rechazo de Logística debe retirar el archivo de Blob.");
+        assertEquals(303, subirFoto(recepcion, png).statusCode());
+        assertEquals(409, subirFoto(recepcion, png).statusCode());
+        assertEquals(1, archivos.size());
+
+        String idFoto = archivos.keySet().iterator().next().substring("/privado/".length());
+        String fotoEntidad = "/entidad/donaciones/" + ids[0] + "/fotos/" + idFoto;
+        String fotoDonante = "/donante/donaciones/" + ids[0] + "/fotos/" + idFoto;
+        assertTrue(get(recepcion).body().contains(fotoEntidad));
+        var descarga = cliente.send(HttpRequest.newBuilder(uri(fotoEntidad)).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, descarga.statusCode());
+        assertEquals("image/png", descarga.headers().firstValue("Content-Type").orElseThrow());
+        assertArrayEquals(png, descarga.body());
+
+        clienteNuevo();
+        assertEquals(303, get(fotoEntidad).statusCode());
+        assertEquals(303, post("/login", Map.of("usuario", emails[3], "password", "clave-segura")).statusCode());
+        assertEquals(404, get(fotoEntidad).statusCode());
+        clienteNuevo();
+        assertEquals(303, post("/login", Map.of("usuario", emails[0], "password", "clave-segura")).statusCode());
+        assertTrue(get("/donante/donaciones?historial=" + ids[0]).body().contains(fotoDonante));
+        assertEquals(200, get(fotoDonante).statusCode());
+        clienteNuevo();
+        assertEquals(303, post("/login", Map.of("usuario", emails[1], "password", "clave-segura")).statusCode());
+        assertEquals(404, get(fotoDonante).statusCode());
+    }
+
+    private HttpResponse<String> subirFoto(String ruta, byte[] bytes) throws Exception {
+        return cliente.send(HttpRequest.newBuilder(uri(ruta)).timeout(Duration.ofSeconds(20))
+                .header("Content-Type", "multipart/form-data; boundary=prueba")
+                .POST(HttpRequest.BodyPublishers.concat(
+                        HttpRequest.BodyPublishers.ofString("--prueba\r\nContent-Disposition: form-data; name=\"fotos\"; filename=\"foto.png\"\r\nContent-Type: image/png\r\n\r\n"),
+                        HttpRequest.BodyPublishers.ofByteArray(bytes),
+                        HttpRequest.BodyPublishers.ofString("\r\n--prueba--\r\n")))
+                .build(), HttpResponse.BodyHandlers.ofString());
     }
 
     private void verificarVista(String ruta, String presente, String ausente) throws Exception {

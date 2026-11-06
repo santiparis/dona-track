@@ -44,6 +44,8 @@ services:
     environment:
       LOGISTICA_URL: http://logistica-api:7070/
       LOGISTICA_GRPC_HOST: logistica-api
+      AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
+      AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
     depends_on:
       mysql:
         condition: service_healthy
