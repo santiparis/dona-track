@@ -40,6 +40,18 @@ public class Necesidad {
         this.id = id;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public Map<Subcategoria, Integer> getCantidadesRequeridas() {
+        return Map.copyOf(cantidadesRequeridas);
+    }
+
+    public Map<Subcategoria, Integer> getCantidadesSuplidas() {
+        return Map.copyOf(cantidadesSuplidas);
+    }
+
     public PoliticaDeRenovacion getRenovacion() {
         return renovacion;
     }

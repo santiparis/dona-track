@@ -38,30 +38,6 @@ public class DatosMock {
     return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
   }
 
-  public static List<Map<String, String>> categorias() {
-    return List.of(
-        Map.of("valor", "ALIMENTOS", "texto", "Alimentos"),
-        Map.of("valor", "MUEBLES", "texto", "Muebles"),
-        Map.of("valor", "ROPA", "texto", "Ropa")
-    );
-  }
-
-  public static List<Map<String, String>> subcategorias(String categoria) {
-    return switch (categoria) {
-      case "ALIMENTOS" -> List.of(
-          Map.of("valor", "FIDEOS", "texto", "Fideos"),
-          Map.of("valor", "LECHE", "texto", "Leche"));
-      case "MUEBLES" -> List.of(
-          Map.of("valor", "BANCOS", "texto", "Bancos"),
-          Map.of("valor", "SILLAS", "texto", "Sillas"),
-          Map.of("valor", "MESAS", "texto", "Mesas"));
-      case "ROPA" -> List.of(
-          Map.of("valor", "ABRIGOS", "texto", "Abrigos"),
-          Map.of("valor", "CALZADO", "texto", "Calzado"));
-      default -> List.of();
-    };
-  }
-
   // Todas las notificaciones juntas, como las devuelve el repositorio: cada controller filtra por destinatario
   public static List<Map<String, Object>> notificaciones() {
     return List.of(
@@ -99,39 +75,6 @@ public class DatosMock {
   public static Map<String, Object> entidad() {
     return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1,
         "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
-  }
-
-  public static List<Map<String, String>> necesidadesDeLaEntidad() {
-    return List.of(
-        Map.of("id", "1", "subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "descripcion", "Reposición tras inundación",
-            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
-            "cantidad", "30", "avance", "10 / 30", "porcentaje", "33"),
-        Map.of("id", "2", "subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "descripcion", "Reposición tras inundación",
-            "tipo", "EXTRAORDINARIA", "tipoTexto", "Extraordinaria", "periodo", "",
-            "cantidad", "30", "avance", "6 / 30", "porcentaje", "20"),
-        Map.of("id", "3", "subcategoria", "LECHE", "subcategoriaTexto", "Leche", "descripcion", "Desayuno escolar",
-            "tipo", "RECURRENTE", "tipoTexto", "Recurrente · mensual", "periodo", "MENSUAL",
-            "cantidad", "50", "avance", "40 / 50", "porcentaje", "80")
-    );
-  }
-
-  // Subcategorías agrupadas por categoría, para los <select> con <optgroup>
-  public static List<Map<String, Object>> categoriasConSubcategorias() {
-    return categorias().stream()
-        .map(c -> Map.of("texto", c.get("texto"), "subcategorias", subcategorias(c.get("valor"))))
-        .toList();
-  }
-
-  // Una sugerencia por donación en depósito: lo que propusieron los dos algoritmos para esa donación
-  public static List<Map<String, String>> sugerencias() {
-    return List.of(
-        Map.of("id", "21", "bien", "Fideos", "cantidad", "100 paquetes", "donante", "Pastas del Sur",
-            "ingreso", "25/10/2026", "coincidencias", "2", "resultado", "2 coincidencias"),
-        Map.of("id", "19", "bien", "Sillas · usadas", "cantidad", "6 unidades", "donante", "Arcos Plateados S.A.",
-            "ingreso", "24/10/2026", "coincidencias", "1", "resultado", "1 coincidencia"),
-        Map.of("id", "24", "bien", "Camperas · usadas", "cantidad", "12 unidades", "donante", "Ana Pérez",
-            "ingreso", "27/10/2026", "coincidencias", "0", "resultado", "Sin coincidencias")
-    );
   }
 
   // Lo que devolvería la SugerenciaAsignacion de una donación: el ranking de cada algoritmo y las coincidencias entre ellos
@@ -185,41 +128,5 @@ public class DatosMock {
         "fecha", "Hoy 10:15",
         "leidas", "20.000", "creados", "18.450", "actualizados", "1.520", "conError", "30",
         "errores", List.of("Fila 1.204: falta el correo electrónico", "Fila 7.881: TipoDoc inválido"));
-  }
-
-  public static List<Map<String, String>> donantes() {
-    return List.of(
-        Map.of("id", "1", "nombre", "Arcos Plateados S.A.", "documento", "30-12345678-9", "email", "contacto@empresa.com"),
-        Map.of("id", "2", "nombre", "Ana Pérez", "documento", "12345678", "email", "ana@mail.com")
-    );
-  }
-
-  // La Escuela tiene más de 3 necesidades: su tarjeta muestra 3 y el link al detalle con todas
-  public static List<Map<String, Object>> entidadesConNecesidades() {
-    return List.of(
-        Map.of("id", "11", "nombre", "Escuela Rural N°10", "direccion", "Ruta 5 km 32, San Andrés de Giles", "telefono", "(02325) 44-1234",
-            "correos", List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar"),
-            "necesidades", List.of(
-                Map.of("subcategoria", "BANCOS", "subcategoriaTexto", "Bancos", "tipo", "Extraordinaria",
-                    "porcentaje", "33", "detalle", "10 de 30 unidades · Reposición tras inundación"),
-                Map.of("subcategoria", "SILLAS", "subcategoriaTexto", "Sillas", "tipo", "Extraordinaria",
-                    "porcentaje", "20", "detalle", "6 de 30 unidades"),
-                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
-                    "porcentaje", "0", "detalle", "0 de 10 unidades"),
-                Map.of("subcategoria", "LECHE", "subcategoriaTexto", "Leche", "tipo", "Recurrente · mensual",
-                    "porcentaje", "80", "detalle", "40 de 50 litros este mes · Desayuno escolar"),
-                Map.of("subcategoria", "ABRIGOS", "subcategoriaTexto", "Abrigos", "tipo", "Extraordinaria",
-                    "porcentaje", "12", "detalle", "5 de 40 unidades"))),
-        Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas", "direccion", "Av. Tapia de Cruz 1200, Escobar", "telefono", "(0348) 442-5678",
-            "correos", List.of("escobarsonrisas@gmail.com"),
-            "necesidades", List.of(
-                Map.of("subcategoria", "FIDEOS", "subcategoriaTexto", "Fideos", "tipo", "Recurrente · semanal",
-                    "porcentaje", "60", "detalle", "60 de 100 paquetes esta semana"))),
-        Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte", "direccion", "Calle 14 N°560, La Plata", "telefono", "(0221) 455-0000",
-            "correos", List.of("tutoriasbarrionorte@gmail.com"),
-            "necesidades", List.of(
-                Map.of("subcategoria", "MESAS", "subcategoriaTexto", "Mesas", "tipo", "Extraordinaria",
-                    "porcentaje", "0", "detalle", "0 de 5 unidades")))
-    );
   }
 }

@@ -21,6 +21,7 @@ import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -205,9 +206,10 @@ public class AsignacionesController {
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
     model.put("usuario", DatosMock.admin());   // MOCK
-    model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
-    // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
-    model.put("sugerencias", DatosMock.sugerencias());   // MOCK
+    model.put("ultimaEjecucion", "-");   // La fecha de la última ejecución todavía no se guarda (A8)
+    model.put("sugerencias", sugerenciaRepository.obtenerTodas().stream()
+        .map(AsignacionesController::sugerenciaParaVista)
+        .toList());
     // Después de ejecutar los algoritmos se vuelve con ?ejecutado, y después de confirmar un destino con ?asignada={id}
     model.put("ejecutado", ctx.queryParam("ejecutado") != null);
     model.put("asignada", ctx.queryParam("asignada"));
@@ -223,14 +225,31 @@ public class AsignacionesController {
     model.put("seccion", "asignaciones");
     model.put("usuario", DatosMock.admin());   // MOCK
 
-    // SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
-    model.put("donacion", DatosMock.sugerencias().stream()
-        .filter(s -> s.get("id").equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new));   // MOCK
-    // sugerencia.getEntidadesPorAlgoritmo() y sugerencia.getCoincidencias()
-    model.putAll(DatosMock.rankingsDeSugerencia(id));   // MOCK
+    SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", sugerenciaParaVista(sugerencia));
+    // Los rankings no se guardan (A10): se usa el ejemplo del mock que tiene la misma cantidad de coincidencias
+    String ejemplo = switch (sugerencia.getCoincidencias().size()) {
+      case 2 -> "21";
+      case 1 -> "19";
+      default -> "";
+    };
+    model.putAll(DatosMock.rankingsDeSugerencia(ejemplo));   // MOCK
     return model;
+  }
+
+  // La sugerencia como la muestran la lista y el detalle: la donación y cuántas coincidencias tuvo
+  private static Map<String, String> sugerenciaParaVista(SugerenciaAsignacion sugerencia) {
+    Donacion donacion = sugerencia.getDonacion();
+    int coincidencias = sugerencia.getCoincidencias().size();
+    return Map.of(
+        "id", donacion.getId().toString(),
+        "bien", donacion.getBien().getSubcategoria().nombre(),
+        "cantidad", donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad(),
+        "donante", donacion.getDonante().getNombre(),
+        "ingreso", donacion.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+        "coincidencias", String.valueOf(coincidencias),
+        "resultado", coincidencias == 0 ? "Sin coincidencias"
+            : coincidencias == 1 ? "1 coincidencia" : coincidencias + " coincidencias");
   }
 
   public void confirmarDestino(Context ctx) {

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -415,11 +416,15 @@ public class DonacionController {
     // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
     String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
     model.put("busqueda", busqueda);
-    // Persona donante = personasRepository.buscarPorDocumentoOEmail(busqueda);
-    DatosMock.donantes().stream()
-        .filter(d -> d.get("documento").equals(busqueda) || d.get("email").equals(busqueda))
-        .findFirst()
-        .ifPresent(d -> model.put("donante", d));   // MOCK
+    if (!busqueda.isEmpty()) {
+      personasRepository.buscarPorDocumento(busqueda)
+          .or(() -> personasRepository.buscarPorEmail(busqueda))
+          .ifPresent(d -> model.put("donante", Map.of(
+              "id", d.getId().toString(),
+              "nombre", d.getNombre(),
+              "documento", d.getDocumento(),
+              "email", d.getEmail())));
+    }
 
     // Paso 3: una fila por bien; "+ Agregar bien" recarga con ?filas=N+1 (sin JavaScript)
     int cantidadFilas = ctx.queryParamAsClass("filas", Integer.class).getOrDefault(3);
@@ -427,14 +432,40 @@ public class DonacionController {
         .mapToObj(numero -> Map.of("indice", numero - 1, "numero", numero))
         .toList());
     model.put("masFilas", cantidadFilas + 1);
-    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    model.put("categorias", Arrays.stream(Categoria.values())
+        .map(c -> Map.of(
+            "texto", c.nombre(),
+            "subcategorias", Arrays.stream(Subcategoria.values())
+                .filter(s -> s.getCategoria() == c)
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .toList()))
+        .toList());
     return model;
   }
 
   public void registrarDonacion(Context ctx) {
-    // Sin persistencia todavía: acá se arma la donación con sus bienes (bienes[i].subcategoria, cantidad, ...),
-    // se segmenta por subcategoría y vencimiento, y las donaciones resultantes quedan En depósito
+    // Una fila del form por bien; las filas sin subcategoría quedaron vacías
+    List<BienDTO> bienes = new ArrayList<>();
+    for (int i = 0; ctx.formParam("bienes[" + i + "].subcategoria") != null; i++) {
+      String fila = "bienes[" + i + "].";
+      if (ctx.formParam(fila + "subcategoria").isBlank()) {
+        continue;
+      }
+      bienes.add(new BienDTO(false, false,
+          ctx.formParam(fila + "subcategoria"),
+          Integer.valueOf(ctx.formParam(fila + "cantidad")),
+          ctx.formParam(fila + "unidad"),
+          ctx.formParam(fila + "descripcion"),
+          vacioANull(ctx.formParam(fila + "estado")),
+          vacioANull(ctx.formParam(fila + "vencimiento")),
+          null));
+    }
+    crearDonacion(new DonacionRequestDTO(Long.valueOf(ctx.formParam("donante")), ctx.formParam("descripcion"), bienes));
     ctx.redirect("/admin/donaciones");
+  }
+
+  private static String vacioANull(String valor) {
+    return valor == null || valor.isBlank() ? null : valor;
   }
 
   public Map<String, Object> deposito(Context ctx) {
