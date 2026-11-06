@@ -62,4 +62,18 @@ public class DonacionRepository implements WithSimplePersistenceUnit {
         .setParameter("estado", estado)
         .getResultList();
   }
+
+  public List<Donacion> buscarPorEntidad(Long entidadId) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.entidadBeneficiaria.id = :entidadId", Donacion.class)
+        .setParameter("entidadId", entidadId)
+        .getResultList();
+  }
+
+  public List<Donacion> buscarPorEstado(EstadoDonacion estado) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.estado = :estado", Donacion.class)
+        .setParameter("estado", estado)
+        .getResultList();
+  }
 }

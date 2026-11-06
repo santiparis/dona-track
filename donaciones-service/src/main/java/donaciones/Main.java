@@ -41,7 +41,7 @@ public class Main {
     NotificacionRepository notificacionRepository = new NotificacionRepository();
     Notificador notificador = new Notificador(notificacionRepository);
 
-    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador);
+    DonacionController controller = new DonacionController(donacionesRepository, personasRepository, administradorasRepo, notificador, logisticaGrpcClient);
     DonanteController donanteController = new DonanteController(personasRepository);
     IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();

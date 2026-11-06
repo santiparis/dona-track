@@ -1,9 +1,11 @@
 package logistica.repository;
 
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
+import java.util.NoSuchElementException;
 import logistica.domain.Camion;
 import logistica.domain.Coordenadas;
 import logistica.domain.Entrega;
+import logistica.domain.EstadoEntrega;
 import logistica.domain.Ruta;
 import logistica.domain.EstadoRuta;
 
@@ -32,6 +34,16 @@ public class RutasRepository implements WithSimplePersistenceUnit {
   public Optional<Ruta> buscarRutaPorEntregaId(Long entregaId) {
     return createQuery("select r from Ruta r join r.entregas e where e.id = :entregaId", Ruta.class)
         .setParameter("entregaId", entregaId)
+        .getResultStream()
+        .findFirst();
+  }
+
+  public Optional<Entrega> buscarEntregaPorDonacionId(Long donacionId) {
+    return createQuery(
+        "select e from Ruta r join r.entregas e join e.listaDonaciones d where d.donacionId = :donacionId",
+        Entrega.class
+    )
+        .setParameter("donacionId", donacionId)
         .getResultStream()
         .findFirst();
   }
@@ -73,5 +85,29 @@ public class RutasRepository implements WithSimplePersistenceUnit {
                   .build();
             }))
         .toList();
+  }
+
+  public void actualizarEstadoEntregaPorDonacion(Long donacionId, EstadoEntrega nuevoEstado) {
+    Entrega entrega = buscarEntregaPorDonacionId(donacionId)
+        .orElseThrow(() -> new NoSuchElementException("No se encontró entrega para la donación: " + donacionId));
+
+    if (nuevoEstado == EstadoEntrega.ENTREGADA) {
+      entrega.marcarEntregada();
+    } else if (nuevoEstado == EstadoEntrega.NO_RECIBIDA) {
+      entrega.marcarNoRecibida();
+    }
+  }
+
+  public void actualizarEstadoEntrega(Long entregaId, EstadoEntrega nuevoEstado) {
+    withTransaction(() -> {
+      Entrega entrega = buscarEntregaPorId(entregaId)
+          .orElseThrow(() -> new NoSuchElementException("No se encontró entrega con ID: " + entregaId));
+
+      if (nuevoEstado == EstadoEntrega.ENTREGADA) {
+        entrega.marcarEntregada();
+      } else if (nuevoEstado == EstadoEntrega.NO_RECIBIDA) {
+        entrega.marcarNoRecibida();
+      }
+    });
   }
 }

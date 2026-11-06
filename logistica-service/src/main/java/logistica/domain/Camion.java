@@ -9,6 +9,8 @@ import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -44,7 +46,10 @@ public class Camion {
   private Coordenadas localizacion = null;
 
   private double velocidad = 0;
-  private Boolean disponibilidad;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "estado", nullable = false)
+  private EstadoCamion estado;
 
   // los jsonProperty los usara jackson para crear los objetos de json a dominio
   @JsonCreator
@@ -56,7 +61,7 @@ public class Camion {
     this.volumen = volumen;
     this.altura = altura;
     this.cargaMax = cargaMax;
-    this.disponibilidad = true;
+    this.estado = EstadoCamion.DISPONIBLE;
   }
 
   // constructor sin argumentos que exige JPA para instanciar al leer de la base
@@ -88,7 +93,7 @@ public class Camion {
   }
 
   public boolean estaDisponible(){
-    return Boolean.TRUE.equals(this.disponibilidad);
+    return this.estado == EstadoCamion.DISPONIBLE;
   }
 
   public Coordenadas getLocalizacion() {
@@ -119,13 +124,17 @@ public class Camion {
     return ultimaActualizacion;
   }
 
-  // ocupar/liberar en vez de un setter: el camion se ocupa al asignarsele una ruta
-  // y se libera cuando esa ruta termina
+  public void setEstado(EstadoCamion nuevoEstado) { this.estado = nuevoEstado; }
+
   public void ocupar() {
-    this.disponibilidad = false;
+    this.estado = EstadoCamion.EN_RUTA;
   }
 
   public void liberar() {
-    this.disponibilidad = true;
+    this.estado = EstadoCamion.DISPONIBLE;
+  }
+
+  public void inhabilitar() {
+    this.estado = EstadoCamion.NO_DISPONIBLE;
   }
 }

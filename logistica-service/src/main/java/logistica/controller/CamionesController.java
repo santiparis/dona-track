@@ -25,11 +25,18 @@ public class CamionesController {
   public void postCamiones(Context ctx) {
     try {
       CamionDTO dto = ctx.bodyAsClass(CamionDTO.class);
-      this.camionesRepository.agregar(new Camion(dto.patente(),
+      Camion camion = new Camion(
+          dto.patente(),
           dto.volumen(),
           dto.altura(),
           dto.cargaMax()
-      ));
+      );
+
+      if (dto.estado() != null) {
+        camion.setEstado(dto.estado());
+      }
+
+      this.camionesRepository.agregar(camion);
       ctx.status(HttpStatus.CREATED);
     } catch (RuntimeException e) {
       this.manejarExcepcion(ctx, e);
@@ -58,6 +65,10 @@ public class CamionesController {
           .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
 
       camion.actualizarDatos(dto.patente(), dto.volumen(), dto.altura(), dto.cargaMax());
+
+      if (dto.estado() != null) {
+        camion.setEstado(dto.estado());
+      }
 
       ctx.status(HttpStatus.OK).json(camion);
     } catch (NumberFormatException e) {
