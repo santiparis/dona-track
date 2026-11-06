@@ -24,6 +24,7 @@ import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.web.DatosMock;
+import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -413,7 +414,6 @@ public class DonacionController {
     model.put("titulo", "Registrar donación");
     model.put("rol", "admin");
     model.put("seccion", "donacion-nueva");
-    model.put("usuario", DatosMock.admin());   // MOCK
 
     // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
     String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
@@ -449,7 +449,6 @@ public class DonacionController {
     model.put("titulo", "Donaciones en depósito");
     model.put("rol", "admin");
     model.put("seccion", "deposito");
-    model.put("usuario", DatosMock.admin());   // MOCK
 
     // List<Donacion> enDeposito = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO).toList();
     List<Map<String, String>> enDeposito = DatosMock.donacionesEnDeposito();   // MOCK
@@ -485,14 +484,14 @@ public class DonacionController {
     model.put("titulo", "Mis donaciones");
     model.put("rol", "donante");
     model.put("seccion", "donaciones");
-    model.put("usuario", DatosMock.donante());   // MOCK
 
-    // List<Donacion> donaciones = donacionesRepository.buscarPorDonante(idDonante, estado, categoria, subcategorias);
-    List<Map<String, String>> donaciones = DatosMock.donacionesDelDonante().stream()
+    List<Donacion> propias = donacionesRepository.buscarPorUsuarioDonante(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
+    List<Map<String, String>> donaciones = propias.stream()
+        .map(this::donacionParaVista)
         .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
         .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
         .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.get("subcategoria")))
-        .toList();   // MOCK
+        .toList();
     model.put("donaciones", donaciones);
     model.put("total", donaciones.size());
 
@@ -507,14 +506,17 @@ public class DonacionController {
 
     // ?historial={id} muestra los cambios de estado de esa donación
     String idHistorial = ctx.queryParam("historial");
-    DatosMock.donacionesDelDonante().stream()
-        .filter(d -> d.get("id").equals(idHistorial))
+    propias.stream()
+        .filter(d -> d.getId().toString().equals(idHistorial))
         .findFirst()
         .ifPresent(d -> model.put("historial", Map.of(
-            "bien", d.get("bien"),
-            "cantidad", d.get("cantidad"),
-            // donacion.getHistorialEstados()
-            "cambios", DatosMock.historialDeEstados())));   // MOCK
+            "bien", d.getBien().getSubcategoria().nombre(),
+            "cantidad", d.getBien().getCantidad(),
+            "cambios", d.getHistorialEstados().stream()
+                .map(cambio -> Map.of(
+                    "fecha", Objects.toString(cambio.fecha(), ""),
+                    "descripcion", textoEstado(cambio.estadoNuevo()) + ": " + Objects.toString(cambio.justificacion(), "")))
+                .toList())));
 
     return model;
   }
@@ -527,12 +529,11 @@ public class DonacionController {
     model.put("titulo", "Donaciones asignadas");
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
-    model.put("usuario", DatosMock.entidad());   // MOCK
 
-    // List<Donacion> donaciones = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEntidadBeneficiaria() == entidad).toList();
-    model.put("donaciones", DatosMock.donacionesAsignadas().stream()
+    model.put("donaciones", donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
+        .map(this::donacionParaVista)
         .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
-        .toList());   // MOCK
+        .toList());
     model.put("estadoElegido", estado);
     // A la entidad solo le llegan donaciones ya asignadas: no tiene sentido filtrar por En depósito ni Vencida
     model.put("estados", DatosMock.estados().stream()
@@ -542,28 +543,21 @@ public class DonacionController {
   }
 
   public Map<String, Object> recepcion(Context ctx) {
-    String id = ctx.pathParam("id");
-
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Confirmar recepción");
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
-    model.put("usuario", DatosMock.entidad());   // MOCK
 
-    // Donacion donacion = donacionesRepository.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
-    model.put("donacion", DatosMock.donacionesAsignadas().stream()
-        .filter(d -> d.get("id").equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new));   // MOCK
+    model.put("donacion", donacionParaVista(donacionDeLaEntidad(ctx)));
     return model;
   }
 
   public void confirmarRecepcion(Context ctx) {
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
     try {
-      Long entregaId = Long.parseLong(ctx.pathParam("id"));
 
       // Simplemente notificamos a Logística por gRPC
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(entregaId, true);
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
 
       if (!response.getExito()) {
         ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
@@ -577,11 +571,11 @@ public class DonacionController {
   }
 
   public void informarNoRecibida(Context ctx) {
+    Long donacionId = donacionDeLaEntidad(ctx).getId();
     try {
-      Long entregaId = Long.parseLong(ctx.pathParam("id"));
 
       // Simplemente notificamos a Logística por gRPC
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(entregaId, false);
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false);
 
       if (!response.getExito()) {
         ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
@@ -592,6 +586,39 @@ public class DonacionController {
     } catch (Exception e) {
       ctx.status(500).result("Error al procesar el rechazo: " + e.getMessage());
     }
+  }
+
+  private Donacion donacionDeLaEntidad(Context ctx) {
+    String id = ctx.pathParam("id");
+    return donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
+        .filter(d -> d.getId().toString().equals(id))
+        .findFirst()
+        .orElseThrow(NotFoundResponse::new);
+  }
+
+  private Map<String, String> donacionParaVista(Donacion donacion) {
+    Bien bien = donacion.getBien();
+    Map<String, String> fila = new HashMap<>();
+    fila.put("id", donacion.getId().toString());
+    fila.put("bien", bien.getSubcategoria().nombre());
+    fila.put("cantidad", (bien.getCantidad() + " " + Objects.toString(bien.getUnidad(), "")).trim());
+    fila.put("fecha", Objects.toString(donacion.getFecha(), ""));
+    fila.put("actualizado", donacion.getHistorialEstados().stream()
+        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.util.Date::compareTo)
+        .map(java.util.Date::toString).orElse(fila.get("fecha")));
+    fila.put("estado", donacion.getEstado().name());
+    fila.put("estadoTexto", textoEstado(donacion.getEstado()));
+    fila.put("categoria", bien.getSubcategoria().getCategoria().name());
+    fila.put("subcategoria", bien.getSubcategoria().name());
+    fila.put("donante", donacion.getDonante().getNombre());
+    var entidad = donacion.getEntidadBeneficiaria();
+    fila.put("entidad", entidad == null ? "—" : entidad.getRazonSocial());
+    return fila;
+  }
+
+  private String textoEstado(EstadoDonacion estado) {
+    return DatosMock.estados().stream().filter(e -> e.get("valor").equals(estado.name()))
+        .map(e -> e.get("texto")).findFirst().orElse(estado.name());
   }
 
   public Map<String, Object> entregadas() {

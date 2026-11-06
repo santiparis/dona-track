@@ -119,7 +119,8 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
       EstadoEntrega nuevoEstado = request.getExito() ? EstadoEntrega.ENTREGADA : EstadoEntrega.NO_RECIBIDA;
 
       // Llama al repo que usa buscarEntregaPorDonacionId y ejecuta marcarEntregada() / marcarNoRecibida()
-      rutasRepository.actualizarEstadoEntregaPorDonacion(donacionId, nuevoEstado);
+      rutasRepository.withTransaction(() ->
+          rutasRepository.actualizarEstadoEntregaPorDonacion(donacionId, nuevoEstado));
 
       ReportarEntregaResponse response = ReportarEntregaResponse.newBuilder()
           .setExito(true)
@@ -136,6 +137,10 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
+    } finally {
+      if (rutasRepository.perThreadEntityManagerAccess().isAttached()) {
+        rutasRepository.perThreadEntityManagerAccess().dispose();
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ import donaciones.domain.donante.PersonaJuridica;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
+import donaciones.domain.donante.Rol;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +52,7 @@ public class ImportadorPersonas {
             String documento = record.get("Documento");
             List<Contacto> contactos = crearContactos(emailStr, telefonoStr);
             Contacto medioPredeterminado = contactos.get(0);
-            Usuario nuevoUsuario = new Usuario(emailStr, "password_provisoria");
+            Usuario nuevoUsuario = new Usuario(emailStr, "password_provisoria", Rol.DONANTE);
 
             Persona persona;
             if ("HUMANA".equalsIgnoreCase(tipoPersona)) {

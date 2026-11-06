@@ -46,6 +46,18 @@ public class Necesidad {
         return id;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public Map<Subcategoria, Integer> getCantidadesRequeridas() {
+        return Map.copyOf(cantidadesRequeridas);
+    }
+
+    public Map<Subcategoria, Integer> getCantidadesSuplidas() {
+        return Map.copyOf(cantidadesSuplidas);
+    }
+
     public void setId(Long id) {
         this.id = id;
     }

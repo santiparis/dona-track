@@ -166,9 +166,9 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>${protobuf.plugin.version}</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:windows-x86_64</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:windows-x86_64</pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                 </configuration>
                 <executions>
                     <execution>
@@ -195,11 +195,9 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--<appendAssemblyId>false</appendAssemblyId>-->
-                    <descriptorRefs>
-                        <!-- Esto indica que genere un paquete que incluya las dependencias -->
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>${project.basedir}/../assembly.xml</descriptor>
+                    </descriptors>
                 </configuration>
 
                 <executions>

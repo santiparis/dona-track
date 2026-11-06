@@ -1,30 +1,44 @@
 package donaciones.domain.donante;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
+import java.util.Locale;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario", uniqueConstraints = @UniqueConstraint(name = "uk_usuario_nombre", columnNames = "nombre_usuario"))
 public class Usuario {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "usuario_id") private Long id;
-    @Column(name = "nombre_usuario")
+    @Column(name = "nombre_usuario", nullable = false)
     private String nombreUsuario;
     @Column(name = "contrasenia")
-    private String password;
+    @JsonIgnore
+    private String passwordHash;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol", nullable = false)
+    private Rol rol;
 
     protected Usuario() { }
 
-    public Usuario(String nombreUsuario, String password) {
-        this.nombreUsuario = nombreUsuario;
-        // TODO: Almacenar la password de forma segura.
-        this.password = password;
+    public Usuario(String nombreUsuario, String password, Rol rol) {
+        if (nombreUsuario == null || nombreUsuario.isBlank() || nombreUsuario.trim().length() > 255) {
+            throw new IllegalArgumentException("El nombre de usuario es obligatorio y admite hasta 255 caracteres.");
+        }
+        this.nombreUsuario = nombreUsuario.trim().toLowerCase(Locale.ROOT);
+        this.rol = Objects.requireNonNull(rol, "El rol del usuario es obligatorio.");
+        this.passwordHash = HashContrasenia.generar(password);
     }
 
     public String getNombreUsuario() {
         return nombreUsuario;
     }
 
-    public String getPassword() {
-        return password;
+    public boolean validarPassword(String password) {
+        return HashContrasenia.verificar(password, passwordHash);
     }
     public Long getId() { return id; }
+
+    public Rol getRol() {
+        return rol;
+    }
 }

@@ -12,14 +12,16 @@
 
     <form class="card" action="/usuarios" method="post">
         <input type="hidden" name="tipo" value="{{tipo}}">
+        {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
 
         {{#if (eq tipo "ENTIDAD")}}
             <div class="bloque">
                 <h2>Entidad beneficiaria</h2>
-                <label>Razón social<input name="razonSocial" required></label>
-                <label>Dirección completa<input name="direccion" required></label>
-                <label>Teléfono<input name="telefono" type="tel"></label>
-                <label>Correos de representantes<textarea name="correos"></textarea><span class="hint">Uno por línea.</span></label>
+                <label>Razón social<input name="razonSocial" value="{{razonSocial}}" maxlength="255" required></label>
+                <label>Dirección completa<input name="direccion" value="{{direccion}}" maxlength="255" required></label>
+                <label>Correo electrónico de la cuenta<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
+                <label>Teléfono<input name="telefono" type="tel" value="{{telefono}}" maxlength="255"></label>
+                <label>Correos de representantes (opcional)<textarea name="correos" maxlength="5000">{{correos}}</textarea><span class="hint">Uno por línea.</span></label>
             </div>
         {{else}}
             {{> form-donante}}
@@ -27,13 +29,14 @@
 
         <fieldset>
             <legend>Acceso</legend>
+            <p class="hint">Vas a ingresar con el correo electrónico de esta cuenta. La contraseña debe tener entre 8 y 128 caracteres.</p>
             <div class="f2">
-                <label>Contraseña<input name="password" type="password" required></label>
-                <label>Repetir contraseña<input name="password2" type="password" required></label>
+                <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+                <label>Repetir contraseña<input name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
             </div>
         </fieldset>
 
-        <label class="radio"><input type="checkbox" name="acepta" required>Acepto los <a href="/legal">términos y la política de privacidad</a></label>
+        <label class="radio"><input type="checkbox" name="acepta" {{#if acepta}}checked{{/if}} required>Acepto los <a href="/legal">términos y la política de privacidad</a></label>
         <div class="row acciones">
             <a class="btn2" href="/">Cancelar</a>
             <button class="btn" type="submit">Crear cuenta</button>

@@ -30,7 +30,8 @@ public class Main {
     var transaccion = new TransaccionPorRequest();
 
     // 1. Cliente gRPC hacia donaciones-service (puerto 9091)
-    var donacionesGrpcClient = new DonacionesGrpcClient("localhost", 9091);
+    var donacionesGrpcClient = new DonacionesGrpcClient(
+        System.getenv().getOrDefault("DONACIONES_GRPC_HOST", "localhost"), 9091);
 
     var notificadorEntregas = new NotificadorEntregas(donacionesGrpcClient);
     var donacionesController = new DonacionesAPIController(repositorioDonaciones);

@@ -1,5 +1,7 @@
 package donaciones.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import donaciones.domain.donante.Usuario;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificable;
 import java.util.ArrayList;
@@ -13,6 +15,9 @@ import org.hibernate.annotations.Where;
 public class PersonaAdministradora implements Notificable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "persona_administradora_id") private Long id;
     private String nombre;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "usuario_id", unique = true)
+    private Usuario usuario;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "notificable_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "tipo_notificable = 'ADMINISTRADORA'")
@@ -22,7 +27,13 @@ public class PersonaAdministradora implements Notificable {
     protected PersonaAdministradora() { }
 
     public PersonaAdministradora(String nombre, List<Contacto> contactos, Contacto medioPredeterminado) {
+        this(nombre, contactos, medioPredeterminado, null);
+    }
+
+    public PersonaAdministradora(String nombre, List<Contacto> contactos, Contacto medioPredeterminado,
+                                 Usuario usuario) {
         this.nombre = nombre;
+        this.usuario = usuario;
         if (contactos != null) {
             this.contactos.addAll(contactos);
             this.contactos.forEach(contacto -> contacto.identificarNotificable("ADMINISTRADORA"));
@@ -33,6 +44,11 @@ public class PersonaAdministradora implements Notificable {
     }
 
     public Long getId() { return id; }
+
+    @JsonIgnore
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
     public String getNombre() {
         return nombre;

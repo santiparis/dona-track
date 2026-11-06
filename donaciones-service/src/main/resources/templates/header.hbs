@@ -1,5 +1,4 @@
-{{!-- Un solo header para todos los perfiles. Sin sesión todavía: el controller indica el rol de la pantalla
-      y, si hay alguien logueado, lo pasa en "usuario" (nombre y notificaciones sin leer). --}}
+{{!-- El renderer agrega la cuenta autenticada al encabezado de todas las páginas. --}}
 <header class="hdr">
     <a class="logo" href="{{#if (eq rol "donante")}}/donante/donaciones{{else if (eq rol "entidad")}}/entidad/necesidades{{else if (eq rol "admin")}}/admin/donaciones{{else}}/{{/if}}">
         <span class="logo-box"></span>DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
@@ -21,7 +20,10 @@
     {{#if usuario}}
         <div class="user">
             <span>{{usuario.nombre}}</span>
-            <a class="btn2 chico" href="/">Cerrar sesión</a>
+            <a class="btn2 chico" href="{{inicioUsuario}}">Mi cuenta</a>
+            <form action="/logout" method="post">
+                <button class="btn2 chico" type="submit">Cerrar sesión</button>
+            </form>
         </div>
     {{else}}
         <div class="row">

@@ -17,12 +17,13 @@ import donaciones.repository.SugerenciaAsignacionRepository;
 import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
+import donaciones.web.SesionUsuario;
+import donaciones.repository.UsuarioRepository;
 import donaciones.web.templates.JavalinHandlebars;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
-import donaciones.controller.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +37,8 @@ public class Main {
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
     // Cliente gRPC hacia logistica-service
-    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient(
+        System.getenv().getOrDefault("LOGISTICA_GRPC_HOST", "localhost"), 9090);
 
     NotificacionRepository notificacionRepository = new NotificacionRepository();
     Notificador notificador = new Notificador(notificacionRepository);
@@ -57,7 +59,7 @@ public class Main {
     CamionesController camionesController = new CamionesController(logisticaGrpcClient, donacionesRepository);
     NotificacionesController notificacionesController = new NotificacionesController(notificacionRepository);
     PublicoController publicoController = new PublicoController();
-    SesionController sesionController = new SesionController();
+    SesionController sesionController = new SesionController(new UsuarioRepository());
 
     // Servidor gRPC propio de donaciones-service (puerto 9091)
     try {
@@ -77,6 +79,7 @@ public class Main {
 
     // Servidor web HTTP / Javalin (puerto 8081)
     Javalin app = Javalin.create(config -> {
+      SesionUsuario.configurar(config);
       config.fileRenderer(new JavalinHandlebars());
       config.staticFiles.add(staticFiles -> {
         staticFiles.hostedPath = "/assets";

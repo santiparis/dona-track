@@ -211,7 +211,6 @@ public class DonanteController {
     model.put("titulo", "Registrar donante");
     model.put("rol", "admin");
     model.put("seccion", "donante-nuevo");
-    model.put("usuario", DatosMock.admin());   // MOCK
     // La pestaña viaja en la URL: /admin/donantes/nuevo?tipo=HUMANA|JURIDICA
     model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), "HUMANA"));
     return model;
@@ -232,7 +231,6 @@ public class DonanteController {
     model.put("titulo", "Importar donantes");
     model.put("rol", "admin");
     model.put("seccion", "importacion");
-    model.put("usuario", DatosMock.admin());   // MOCK
     // Después de importar se vuelve con ?importado para mostrar el resultado
     if (ctx.queryParam("importado") != null) {
       model.put("resultado", DatosMock.resultadoImportacion());   // MOCK

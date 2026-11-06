@@ -18,14 +18,24 @@ public class DonacionRepository implements WithSimplePersistenceUnit {
     return createQuery("from Donacion", Donacion.class).getResultList();
   }
 
-  public List<Donacion> obtenerEnDeposito() {
-    return createQuery("from Donacion d where d.estado = :estado", Donacion.class)
-        .setParameter("estado", donaciones.domain.EstadoDonacion.EN_DEPOSITO)
-        .getResultList();
+  public List<Donacion> buscarPorUsuarioDonante(Long usuarioId) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.donante.usuario.id = :usuarioId order by d.fecha desc, d.id desc", Donacion.class)
+        .setParameter("usuarioId", usuarioId).getResultList();
+  }
+
+  public List<Donacion> buscarPorUsuarioEntidad(Long usuarioId) {
+    TransaccionPorRequest.iniciarSiEsNecesario();
+    return createQuery("from Donacion d where d.entidadBeneficiaria.usuario.id = :usuarioId order by d.fecha desc, d.id desc", Donacion.class)
+        .setParameter("usuarioId", usuarioId).getResultList();
   }
 
   public Optional<Donacion> buscarPorId(Long id) {
     return Optional.ofNullable(find(Donacion.class, id));
+  }
+
+  public List<Donacion> obtenerEnDeposito() {
+    return buscarPorEstado(EstadoDonacion.EN_DEPOSITO);
   }
 
   public Optional<Donacion> buscarPorIdParaActualizar(Long id) {

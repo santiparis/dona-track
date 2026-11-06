@@ -2,6 +2,7 @@ package logistica.repository;
 
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import logistica.domain.Camion;
+import logistica.domain.EstadoCamion;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,9 @@ public class CamionesRepository implements WithSimplePersistenceUnit {
   }
 
   public List<Camion> obtenerDisponibles() {
-    return createQuery("from Camion where disponibilidad = true", Camion.class).getResultList();
+    return createQuery("from Camion where estado = :estado", Camion.class)
+        .setParameter("estado", EstadoCamion.DISPONIBLE)
+        .getResultList();
   }
 
   public void eliminarPorId(Long id) {
