@@ -32,7 +32,7 @@ public class CamionesRepository implements WithSimplePersistenceUnit {
   }
 
   public List<Camion> obtenerDisponibles() {
-    return createQuery("from Camion where disponibilidad = true", Camion.class).getResultList();
+    return createQuery("from Camion where estado = 'DISPONIBLE'", Camion.class).getResultList();
   }
 
   public void eliminarPorId(Long id) {

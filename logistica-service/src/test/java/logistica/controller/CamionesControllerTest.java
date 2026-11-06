@@ -60,7 +60,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void postCamionesGuardaElCamionYDevuelveCreated() {
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, null));
 
     controller.postCamiones(ctx);
 
@@ -89,7 +89,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
   @Test
   void putCamionActualizaLosDatosDelCamion() {
     when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, null));
 
     controller.putCamion(ctx);
 
@@ -104,7 +104,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
   @Test
   void putCamionDevuelveNotFoundCuandoNoExiste() {
     when(ctx.pathParam("id")).thenReturn("999999");
-    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500));
+    when(ctx.bodyAsClass(CamionDTO.class)).thenReturn(new CamionDTO("XY987ZW", 12, 2.5, 1500, null));
 
     controller.putCamion(ctx);
 
