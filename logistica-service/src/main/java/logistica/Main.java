@@ -68,7 +68,9 @@ public class Main {
     // Carga de flota inicial
     transaccion.withTransaction(() -> {
       if (repositorioCamiones.obtenerTodos().isEmpty()) {
-        repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+        var camiones = SeedCamiones.camiones();
+        repositorioCamiones.agregarTodos(camiones);
+        SeedCamiones.rutas(camiones).forEach(repositorioRutas::agregar);
       }
     });
 

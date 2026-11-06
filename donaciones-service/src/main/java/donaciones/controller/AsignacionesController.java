@@ -3,6 +3,8 @@ package donaciones.controller;
 import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.Periodo;
+import donaciones.domain.Subcategoria;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.db.TransaccionPorRequest;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AsignacionesController {
   private static final Logger logger = LoggerFactory.getLogger(AsignacionesController.class);
@@ -69,8 +72,8 @@ public class AsignacionesController {
     return sugerenciasGeneradas;
   }
 
-  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamañoLote) {
-    if (tamañoLote < 1) {
+  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamanioLote) {
+    if (tamanioLote < 1) {
       throw new IllegalArgumentException("El tamaño del lote debe ser positivo");
     }
 
@@ -81,8 +84,8 @@ public class AsignacionesController {
     transaccion.perThreadEntityManagerAccess().dispose();
 
     List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
-    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamañoLote) {
-      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamañoLote, idsDonaciones.size()));
+    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamanioLote) {
+      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamanioLote, idsDonaciones.size()));
       try {
         List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
             .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
@@ -252,14 +255,44 @@ public class AsignacionesController {
 
     SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
     model.put("donacion", sugerenciaParaVista(sugerencia));
-    // Los rankings no se guardan (A10): se usa el ejemplo del mock que tiene la misma cantidad de coincidencias
-    String ejemplo = switch (sugerencia.getCoincidencias().size()) {
-      case 2 -> "21";
-      case 1 -> "19";
-      default -> "";
-    };
-    model.putAll(DatosMock.rankingsDeSugerencia(ejemplo));   // MOCK
+    Map<String, List<EntidadBeneficiaria>> rankings = sugerencia.getEntidadesPorAlgoritmo();
+    model.put("algoritmos", rankings.entrySet().stream()
+        .map(ranking -> Map.of(
+            "nombre", ranking.getKey(),
+            "entidades", ranking.getValue().stream()
+                .map(e -> Map.of("id", e.getId().toString(), "nombre", e.getRazonSocial()))
+                .toList()))
+        .toList());
+    Subcategoria subcategoria = sugerencia.getDonacion().getBien().getSubcategoria();
+    model.put("coincidencias", sugerencia.getCoincidencias().stream()
+        .map(e -> Map.of(
+            "id", e.getId().toString(),
+            "nombre", e.getRazonSocial(),
+            "detalle", necesidadPendiente(e, subcategoria),
+            // En qué puesto la puso cada algoritmo
+            "posiciones", rankings.entrySet().stream()
+                .map(ranking -> ranking.getKey() + " #" + (ranking.getValue().indexOf(e) + 1))
+                .collect(Collectors.joining(" · "))))
+        .toList());
     return model;
+  }
+
+  // Cuánto le falta a la entidad de esa subcategoría, ej. "Necesita 40 más esta semana"
+  private static String necesidadPendiente(EntidadBeneficiaria entidad, Subcategoria subcategoria) {
+    return entidad.getNecesidades().stream()
+        .filter(n -> n.getCantidadesRequeridas().containsKey(subcategoria))
+        .findFirst()
+        .map(n -> {
+          int falta = n.getCantidadesRequeridas().get(subcategoria) - n.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
+          String detalle = "Necesita " + falta + " más";
+          if (n.getPeriodo() == Periodo.SEMANAL) {
+            detalle += " esta semana";
+          } else if (n.getPeriodo() == Periodo.MENSUAL) {
+            detalle += " este mes";
+          }
+          return detalle;
+        })
+        .orElse("");
   }
 
   // La sugerencia como la muestran la lista y el detalle: la donación y cuántas coincidencias tuvo

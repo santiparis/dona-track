@@ -23,6 +23,7 @@ import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -113,9 +114,31 @@ public class Seed implements WithSimplePersistenceUnit {
         List.of(correoTutorias), correoTutorias);
     tutorias.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.MESAS, 5)));
 
+    // Las tres que aparecen en los rankings de Elegir entidad final
+    Contacto correoBarrioSur = new ContactoPorEmail("comedorbarriosur@gmail.com");
+    EntidadBeneficiaria barrioSur = new EntidadBeneficiaria("Comedor Barrio Sur", "Av. Mitre 2450, Avellaneda",
+        "(011) 4201-3344", new ArrayList<>(List.of("comedorbarriosur@gmail.com")),
+        List.of(correoBarrioSur), correoBarrioSur);
+    barrioSur.registrarNecesidad(new Necesidad(null, true, LocalDate.now(), Periodo.SEMANAL, Map.of(Subcategoria.FIDEOS, 50)));
+
+    Contacto correoSanJose = new ContactoPorEmail("hogarsanjose@gmail.com");
+    EntidadBeneficiaria sanJose = new EntidadBeneficiaria("Hogar San José", "Belgrano 780, Luján",
+        "(02323) 42-5566", new ArrayList<>(List.of("hogarsanjose@gmail.com")),
+        List.of(correoSanJose), correoSanJose);
+    sanJose.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.CAMPERAS, 20)));
+
+    Contacto correoLosPibes = new ContactoPorEmail("merenderolospibes@gmail.com");
+    EntidadBeneficiaria losPibes = new EntidadBeneficiaria("Merendero Los Pibes", "Calle 9 N°1120, Florencio Varela",
+        "(011) 4255-7788", new ArrayList<>(List.of("merenderolospibes@gmail.com")),
+        List.of(correoLosPibes), correoLosPibes);
+    losPibes.registrarNecesidad(new Necesidad(null, true, LocalDate.now(), Periodo.MENSUAL, Map.of(Subcategoria.FIDEOS, 100)));
+
     persist(escuela);
     persist(comedor);
     persist(tutorias);
+    persist(barrioSur);
+    persist(sanJose);
+    persist(losPibes);
 
     // Donaciones en todos los estados
     LocalDate hoy = LocalDate.now();
@@ -129,10 +152,21 @@ public class Seed implements WithSimplePersistenceUnit {
     Donacion camperasAna = new Donacion(ana, new Bien(Subcategoria.CAMPERAS, 12, "unidades", "Camperas de abrigo talle M", null, EstadoBien.USADO, null));
     persist(camperasAna);
 
-    // Sugerencias de asignación de las donaciones en depósito, como las de Asignaciones pendientes
-    persist(new SugerenciaAsignacion(fideosPastas.getId(), fideosPastas, new ArrayList<>(List.of(comedor, escuela)), Map.of()));
-    persist(new SugerenciaAsignacion(sillasArcos.getId(), sillasArcos, new ArrayList<>(List.of(escuela)), Map.of()));
-    persist(new SugerenciaAsignacion(camperasAna.getId(), camperasAna, new ArrayList<>(), Map.of()));
+    // Sugerencias de asignación de las donaciones en depósito, con el ranking de cada algoritmo
+    Map<String, List<EntidadBeneficiaria>> rankingFideos = new LinkedHashMap<>();
+    rankingFideos.put("Compatibilidad Semantica", List.of(comedor, barrioSur, sanJose, losPibes));
+    rankingFideos.put("Prioridad Subatendidos", List.of(losPibes, escuela, comedor, tutorias));
+    persist(new SugerenciaAsignacion(fideosPastas.getId(), fideosPastas, new ArrayList<>(List.of(comedor, losPibes)), rankingFideos));
+
+    Map<String, List<EntidadBeneficiaria>> rankingSillas = new LinkedHashMap<>();
+    rankingSillas.put("Compatibilidad Semantica", List.of(escuela, tutorias, sanJose));
+    rankingSillas.put("Prioridad Subatendidos", List.of(losPibes, escuela, barrioSur));
+    persist(new SugerenciaAsignacion(sillasArcos.getId(), sillasArcos, new ArrayList<>(List.of(escuela)), rankingSillas));
+
+    Map<String, List<EntidadBeneficiaria>> rankingCamperas = new LinkedHashMap<>();
+    rankingCamperas.put("Compatibilidad Semantica", List.of(barrioSur, sanJose));
+    rankingCamperas.put("Prioridad Subatendidos", List.of(escuela, tutorias));
+    persist(new SugerenciaAsignacion(camperasAna.getId(), camperasAna, new ArrayList<>(), rankingCamperas));
 
     Donacion mesa = new Donacion(arcos, new Bien(Subcategoria.MESAS, 1, "unidades", "Mesa de madera", null, EstadoBien.USADO, null));
     mesa.asignarA(escuela);

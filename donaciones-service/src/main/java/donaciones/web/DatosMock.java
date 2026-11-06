@@ -77,40 +77,6 @@ public class DatosMock {
         "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
   }
 
-  // Lo que devolvería la SugerenciaAsignacion de una donación: el ranking de cada algoritmo y las coincidencias entre ellos
-  public static Map<String, Object> rankingsDeSugerencia(String idDonacion) {
-    Map<String, String> escobar = Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas");
-    Map<String, String> barrioSur = Map.of("id", "5", "nombre", "Comedor Barrio Sur");
-    Map<String, String> sanJose = Map.of("id", "9", "nombre", "Hogar San José");
-    Map<String, String> losPibes = Map.of("id", "7", "nombre", "Merendero Los Pibes");
-    Map<String, String> escuela = Map.of("id", "11", "nombre", "Escuela Rural N°10");
-    Map<String, String> tutorias = Map.of("id", "12", "nombre", "Espacio de Tutorías Barrio Norte");
-
-    Map<String, String> coincidenciaEscobar = Map.of("id", "3", "nombre", "Comedor Escobar Sonrisas",
-        "detalle", "Necesita 40 paquetes más esta semana", "posiciones", "Semántica #1 · Sub-atendidos #3");
-    Map<String, String> coincidenciaLosPibes = Map.of("id", "7", "nombre", "Merendero Los Pibes",
-        "detalle", "Necesita 100 paquetes por mes", "posiciones", "Semántica #4 · Sub-atendidos #1");
-
-    return switch (idDonacion) {
-      case "21" -> Map.of(
-          "algoritmos", List.of(
-              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(escobar, barrioSur, sanJose, losPibes)),
-              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(losPibes, escuela, escobar, tutorias))),
-          "coincidencias", List.of(coincidenciaEscobar, coincidenciaLosPibes));
-      case "19" -> Map.of(
-          "algoritmos", List.of(
-              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(escuela, tutorias, sanJose)),
-              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(losPibes, escuela, barrioSur))),
-          "coincidencias", List.of(Map.of("id", "11", "nombre", "Escuela Rural N°10",
-              "detalle", "Necesita 24 sillas más", "posiciones", "Semántica #1 · Sub-atendidos #2")));
-      default -> Map.of(
-          "algoritmos", List.of(
-              Map.of("nombre", "Compatibilidad semántica", "entidades", List.of(barrioSur, sanJose)),
-              Map.of("nombre", "Prioridad a sub-atendidos", "entidades", List.of(escuela, tutorias))),
-          "coincidencias", List.of());
-    };
-  }
-
   public static List<Map<String, String>> camiones() {
     return List.of(
         Map.of("id", "1", "patente", "AB123CD", "volumen", "18", "altura", "3.2", "cargaMax", "3500",

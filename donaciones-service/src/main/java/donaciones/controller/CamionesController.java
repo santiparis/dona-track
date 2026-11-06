@@ -10,6 +10,7 @@ import io.javalin.http.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import logistica.grpc.UbicacionCamion;
 import logistica.grpc.UbicacionCamionesResponse;
 
 public class CamionesController {
@@ -80,10 +81,10 @@ public class CamionesController {
     model.put("subtitulo", "Camiones que hoy llevan donaciones tuyas.");
     model.put("textoMapa", "Un marcador por camión y los destinos de tus donaciones");
 
-    // 1. Buscar donaciones en traslado del donante
-    Long idDonante = (Long) donante.get("id"); // O extraer id del usuario autenticado
-    List<Donacion> donacionesEnTraslado = donacionRepository
-        .buscarPorDonanteYEstado(idDonante, EstadoDonacion.EN_TRASLADO);
+    // 1. Buscar donaciones en traslado del donante (donante fijo del seed hasta que esté el login)
+    List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO && d.getDonante().getEmail().equals("ana@mail.com"))
+        .toList();
 
     // 2. Extraer los IDs de las donaciones
     List<Long> idsDonaciones = donacionesEnTraslado.stream()
@@ -97,14 +98,7 @@ public class CamionesController {
 
       // 4. Mapear la respuesta de Protobuf a la estructura que espera la vista
       camiones = response.getUbicacionesList().stream()
-          .map(u -> Map.<String, Object>of(
-              "idDonacion", u.getIdDonacion(),
-              "patente", u.getPatente(),
-              "latitud", u.getLatitud(),
-              "longitud", u.getLongitud(),
-              "velocidad", u.getVelocidad(),
-              "ultimaActualizacion", u.getUltimaActualizacion()
-          ))
+          .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
     }
     if (camiones.isEmpty()) {
@@ -127,9 +121,11 @@ public class CamionesController {
     model.put("subtitulo", "Camiones en camino con donaciones para tu entidad.");
     model.put("textoMapa", "Un marcador por camión y la ubicación de tu entidad");
 
-    Long idEntidad = (Long) entidad.get("id");
-    List<Donacion> donacionesEnTraslado = donacionRepository
-        .buscarPorEntidadYEstado(idEntidad, EstadoDonacion.EN_TRASLADO);
+    // Entidad fija del seed hasta que esté el login
+    List<Donacion> donacionesEnTraslado = donacionRepository.obtenerTodas().stream()
+        .filter(d -> d.getEstado() == EstadoDonacion.EN_TRASLADO
+            && d.getEntidadBeneficiaria().getRazonSocial().equals("Escuela Rural N°10"))
+        .toList();
 
     List<Long> idsDonaciones = donacionesEnTraslado.stream()
         .map(Donacion::getId)
@@ -140,14 +136,7 @@ public class CamionesController {
       UbicacionCamionesResponse response = logisticaGrpcClient.obtenerUbicacionCamiones(idsDonaciones);
 
       camiones = response.getUbicacionesList().stream()
-          .map(u -> Map.<String, Object>of(
-              "idDonacion", u.getIdDonacion(),
-              "patente", u.getPatente(),
-              "latitud", u.getLatitud(),
-              "longitud", u.getLongitud(),
-              "velocidad", u.getVelocidad(),
-              "ultimaActualizacion", u.getUltimaActualizacion()
-          ))
+          .map(u -> camionParaVista(u, donacionesEnTraslado))
           .toList();
     }
     if (camiones.isEmpty()) {
@@ -158,5 +147,23 @@ public class CamionesController {
 
     model.put("camiones", camiones);
     return model;
+  }
+
+  // El camión como lo muestra la tabla del seguimiento, con los datos de la donación que lleva
+  private static Map<String, Object> camionParaVista(UbicacionCamion ubicacion, List<Donacion> donaciones) {
+    Donacion donacion = donaciones.stream()
+        .filter(d -> d.getId() == ubicacion.getIdDonacion())
+        .findFirst()
+        .orElseThrow();
+    return Map.of(
+        "patente", ubicacion.getPatente(),
+        "donacion", donacion.getBien().getSubcategoria().nombre() + " · " + donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad(),
+        "destino", donacion.getEntidadBeneficiaria().getRazonSocial(),
+        "avance", "—",   // logística no informa el avance de la ruta
+        "latitud", ubicacion.getLatitud(),
+        "longitud", ubicacion.getLongitud(),
+        "velocidad", (int) ubicacion.getVelocidad() + " km/h",
+        // ultimaActualizacion viene en ISO-8601: se muestra la hora (HH:mm)
+        "actualizacion", ubicacion.getUltimaActualizacion().isEmpty() ? "—" : ubicacion.getUltimaActualizacion().substring(11, 16));
   }
 }
