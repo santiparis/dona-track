@@ -3,10 +3,12 @@ services:
   donaciones-api:
     environment:
       LOGISTICA_URL: http://${LOGISTICA_IP}:7070/
+      LOGISTICA_GRPC_HOST: ${LOGISTICA_IP}
 
   logistica-api:
     environment:
       DONACIONES_URL: http://${DONACIONES_IP}:8081/
+      DONACIONES_GRPC_HOST: ${DONACIONES_IP}
       PLANIFICADOR_URL: http://mock-planificador:9092/
 
   mysql:

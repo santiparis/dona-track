@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -246,19 +248,51 @@ public class EntidadesBeneficiariasController {
     model.put("rol", "donante");
     model.put("seccion", "entidades");
 
-    // List<EntidadBeneficiaria> entidades = entidadRepo.buscar(busqueda, subcategoria);
-    model.put("entidades", DatosMock.entidadesConNecesidades().stream()
-        .filter(e -> ((String) e.get("nombre")).toLowerCase().contains(busqueda.toLowerCase()))
-        .filter(e -> subcategoria.isEmpty() || ((List<?>) e.get("necesidades")).stream()
-            .anyMatch(n -> subcategoria.equals(((Map<?, ?>) n).get("subcategoria"))))
-        .toList());   // MOCK
+    model.put("entidades", entidadesRepository.obtenerTodas().stream()
+        .filter(e -> e.getRazonSocial().toLowerCase().contains(busqueda.toLowerCase()))
+        .filter(e -> subcategoria.isEmpty() || e.getNecesidades().stream()
+            .anyMatch(n -> n.getCantidadesRequeridas().containsKey(Subcategoria.valueOf(subcategoria))))
+        .map(EntidadesBeneficiariasController::entidadConNecesidades)
+        .toList());
     model.put("busqueda", busqueda);
     model.put("subcategoriaElegida", subcategoria);
     // Todas las subcategorías, de todas las categorías
-    model.put("subcategorias", DatosMock.categorias().stream()
-        .flatMap(c -> DatosMock.subcategorias(c.get("valor")).stream())
-        .toList());   // MOCK
+    model.put("subcategorias", Arrays.stream(Subcategoria.values())
+        .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+        .toList());
     return model;
+  }
+
+  // La entidad como la muestran el listado y el detalle: una necesidad por subcategoría, con su avance
+  private static Map<String, Object> entidadConNecesidades(EntidadBeneficiaria entidad) {
+    List<Map<String, String>> necesidades = new ArrayList<>();
+    for (Necesidad necesidad : entidad.getNecesidades()) {
+      necesidad.getCantidadesRequeridas().forEach((subcategoria, requerido) -> {
+        int suplido = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
+        String detalle = suplido + " de " + requerido;
+        if (necesidad.getPeriodo() == Periodo.SEMANAL) {
+          detalle += " esta semana";
+        } else if (necesidad.getPeriodo() == Periodo.MENSUAL) {
+          detalle += " este mes";
+        }
+        if (necesidad.getDescripcion() != null) {
+          detalle += " · " + necesidad.getDescripcion();
+        }
+        necesidades.add(Map.of(
+            "subcategoria", subcategoria.name(),
+            "subcategoriaTexto", subcategoria.nombre(),
+            "tipo", necesidad.getPeriodo() == null ? "Extraordinaria" : "Recurrente · " + necesidad.getPeriodo().name().toLowerCase(),
+            "porcentaje", String.valueOf(suplido * 100 / requerido),
+            "detalle", detalle));
+      });
+    }
+    return Map.of(
+        "id", entidad.getId().toString(),
+        "nombre", entidad.getRazonSocial(),
+        "direccion", entidad.getDireccion(),
+        "telefono", entidad.getTelefono(),
+        "correos", entidad.getCorreosRepresentantes(),
+        "necesidades", necesidades);
   }
 
   public Map<String, Object> entidad(Context ctx) {
@@ -268,11 +302,8 @@ public class EntidadesBeneficiariasController {
     model.put("rol", "donante");
     model.put("seccion", "entidades");
 
-    // EntidadBeneficiaria entidad = entidadRepo.buscarPorId(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
-    Map<String, Object> entidad = DatosMock.entidadesConNecesidades().stream()
-        .filter(e -> e.get("id").equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new);   // MOCK
+    Map<String, Object> entidad = entidadConNecesidades(entidadesRepository.buscarPorId(Long.valueOf(id))
+        .orElseThrow(NotFoundResponse::new));
     model.put("entidad", entidad);
     model.put("titulo", entidad.get("nombre"));
     return model;
@@ -305,7 +336,14 @@ public class EntidadesBeneficiariasController {
     model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), enEdicion.getOrDefault("tipo", "EXTRAORDINARIA")));
 
     // Subcategorías agrupadas por categoría para el <select> con <optgroup>
-    model.put("categorias", DatosMock.categoriasConSubcategorias());   // MOCK
+    model.put("categorias", Arrays.stream(Categoria.values())
+        .map(c -> Map.of(
+            "texto", c.nombre(),
+            "subcategorias", Arrays.stream(Subcategoria.values())
+                .filter(s -> s.getCategoria() == c)
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .toList()))
+        .toList());
     return model;
   }
 

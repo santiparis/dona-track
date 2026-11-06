@@ -3,6 +3,8 @@ package donaciones.controller;
 import donaciones.domain.Donacion;
 import donaciones.domain.EstadoDonacion;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.Periodo;
+import donaciones.domain.Subcategoria;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.db.TransaccionPorRequest;
@@ -21,11 +23,13 @@ import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AsignacionesController {
   private static final Logger logger = LoggerFactory.getLogger(AsignacionesController.class);
@@ -68,8 +72,8 @@ public class AsignacionesController {
     return sugerenciasGeneradas;
   }
 
-  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamañoLote) {
-    if (tamañoLote < 1) {
+  public List<SugerenciaAsignacion> procesarDonacionesEnDepositoEnLotes(int tamanioLote) {
+    if (tamanioLote < 1) {
       throw new IllegalArgumentException("El tamaño del lote debe ser positivo");
     }
 
@@ -80,8 +84,8 @@ public class AsignacionesController {
     transaccion.perThreadEntityManagerAccess().dispose();
 
     List<SugerenciaAsignacion> sugerenciasGeneradas = new ArrayList<>();
-    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamañoLote) {
-      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamañoLote, idsDonaciones.size()));
+    for (int inicio = 0; inicio < idsDonaciones.size(); inicio += tamanioLote) {
+      List<Long> idsLote = idsDonaciones.subList(inicio, Math.min(inicio + tamanioLote, idsDonaciones.size()));
       try {
         List<EntidadBeneficiaria> entidadesConNecesidadesActivas = entidadRepository.obtenerTodas().stream()
             .filter(entidad -> entidad.getNecesidades() != null && !entidad.getNecesidades().isEmpty())
@@ -229,9 +233,10 @@ public class AsignacionesController {
     model.put("titulo", "Asignaciones pendientes");
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
-    model.put("ultimaEjecucion", "hoy 03:00");   // MOCK
-    // List<SugerenciaAsignacion> sugerencias = sugerenciaRepository.obtenerTodas();
-    model.put("sugerencias", DatosMock.sugerencias());   // MOCK
+    model.put("ultimaEjecucion", "-");   // La fecha de la última ejecución todavía no se guarda (A8)
+    model.put("sugerencias", sugerenciaRepository.obtenerTodas().stream()
+        .map(AsignacionesController::sugerenciaParaVista)
+        .toList());
     // Después de ejecutar los algoritmos se vuelve con ?ejecutado, y después de confirmar un destino con ?asignada={id}
     model.put("ejecutado", ctx.queryParam("ejecutado") != null);
     model.put("asignada", ctx.queryParam("asignada"));
@@ -246,14 +251,61 @@ public class AsignacionesController {
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
 
-    // SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
-    model.put("donacion", DatosMock.sugerencias().stream()
-        .filter(s -> s.get("id").equals(id))
-        .findFirst()
-        .orElseThrow(NotFoundResponse::new));   // MOCK
-    // sugerencia.getEntidadesPorAlgoritmo() y sugerencia.getCoincidencias()
-    model.putAll(DatosMock.rankingsDeSugerencia(id));   // MOCK
+    SugerenciaAsignacion sugerencia = sugerenciaRepository.buscarPorID(Long.valueOf(id)).orElseThrow(NotFoundResponse::new);
+    model.put("donacion", sugerenciaParaVista(sugerencia));
+    Map<String, List<EntidadBeneficiaria>> rankings = sugerencia.getEntidadesPorAlgoritmo();
+    model.put("algoritmos", rankings.entrySet().stream()
+        .map(ranking -> Map.of(
+            "nombre", ranking.getKey(),
+            "entidades", ranking.getValue().stream()
+                .map(e -> Map.of("id", e.getId().toString(), "nombre", e.getRazonSocial()))
+                .toList()))
+        .toList());
+    Subcategoria subcategoria = sugerencia.getDonacion().getBien().getSubcategoria();
+    model.put("coincidencias", sugerencia.getCoincidencias().stream()
+        .map(e -> Map.of(
+            "id", e.getId().toString(),
+            "nombre", e.getRazonSocial(),
+            "detalle", necesidadPendiente(e, subcategoria),
+            // En qué puesto la puso cada algoritmo
+            "posiciones", rankings.entrySet().stream()
+                .map(ranking -> ranking.getKey() + " #" + (ranking.getValue().indexOf(e) + 1))
+                .collect(Collectors.joining(" · "))))
+        .toList());
     return model;
+  }
+
+  // Cuánto le falta a la entidad de esa subcategoría, ej. "Necesita 40 más esta semana"
+  private static String necesidadPendiente(EntidadBeneficiaria entidad, Subcategoria subcategoria) {
+    return entidad.getNecesidades().stream()
+        .filter(n -> n.getCantidadesRequeridas().containsKey(subcategoria))
+        .findFirst()
+        .map(n -> {
+          int falta = n.getCantidadesRequeridas().get(subcategoria) - n.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
+          String detalle = "Necesita " + falta + " más";
+          if (n.getPeriodo() == Periodo.SEMANAL) {
+            detalle += " esta semana";
+          } else if (n.getPeriodo() == Periodo.MENSUAL) {
+            detalle += " este mes";
+          }
+          return detalle;
+        })
+        .orElse("");
+  }
+
+  // La sugerencia como la muestran la lista y el detalle: la donación y cuántas coincidencias tuvo
+  private static Map<String, String> sugerenciaParaVista(SugerenciaAsignacion sugerencia) {
+    Donacion donacion = sugerencia.getDonacion();
+    int coincidencias = sugerencia.getCoincidencias().size();
+    return Map.of(
+        "id", donacion.getId().toString(),
+        "bien", donacion.getBien().getSubcategoria().nombre(),
+        "cantidad", donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad(),
+        "donante", donacion.getDonante().getNombre(),
+        "ingreso", donacion.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+        "coincidencias", String.valueOf(coincidencias),
+        "resultado", coincidencias == 0 ? "Sin coincidencias"
+            : coincidencias == 1 ? "1 coincidencia" : coincidencias + " coincidencias");
   }
 
   public void confirmarDestino(Context ctx) {

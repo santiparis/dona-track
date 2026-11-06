@@ -1,6 +1,7 @@
 package logistica.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -122,7 +123,8 @@ public class Camion {
     return this.patente;
   }
 
-  @JsonSerialize(using = ToStringSerializer.class)
+  // Solo lo usa gRPC (ubicación de camiones); sin el módulo jsr310, Jackson no puede serializar LocalDateTime
+  @JsonIgnore
   public LocalDateTime getUltimaActualizacion() {
     return ultimaActualizacion;
   }

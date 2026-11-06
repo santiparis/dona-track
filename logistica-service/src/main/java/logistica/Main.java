@@ -1,5 +1,6 @@
 package logistica;
 
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
@@ -23,6 +24,12 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) {
+    // Desde IntelliJ se usa la URL del persistence.xml (localhost); en Docker, compose pasa DB_URL
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
+
     var repositorioCamiones = new CamionesRepository();
     var repositorioDonaciones = new DonacionesRepository();
     var repositorioRutas = new RutasRepository();
@@ -45,7 +52,7 @@ public class Main {
     // 2. Servidor gRPC propio de logistica-service (puerto 9090)
     try {
       Server gRpcServer = ServerBuilder.forPort(9090)
-          .addService(new LogisticaServiceImpl(repositorioRutas))
+          .addService(new LogisticaServiceImpl(repositorioRutas, notificadorEntregas, transaccion))
           .build();
       gRpcServer.start();
       System.out.println("Servidor gRPC de logistica-service escuchando en el puerto 9090...");
@@ -61,7 +68,9 @@ public class Main {
     // Carga de flota inicial
     transaccion.withTransaction(() -> {
       if (repositorioCamiones.obtenerTodos().isEmpty()) {
-        repositorioCamiones.agregarTodos(SeedCamiones.camiones());
+        var camiones = SeedCamiones.camiones();
+        repositorioCamiones.agregarTodos(camiones);
+        SeedCamiones.rutas(camiones).forEach(repositorioRutas::agregar);
       }
     });
 

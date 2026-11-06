@@ -25,7 +25,7 @@ public class MockGps {
   private static final int INTERVALO_MS = 5000; // el device reporta cada 5 segundos
 
   private static final LogisticaGps API = new Retrofit.Builder()
-      .baseUrl("http://logistica-api:7070/")
+      .baseUrl(System.getenv().getOrDefault("LOGISTICA_URL", "http://localhost:7070/"))
       .addConverterFactory(JacksonConverterFactory.create())
       .build()
       .create(LogisticaGps.class);

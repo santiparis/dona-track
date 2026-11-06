@@ -40,7 +40,7 @@ public class RutasRepository implements WithSimplePersistenceUnit {
 
   public Optional<Entrega> buscarEntregaPorDonacionId(Long donacionId) {
     return createQuery(
-        "select e from Ruta r join r.entregas e join e.listaDonaciones d where d.donacionId = :donacionId",
+        "select e from Ruta r join r.entregas e join e.listaDonaciones d where d.donacionID = :donacionId",
         Entrega.class
     )
         .setParameter("donacionId", donacionId)

@@ -1,6 +1,7 @@
 package donaciones;
 
 import donaciones.controller.*;
+import donaciones.db.Seed;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.algoritmos.CompatibilidadSemantica;
 import donaciones.domain.algoritmos.OrganizadorAsignaciones;
@@ -20,6 +21,7 @@ import donaciones.web.Router;
 import donaciones.web.SesionUsuario;
 import donaciones.repository.UsuarioRepository;
 import donaciones.web.templates.JavalinHandlebars;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
@@ -30,6 +32,13 @@ import java.util.List;
 
 public class Main {
   public static void main(String[] args) {
+    // Desde IntelliJ se usa la URL del persistence.xml (localhost); en Docker, compose pasa DB_URL
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
+
+    new Seed().cargarSiEstaVacia();
 
     PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
