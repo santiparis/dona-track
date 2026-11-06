@@ -155,9 +155,9 @@
                 <!-- Empaqueta las tareas de cron como .jar con dependencias -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>
@@ -206,9 +206,9 @@
                                     <mainClass>logistica.mock.MockGps</mainClass>
                                 </manifest>
                             </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
+                            <descriptors>
+                                <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+                            </descriptors>
                         </configuration>
                     </execution>
 
@@ -226,9 +226,9 @@
                                     <mainClass>logistica.mock.MockPlanificador</mainClass>
                                 </manifest>
                             </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
+                            <descriptors>
+                                <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+                            </descriptors>
                         </configuration>
                     </execution>
                 </executions>

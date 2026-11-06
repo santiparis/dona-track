@@ -43,6 +43,8 @@ services:
       - "8081:8081"
     environment:
       LOGISTICA_URL: http://logistica-api:7070/
+      LOGISTICA_GRPC_HOST: logistica-api
+      DB_URL: jdbc:mysql://mysql:3306/donaciones
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,7 +58,9 @@ services:
       - "7070:7070"
     environment:
       DONACIONES_URL: http://donaciones-api:8081/
-      PLANIFICADOR_URL: http://mock-planificador:9090/
+      PLANIFICADOR_URL: http://mock-planificador:9092/
+      DONACIONES_GRPC_HOST: donaciones-api
+      DB_URL: jdbc:postgresql://postgres:5432/logistica
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,6 +81,8 @@ services:
       context: .
       dockerfile: logistica-service/Dockerfile
       target: mock-gps
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070/
     depends_on:
       - logistica-api
     restart: unless-stopped
@@ -86,6 +92,8 @@ services:
       context: .
       dockerfile: logistica-service/Dockerfile
       target: mock-planificador
+    environment:
+      LOGISTICA_URL: http://logistica-api:7070/
     depends_on:
       - logistica-api
     restart: unless-stopped

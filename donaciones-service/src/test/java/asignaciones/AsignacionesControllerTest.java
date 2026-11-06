@@ -210,7 +210,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     assertEquals(entidadCoincidente.getId(), donacionEnDeposito.getEntidadBeneficiaria().getId());
     assertTrue(controller.obtenerSugerenciasGuardadas().isEmpty());
     verify(notificador).donacionAsignada(donacionEnDeposito);
-    verify(logisticaAPICalls).enviarDonaciones(anyList());
+    verify(logisticaGrpcClient).trazarRuta(anyString(), anyString(), anyString());
   }
 
   @Test

@@ -34,7 +34,7 @@ public class MockPlanificador {
   }
 
   private static final LogisticaCallback CALLBACK = new Retrofit.Builder()
-      .baseUrl("http://logistica-api:7070/")
+      .baseUrl(System.getenv().getOrDefault("LOGISTICA_URL", "http://localhost:7070/"))
       .addConverterFactory(JacksonConverterFactory.create())
       .build()
       .create(LogisticaCallback.class);

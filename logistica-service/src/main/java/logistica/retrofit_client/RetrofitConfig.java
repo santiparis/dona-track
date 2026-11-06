@@ -12,7 +12,7 @@ public class RetrofitConfig {
 
   private String planificadorBaseUrl =
       System.getenv().getOrDefault(
-          "PLANIFICADOR_URL", "http://localhost:9090/"
+          "PLANIFICADOR_URL", "http://localhost:9092/"
       );
 
   public void setDonacionesBaseUrl(String url) {

@@ -1,6 +1,7 @@
 package logistica.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
@@ -115,6 +116,8 @@ public class Camion {
     return this.patente;
   }
 
+  // Solo lo usa gRPC (ubicación de camiones); sin el módulo jsr310, Jackson no puede serializar LocalDateTime
+  @JsonIgnore
   public LocalDateTime getUltimaActualizacion() {
     return ultimaActualizacion;
   }

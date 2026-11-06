@@ -1,5 +1,6 @@
 package logistica;
 
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
@@ -23,6 +24,12 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) {
+    // Desde IntelliJ se usa la URL del persistence.xml (localhost); en Docker, compose pasa DB_URL
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
+
     var repositorioCamiones = new CamionesRepository();
     var repositorioDonaciones = new DonacionesRepository();
     var repositorioRutas = new RutasRepository();
@@ -30,7 +37,8 @@ public class Main {
     var transaccion = new TransaccionPorRequest();
 
     // 1. Cliente gRPC hacia donaciones-service (puerto 9091)
-    var donacionesGrpcClient = new DonacionesGrpcClient("localhost", 9091);
+    var donacionesGrpcClient = new DonacionesGrpcClient(
+        System.getenv().getOrDefault("DONACIONES_GRPC_HOST", "localhost"), 9091);
 
     var notificadorEntregas = new NotificadorEntregas(donacionesGrpcClient);
     var donacionesController = new DonacionesAPIController(repositorioDonaciones);

@@ -18,6 +18,7 @@ import donaciones.retrofit_client.LogisticaAPICalls;
 import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
 import donaciones.web.templates.JavalinHandlebars;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.javalin.Javalin;
@@ -29,6 +30,11 @@ import java.util.List;
 
 public class Main {
   public static void main(String[] args) {
+    // Desde IntelliJ se usa la URL del persistence.xml (localhost); en Docker, compose pasa DB_URL
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
 
     PersonasAdministradorasRepository administradorasRepo = new PersonasAdministradorasRepository();
     DonacionRepository donacionesRepository = new DonacionRepository();
@@ -36,7 +42,8 @@ public class Main {
     EntidadBeneficiariaRepository entidadRepo = new EntidadBeneficiariaRepository();
 
     // Cliente gRPC hacia logistica-service
-    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient(
+        System.getenv().getOrDefault("LOGISTICA_GRPC_HOST", "localhost"), 9090);
 
     NotificacionRepository notificacionRepository = new NotificacionRepository();
     Notificador notificador = new Notificador(notificacionRepository);

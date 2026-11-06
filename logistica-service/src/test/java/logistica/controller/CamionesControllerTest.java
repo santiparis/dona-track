@@ -132,7 +132,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionGuardaCoordenadasYVelocidad() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 47.5));
 
     controller.actualizarLocalizacion(ctx);
@@ -145,7 +145,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaCoordenadaEsInvalida() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(120, -58.42, 20));
 
     controller.actualizarLocalizacion(ctx);
@@ -156,7 +156,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveBadRequestSiLaVelocidadEsNegativa() {
-    when(ctx.pathParam("id")).thenReturn(String.valueOf(camionId));
+    when(ctx.pathParam("patente")).thenReturn(camion.getPatente());
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, -5));
 
     controller.actualizarLocalizacion(ctx);
@@ -168,7 +168,7 @@ public class CamionesControllerTest implements SimplePersistenceTest {
 
   @Test
   void actualizarLocalizacionDevuelveNotFoundSiElCamionNoExiste() {
-    when(ctx.pathParam("id")).thenReturn("999999");
+    when(ctx.pathParam("patente")).thenReturn("PATENTE-INEXISTENTE");
     when(ctx.bodyAsClass(LocalizacionDTO.class)).thenReturn(new LocalizacionDTO(-34.60, -58.42, 20));
 
     controller.actualizarLocalizacion(ctx);
