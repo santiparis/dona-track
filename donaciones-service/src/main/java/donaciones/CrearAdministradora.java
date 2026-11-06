@@ -6,6 +6,7 @@ import donaciones.domain.donante.Rol;
 import donaciones.domain.donante.Usuario;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.UsuarioRepository;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,6 +14,10 @@ import java.util.Locale;
 /** Alta manual de administración; este rol nunca se ofrece en el registro público. */
 public class CrearAdministradora {
   public static void main(String[] args) {
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null && !dbUrl.isBlank()) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
     TransaccionPorRequest transaccion = new TransaccionPorRequest();
     try {
       transaccion.withTransaction(() -> crear(

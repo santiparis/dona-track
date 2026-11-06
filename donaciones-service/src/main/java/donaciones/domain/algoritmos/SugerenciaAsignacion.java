@@ -65,10 +65,6 @@ public class SugerenciaAsignacion {
     return this.id;
   }
 
-  public Long getID() {
-    return this.id;
-  }
-
   public Long getId() {
     return this.id;
   }

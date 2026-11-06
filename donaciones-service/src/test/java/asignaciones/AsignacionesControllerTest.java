@@ -79,7 +79,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
   }
 
   @Test
-  void procesarDonacionesEnDeposito_guardaSoloSugerenciasParaDonacionesEnDeposito() {
+  void procesarDonacionesEnDeposito_guardaSoloSugerenciasParaDonacionesEnDeposito() throws Exception {
     PersonaHumana donante = crearDonanteHumanoSimple("Juan", "Perez");
     Donacion donacionEnDeposito = crearDonacionConBien(donante, Subcategoria.FIDEOS);
     Donacion donacionAsignada = crearDonacionConBien(donante, Subcategoria.ARROZ);
@@ -95,11 +95,11 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
 
     List<SugerenciaAsignacion> sugerencias = controller.procesarDonacionesEnDeposito();
 
-    assertTrue(sugerencias.stream().anyMatch(s -> s.getID().equals(donacionEnDeposito.getId())));
-    assertFalse(sugerencias.stream().anyMatch(s -> s.getID().equals(donacionAsignada.getId())));
+    assertTrue(sugerencias.stream().anyMatch(s -> s.getId().equals(donacionEnDeposito.getId())));
+    assertFalse(sugerencias.stream().anyMatch(s -> s.getId().equals(donacionAsignada.getId())));
 
     SugerenciaAsignacion sugerencia = sugerencias.stream()
-        .filter(s -> s.getID().equals(donacionEnDeposito.getId()))
+        .filter(s -> s.getId().equals(donacionEnDeposito.getId()))
         .findFirst()
         .orElseThrow();
 
@@ -108,7 +108,13 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     assertFalse(sugerencia.getCoincidencias().contains(entidadSinNecesidad));
 
     assertTrue(controller.obtenerSugerenciasGuardadas().stream()
-        .anyMatch(s -> s.getID().equals(donacionEnDeposito.getId())));
+        .anyMatch(s -> s.getId().equals(donacionEnDeposito.getId())));
+
+    var mapper = new io.javalin.json.JavalinJackson();
+    String cuerpo = mapper.toJsonString(sugerencias, List.class);
+    var json = mapper.getMapper().readTree(cuerpo);
+    assertEquals(donacionEnDeposito.getId().longValue(), json.get(0).get("id").asLong());
+    assertFalse(json.get(0).get("donacion").get("fecha").isNull());
   }
 
   @Test
@@ -128,7 +134,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     assertEquals(1, sugerencias.size());
 
     SugerenciaAsignacion sugerencia = sugerencias.stream()
-        .filter(s -> s.getID().equals(donacionEnDeposito.getId()))
+        .filter(s -> s.getId().equals(donacionEnDeposito.getId()))
         .findFirst()
         .orElseThrow();
 
@@ -153,7 +159,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     controller.getCoincidencias(ctx);
 
     SugerenciaAsignacion sugerenciaGuardada = controller.obtenerSugerenciasGuardadas().stream()
-        .filter(s -> s.getID().equals(donacionEnDeposito.getId()))
+        .filter(s -> s.getId().equals(donacionEnDeposito.getId()))
         .findFirst()
         .orElseThrow();
 
@@ -178,7 +184,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     controller.getEntidadesPorAlgoritmo(ctx);
 
     SugerenciaAsignacion sugerenciaGuardada = controller.obtenerSugerenciasGuardadas().stream()
-        .filter(s -> s.getID().equals(donacionEnDeposito.getId()))
+        .filter(s -> s.getId().equals(donacionEnDeposito.getId()))
         .findFirst()
         .orElseThrow();
 

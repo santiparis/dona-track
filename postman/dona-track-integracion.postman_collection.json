@@ -196,7 +196,7 @@
           "request": {
             "method": "POST",
             "url": "{{donacionesBaseUrl}}/sugerencias",
-            "description": "Lo mismo que hace el cron ProcesarAsignaciones: genera una sugerencia por cada donación EN_DEPOSITO. Conocido en fix/persistencia: responde 500 al serializar (SugerenciaAsignacion tiene getID() y getId()), aunque las sugerencias se guardan. El siguiente request lo confirma."
+            "description": "Genera y devuelve las sugerencias de las donaciones EN_DEPOSITO. Requiere la sesión de admin que se abre al principio de la colección."
           }
         },
         {
@@ -219,7 +219,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": { "mode": "raw", "raw": "{\n  \"idEntidad\": {{entidadId}},\n  \"nombreEntidadSeleccionada\": \"{{razonSocial}}\"\n}", "options": { "raw": { "language": "json" } } },
             "url": "{{donacionesBaseUrl}}/sugerencias/{{donacionId}}/asignaciones",
-            "description": "Integración: donaciones le envía la donación a logística (POST /api/donaciones de logística), que la agrega a su pool de pendientes. Conocido en fix/persistencia: responde 500 porque LogisticaAPICalls espera un String y logística devuelve un array JSON. Los requests siguientes muestran si igual quedó asignada y si llegó a logística."
+            "description": "Confirma la entidad elegida y avisa a Logística por gRPC. Requiere que ambos servicios puedan comunicarse."
           }
         },
         {

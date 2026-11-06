@@ -28,10 +28,7 @@ docker compose \
 ```
 
 
-crear admin  de prueba en la base de az
+admin del seed:                             donaciones-api java -cp /app/app.jar donaciones.CrearAdministradora
 
-docker compose -f compose.yaml -f docker-compose.azure.yaml exec -T \
-  -e ADMIN_USUARIO=admin \
-  -e ADMIN_NOMBRE="Admin de prueba" \
-  -e ADMIN_PASSWORD=admin \
-  donaciones-api java -cp /app/app.jar donaciones.CrearAdministradora
+adminUsuario: laura.admin@donatrack.org
+adminPassword: laura123
