@@ -52,7 +52,7 @@ public class Main {
     // 2. Servidor gRPC propio de logistica-service (puerto 9090)
     try {
       Server gRpcServer = ServerBuilder.forPort(9090)
-          .addService(new LogisticaServiceImpl(repositorioRutas))
+          .addService(new LogisticaServiceImpl(repositorioRutas, notificadorEntregas, transaccion))
           .build();
       gRpcServer.start();
       System.out.println("Servidor gRPC de logistica-service escuchando en el puerto 9090...");

@@ -22,11 +22,14 @@ public class DonacionesServiceImpl extends DonacionesServiceGrpc.DonacionesServi
     String nuevoEstadoStr = request.getNuevoEstado();
 
     try {
-      Donacion donacion = donacionRepository.buscarPorIdParaActualizar(idDonacion)
-          .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación con ID: " + idDonacion));
+      // Acá no hay request HTTP que abra la transacción: sin esto el cambio de estado no se guarda
+      donacionRepository.withTransaction(() -> {
+        Donacion donacion = donacionRepository.buscarPorIdParaActualizar(idDonacion)
+            .orElseThrow(() -> new IllegalArgumentException("No se encontró la donación con ID: " + idDonacion));
 
-      donacion.cambiarEstado(EstadoDonacion.valueOf(nuevoEstadoStr), "Petición de cambio de Estado");
-      donacionRepository.guardar(donacion);
+        donacion.cambiarEstado(EstadoDonacion.valueOf(nuevoEstadoStr), "Petición de cambio de Estado");
+        donacionRepository.guardar(donacion);
+      });
 
       CambiarEstadoResponse response = CambiarEstadoResponse.newBuilder()
           .setExito(true)

@@ -3,17 +3,27 @@ package logistica.grpc;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import logistica.domain.Entrega;
-import logistica.domain.EstadoEntrega;
 import logistica.domain.Ruta;
+import logistica.db.TransaccionPorRequest;
+import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.RutasRepository;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceImplBase {
-  private final RutasRepository rutasRepository;
+  private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-  public LogisticaServiceImpl(RutasRepository rutasRepo) {
+  private final RutasRepository rutasRepository;
+  private final NotificadorEntregas notificadorEntregas;
+  private final TransaccionPorRequest transaccion;
+
+  public LogisticaServiceImpl(RutasRepository rutasRepo, NotificadorEntregas notificadorEntregas, TransaccionPorRequest transaccion) {
     this.rutasRepository = rutasRepo;
+    this.notificadorEntregas = notificadorEntregas;
+    this.transaccion = transaccion;
   }
 
   // Los métodos son void porque devolvemos interactuando con el StreamObserver envíandole
@@ -116,10 +126,24 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
   public void reportarEntrega(ReportarEntregaRequest request, StreamObserver<ReportarEntregaResponse> responseObserver) {
     try {
       Long donacionId = request.getEntregaId();
-      EstadoEntrega nuevoEstado = request.getExito() ? EstadoEntrega.ENTREGADA : EstadoEntrega.NO_RECIBIDA;
 
-      // Llama al repo que usa buscarEntregaPorDonacionId y ejecuta marcarEntregada() / marcarNoRecibida()
-      rutasRepository.actualizarEstadoEntregaPorDonacion(donacionId, nuevoEstado);
+      // Lo mismo que EntregasController.confirmar y marcarNoRecibida, en una transacción porque acá no hay request HTTP
+      transaccion.withTransaction(() -> {
+        Entrega entrega = rutasRepository.buscarEntregaPorDonacionId(donacionId)
+            .orElseThrow(() -> new NoSuchElementException("No se encontró entrega para la donación: " + donacionId));
+        Ruta ruta = rutasRepository.buscarRutaPorEntregaId(entrega.getId())
+            .orElseThrow(() -> new IllegalStateException("Entrega sin ruta: " + entrega.getId()));
+
+        if (request.getExito()) {
+          entrega.marcarEntregada();
+          notificadorEntregas.avisarEntregada(entrega,
+              entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + ruta.getCamion().getPatente());
+        } else {
+          entrega.marcarNoRecibida();
+          notificadorEntregas.avisarFallida(entrega);
+        }
+        ruta.completarSiTermino();
+      });
 
       ReportarEntregaResponse response = ReportarEntregaResponse.newBuilder()
           .setExito(true)
