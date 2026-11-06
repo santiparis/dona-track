@@ -62,10 +62,6 @@ public class Necesidad {
         return Map.copyOf(cantidadesSuplidas);
     }
 
-    public PoliticaDeRenovacion getRenovacion() {
-        return renovacion;
-    }
-
     public boolean isRenovacion() {
         return periodo != null;
     }
