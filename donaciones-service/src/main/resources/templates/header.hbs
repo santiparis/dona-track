@@ -1,7 +1,7 @@
 {{!-- El renderer agrega la cuenta autenticada al encabezado de todas las páginas. --}}
 <header class="hdr">
     <a class="logo" href="{{#if (eq rol "donante")}}/donante/donaciones{{else if (eq rol "entidad")}}/entidad/necesidades{{else if (eq rol "admin")}}/admin/donaciones{{else}}/{{/if}}">
-        <span class="logo-box"></span>DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
+        <img class="logo-box" src="/assets/img/logo.svg" alt="">DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
     </a>
 
     {{!-- Cada rol tiene sus links en su propio partial (nav-*.hbs) --}}

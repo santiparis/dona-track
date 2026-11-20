@@ -22,7 +22,7 @@
     color: var(--color-principal-oscuro);
 }
 
-.logo-box { width: 36px; height: 36px; border-radius: 8px; background: var(--color-principal); }
+.logo-box { width: 36px; height: 36px; }
 .nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
 .nav a {
