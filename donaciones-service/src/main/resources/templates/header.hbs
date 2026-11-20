@@ -1,35 +1,34 @@
 {{!-- El renderer agrega la cuenta autenticada al encabezado de todas las páginas. --}}
 <header class="hdr">
-    <a class="logo" href="{{#if (eq rol "donante")}}/donante/donaciones{{else if (eq rol "entidad")}}/entidad/necesidades{{else if (eq rol "admin")}}/admin/donaciones{{else}}/{{/if}}">
-        <img class="logo-box" src="/assets/img/logo.svg" alt="">DonaTrack{{#if (eq rol "admin")}} · Administración{{/if}}
+    <a class="logo" href="{{#if usuario}}{{inicioUsuario}}{{else}}/{{/if}}">
+        <img class="logo-box" src="/assets/img/logo.svg" alt="">DonaTrack{{#if (eq usuario.rol "ADMINISTRADORA")}} · Administración{{/if}}
     </a>
 
-    {{!-- Cada rol tiene sus links en su propio partial (nav-*.hbs) --}}
+    {{!-- Los links públicos se ven siempre, con o sin sesión. Lo de cada rol va en su menú lateral (menu-*.hbs) --}}
     <nav class="nav" aria-label="Principal">
-        {{#if (eq rol "donante")}}
-            {{> nav-donante}}
-        {{else if (eq rol "entidad")}}
-            {{> nav-entidad}}
-        {{else if (eq rol "admin")}}
-            {{!-- El admin navega con el menú lateral (menu-admin.hbs) --}}
-        {{else}}
-            {{> nav-publico}}
-        {{/if}}
+        {{> nav-publico}}
     </nav>
 
     {{#if usuario}}
         <div class="user">
             {{!-- Campanita de notificaciones: solo donante y entidad tienen bandeja --}}
-            {{#if rol}}{{#unless (eq rol "admin")}}
-                <a class="campana" href="/{{rol}}/notificaciones" aria-label="Notificaciones" {{#if (eq seccion "notificaciones")}}aria-current="page"{{/if}}>
+            {{#unless (eq usuario.rol "ADMINISTRADORA")}}
+                <a class="campana" href="{{#if (eq usuario.rol "DONANTE")}}/donante{{else}}/entidad{{/if}}/notificaciones" aria-label="Notificaciones" {{#if (eq seccion "notificaciones")}}aria-current="page"{{/if}}>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
                 </a>
-            {{/unless}}{{/if}}
-            <span>{{usuario.nombre}}</span>
-            <form action="/logout" method="post">
-                <button class="btn2 chico" type="submit">Cerrar sesión</button>
-            </form>
+            {{/unless}}
+            {{!-- Mi panel queda marcado en las pantallas del rol (las que traen "rol"), salvo en la bandeja, que marca la campanita --}}
+            <a class="btn2 chico" href="{{inicioUsuario}}" {{#if rol}}{{#unless (eq seccion "notificaciones")}}aria-current="true"{{/unless}}{{/if}}>Mi panel</a>
+            {{!-- Cerrar sesión queda adentro del desplegable de la cuenta, para no apretarlo sin querer --}}
+            <details class="cuenta">
+                <summary>{{usuario.nombre}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+                <div class="cuenta-panel">
+                    <form action="/logout" method="post">
+                        <button class="btn2 chico" type="submit">Cerrar sesión</button>
+                    </form>
+                </div>
+            </details>
         </div>
     {{else}}
         <div class="row">
@@ -41,4 +40,33 @@
             {{/unless}}
         </div>
     {{/if}}
+
+    {{!-- Menú hamburguesa del celular: junta el menú del rol, los links públicos y la sesión --}}
+    <details class="menu-movil">
+        <summary aria-label="Menú">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </summary>
+        <div class="menu-movil-panel">
+            {{!-- La cuenta arriba de todo y Cerrar sesión abajo de todo (ver justificaciones.md de la E4) --}}
+            {{#if usuario}}<span class="menu-movil-cuenta">{{usuario.nombre}}</span>{{/if}}
+            {{#if (eq usuario.rol "DONANTE")}}
+                {{> menu-donante}}
+            {{else if (eq usuario.rol "ENTIDAD")}}
+                {{> menu-entidad}}
+            {{else if (eq usuario.rol "ADMINISTRADORA")}}
+                {{> menu-admin}}
+            {{/if}}
+            <nav class="nav" aria-label="Principal">
+                {{> nav-publico}}
+            </nav>
+            {{#if usuario}}
+                <form action="/logout" method="post">
+                    <button class="btn2 chico" type="submit">Cerrar sesión</button>
+                </form>
+            {{else}}
+                <a class="btn2" href="/login">Iniciar sesión</a>
+                <a class="btn" href="/usuarios/nuevo">Registrarme</a>
+            {{/if}}
+        </div>
+    </details>
 </header>

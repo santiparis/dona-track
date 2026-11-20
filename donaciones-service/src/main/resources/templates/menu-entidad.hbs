@@ -1,0 +1,7 @@
+{{!-- Menú lateral de la entidad beneficiaria: lo incluyen el layout y el menú del celular cuando rol es "entidad" --}}
+<nav class="menu-lateral" aria-label="Mi entidad">
+    <p>Mi entidad</p>
+    {{> nav-link href="/entidad/necesidades" clave="necesidades" texto="Mis necesidades"}}
+    {{> nav-link href="/entidad/donaciones" clave="donaciones" texto="Donaciones asignadas a mi entidad"}}
+    {{> nav-link href="/entidad/seguimiento" clave="seguimiento" texto="Seguimiento de entregas"}}
+</nav>

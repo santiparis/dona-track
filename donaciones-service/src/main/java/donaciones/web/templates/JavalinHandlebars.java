@@ -33,7 +33,7 @@ public class JavalinHandlebars implements FileRenderer {
       vista.remove("usuario");
       var usuario = SesionUsuario.actual(context);
       if (usuario != null) {
-        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario()));
+        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario(), "rol", usuario.getRol().name()));
         vista.put("inicioUsuario", SesionUsuario.destino(usuario.getRol()));
         context.header("Cache-Control", "no-store");
       }

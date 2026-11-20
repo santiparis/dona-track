@@ -75,3 +75,9 @@ Si falla la carga o Logística rechaza la confirmación, Donaciones revierte la 
 4. Iniciar sesión como la entidad destinataria, abrir «Confirmar recepción», adjuntar una foto y confirmar. Abrir «Ver fotos» y repetir desde el historial del donante. La misma URL debe quedar bloqueada para otra cuenta. Reiniciar Donaciones y comprobar que la foto siga disponible.
 
 La prueba automatizada usa HTTP y MySQL se sustituye por HSQLDB en memoria. Las respuestas de Blob Storage y Logística se simulan localmente. Se ejecuta con `mvn -pl donaciones-service "-Dtest=RegistroHttpTest" test`.
+
+## Menú del celular: cuenta arriba, Cerrar sesión abajo
+
+En el celular, el menú hamburguesa junta el menú del rol, los links públicos y la sesión. El nombre de la cuenta va arriba de todo, para que se vea enseguida con qué cuenta se está operando: es el encabezado de cuenta que propone Material Design para el menú lateral. «Cerrar sesión» va abajo de todo y separado del resto, porque se usa poco y no se puede deshacer: lejos de los links que se tocan seguido, se evita apretarlo sin querer. Es el mismo orden que usan apps conocidas como Gmail o Mercado Libre.
+
+Referencias: guía del *Navigation drawer* de Material Design 3 (m3.material.io), Human Interface Guidelines de Apple (navegación) y los artículos de Nielsen Norman Group sobre menús hamburguesa.
