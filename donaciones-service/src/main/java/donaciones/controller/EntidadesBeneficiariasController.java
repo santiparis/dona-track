@@ -319,30 +319,6 @@ public class EntidadesBeneficiariasController {
             .map(cantidad -> necesidadParaVista(necesidad, cantidad.getKey(), cantidad.getValue())))
         .toList();
     model.put("necesidades", necesidades);
-
-    // ?editar={id} carga esa necesidad en el formulario; si no, el formulario queda vacío para dar de alta
-    String idEditar = ctx.queryParam("editar");
-    Map<String, String> enEdicion = necesidades.stream()
-        .filter(n -> n.get("id").equals(idEditar))
-        .findFirst()
-        .orElseGet(() -> {
-          if (idEditar != null) throw new io.javalin.http.NotFoundResponse();
-          return Map.of();
-        });
-    model.put("necesidad", enEdicion);
-
-    // La pestaña viaja en la URL (?tipo=EXTRAORDINARIA|RECURRENTE); al editar arranca en el tipo de la necesidad
-    model.put("tipo", Objects.requireNonNullElse(ctx.queryParam("tipo"), enEdicion.getOrDefault("tipo", "EXTRAORDINARIA")));
-
-    // Subcategorías agrupadas por categoría para el <select> con <optgroup>
-    model.put("categorias", Arrays.stream(Categoria.values())
-        .map(c -> Map.of(
-            "texto", c.nombre(),
-            "subcategorias", Arrays.stream(Subcategoria.values())
-                .filter(s -> s.getCategoria() == c)
-                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
-                .toList()))
-        .toList());
     return model;
   }
 
@@ -389,5 +365,43 @@ public class EntidadesBeneficiariasController {
         "periodo", Objects.toString(necesidad.getPeriodo(), ""),
         "avance", suplida + " / " + cantidad,
         "porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0));
+  }
+
+  // Registrar necesidad, separada de Mis necesidades. Con ?editar={id} el formulario edita esa necesidad
+  public Map<String, Object> formularioNecesidad(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("rol", "entidad");
+    model.put("seccion", "necesidad-nueva");
+
+    List<Map<String, String>> necesidades = entidadDeLaSesion(ctx).getNecesidades().stream()
+        .flatMap(necesidad -> necesidad.getCantidadesRequeridas().entrySet().stream()
+            .map(cantidad -> necesidadParaVista(necesidad, cantidad.getKey(), cantidad.getValue())))
+        .toList();
+
+    // ?editar={id} carga esa necesidad en el formulario; si no, el formulario queda vacío para dar de alta
+    String idEditar = ctx.queryParam("editar");
+    Map<String, String> enEdicion = necesidades.stream()
+        .filter(n -> n.get("id").equals(idEditar))
+        .findFirst()
+        .orElseGet(() -> {
+          if (idEditar != null) throw new io.javalin.http.NotFoundResponse();
+          return Map.of();
+        });
+    model.put("necesidad", enEdicion);
+    model.put("titulo", enEdicion.isEmpty() ? "Registrar necesidad" : "Editar necesidad");
+
+    // El tipo se elige en el mismo formulario; al editar arranca en el tipo de la necesidad
+    model.put("tipo", enEdicion.getOrDefault("tipo", "EXTRAORDINARIA"));
+
+    // Subcategorías agrupadas por categoría para el <select> con <optgroup>
+    model.put("categorias", Arrays.stream(Categoria.values())
+        .map(c -> Map.of(
+            "texto", c.nombre(),
+            "subcategorias", Arrays.stream(Subcategoria.values())
+                .filter(s -> s.getCategoria() == c)
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .toList()))
+        .toList());
+    return model;
   }
 }

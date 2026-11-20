@@ -145,3 +145,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     background: var(--color-error-fondo);
     color: var(--color-error-texto);
 }
+
+/* Registrar necesidad: según el tipo elegido se ven los campos de recurrente o de extraordinaria */
+form:has(input[name="tipo"][value="RECURRENTE"]:checked) .solo-extraordinaria,
+form:has(input[name="tipo"][value="EXTRAORDINARIA"]:checked) .solo-recurrente { display: none; }
