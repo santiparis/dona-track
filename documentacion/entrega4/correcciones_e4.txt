@@ -36,3 +36,5 @@ El boton de ejecutar algoritmos deberia funcionar, si ahora no hace nada dejarlo
 Configurar el .env para local y el servidor.
 Revisar GRPC y que funcione todo.
 
+Vista de entidades. Mostrar como maximo 2 necesidades, si tiene mas mostrar un indicador (ver que podria ser mejor)
+Al clickear una card de entidades, debe redirigir a la vista de la entidad con su detalle (igual que lo hace expandir)

@@ -7,7 +7,7 @@
             <label>Nombre<input name="nombre" value="{{nombre}}" maxlength="255" required></label>
             <label>Apellido<input name="apellido" value="{{apellido}}" maxlength="255" required></label>
             <label>Tipo de documento<select name="tipoDoc"><option value="DNI">DNI</option></select></label>
-            <label>Número de documento<input name="documento" value="{{documento}}" maxlength="255" required></label>
+            <label>Número de documento<input name="documento" value="{{documento}}" maxlength="255" pattern="\d{7,8}" title="7 u 8 números, sin puntos. Ej: 12345678" required></label>
             <label>Edad<input name="edad" type="number" min="0" max="150" value="{{edad}}"></label>
             <label>Género
                 <select name="genero">
@@ -35,7 +35,7 @@
                 </select>
             </label>
             <label>Rubro<input name="rubro" value="{{rubro}}" maxlength="255"></label>
-            <label>CUIT<input name="documento" value="{{documento}}" maxlength="255" placeholder="30-12345678-9" required></label>
+            <label>CUIT<input name="documento" value="{{documento}}" maxlength="255" placeholder="30-12345678-9" pattern="\d{2}-?\d{8}-?\d" title="11 números, con o sin guiones. Ej: 30-12345678-9" required></label>
         </div>
         {{#if (eq rol "admin")}}
             <label>DNI de las personas representantes habilitadas<textarea name="representantes"></textarea><span class="hint">Uno por línea.</span></label>
@@ -49,8 +49,8 @@
     <legend>Medios de contacto</legend>
     <div class="f2">
         <label>Correo electrónico<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
-        <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="255"></label>
-        <label>WhatsApp (opcional)<input name="whatsapp" type="tel" value="{{whatsapp}}" maxlength="255"></label>
+        <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
+        <label>WhatsApp (opcional)<input name="whatsapp" type="tel" value="{{whatsapp}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
     </div>
     <p class="subtitulo">Medio predeterminado para las notificaciones</p>
     <div class="row">
