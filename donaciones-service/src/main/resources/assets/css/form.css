@@ -149,3 +149,11 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 /* Registrar necesidad: según el tipo elegido se ven los campos de recurrente o de extraordinaria */
 form:has(input[name="tipo"][value="RECURRENTE"]:checked) .solo-extraordinaria,
 form:has(input[name="tipo"][value="EXTRAORDINARIA"]:checked) .solo-recurrente { display: none; }
+
+/* Lo que tiene el atributo hidden no se ve, aunque su estilo diga display: flex (ej: los campos de Registrar donación) */
+[hidden] { display: none !important; }
+
+/* Registrar donación: estado y vencimiento se ven solo si la subcategoría elegida los pide */
+#campo-estado, #campo-vencimiento { display: none; }
+#bien:has(option[data-estado]:checked) #campo-estado,
+#bien:has(option[data-vence]:checked) #campo-vencimiento { display: flex; }
