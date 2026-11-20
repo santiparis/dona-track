@@ -1,5 +1,5 @@
 {{#partial "contenido"}}
-    <h1>Camiones</h1>
+    <h1>Administrar camiones</h1>
 
     {{!-- Con camion.id el formulario edita ese camión; sin id, da de alta uno nuevo --}}
     <form class="card" action="/admin/camiones{{#if camion.id}}/{{camion.id}}{{/if}}" method="post">

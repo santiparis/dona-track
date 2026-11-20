@@ -5,7 +5,6 @@ import donaciones.dto.EntidadBeneficiariaDTO;
 import donaciones.dto.EntidadBeneficiariaPatchDTO;
 import donaciones.dto.NecesidadDTO;
 import donaciones.repository.EntidadBeneficiariaRepository;
-import donaciones.web.DatosMock;
 import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -311,7 +310,7 @@ public class EntidadesBeneficiariasController {
 
   public Map<String, Object> necesidades(Context ctx) {
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Necesidades");
+    model.put("titulo", "Mis necesidades");
     model.put("rol", "entidad");
     model.put("seccion", "necesidades");
 

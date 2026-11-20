@@ -598,7 +598,7 @@ public class DonacionController {
     String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
 
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Donaciones asignadas");
+    model.put("titulo", "Donaciones asignadas a mi entidad");
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
 

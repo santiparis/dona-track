@@ -26,7 +26,7 @@ public class CamionesController {
 
   public Map<String, Object> camiones(Context ctx) {
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Camiones");
+    model.put("titulo", "Administrar camiones");
     model.put("rol", "admin");
     model.put("seccion", "camiones");
 
