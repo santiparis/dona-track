@@ -63,3 +63,9 @@
 
 /* Nombre de quien inició sesión y el link para salir */
 .user { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+
+/* Campanita de notificaciones al lado del nombre, con el contador de no leídas arriba a la derecha */
+.campana { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; color: var(--color-principal-oscuro); }
+.campana:hover, .campana[aria-current="page"] { background: var(--color-principal-claro); }
+.campana svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.campana .badge { position: absolute; top: 2px; right: 0; margin-left: 0; min-width: 18px; height: 18px; padding: 0 4px; font-size: 11px; }

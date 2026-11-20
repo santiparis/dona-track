@@ -19,8 +19,14 @@
 
     {{#if usuario}}
         <div class="user">
+            {{!-- Campanita de notificaciones: solo donante y entidad tienen bandeja --}}
+            {{#if rol}}{{#unless (eq rol "admin")}}
+                <a class="campana" href="/{{rol}}/notificaciones" aria-label="Notificaciones" {{#if (eq seccion "notificaciones")}}aria-current="page"{{/if}}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
+                </a>
+            {{/unless}}{{/if}}
             <span>{{usuario.nombre}}</span>
-            <a class="btn2 chico" href="{{inicioUsuario}}">Mi cuenta</a>
             <form action="/logout" method="post">
                 <button class="btn2 chico" type="submit">Cerrar sesión</button>
             </form>

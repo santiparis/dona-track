@@ -1,7 +1,4 @@
-{{!-- Links del header de la persona donante. Notificaciones va aparte porque lleva el contador de no leídas --}}
+{{!-- Links del header de la persona donante --}}
 {{> nav-link href="/donante/donaciones" clave="donaciones" texto="Mis donaciones"}}
 {{> nav-link href="/donante/entidades" clave="entidades" texto="Entidades beneficiarias"}}
 {{> nav-link href="/donante/seguimiento" clave="seguimiento" texto="Seguimiento de entregas"}}
-<a href="/donante/notificaciones" {{#if (eq seccion "notificaciones")}}aria-current="page"{{/if}}>Notificaciones
-    {{#if usuario.notificacionesSinLeer}}<span class="badge" aria-label="{{usuario.notificacionesSinLeer}} sin leer">{{usuario.notificacionesSinLeer}}</span>{{/if}}
-</a>
