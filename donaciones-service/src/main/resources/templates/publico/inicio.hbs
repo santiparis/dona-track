@@ -4,8 +4,9 @@
             <h1>Tu donación, de punta a punta</h1>
             <p class="muted">DonaTrack gestiona las donaciones que llegan al depósito y las asigna a escuelas, comedores y organizaciones que las necesitan. Cada donación se puede seguir desde que se recibe hasta que se entrega.</p>
             <div class="row">
-                <a class="btn" href="/usuarios/nuevo">Quiero donar</a>
-                <a class="btn2" href="/usuarios/nuevo">Registrar mi entidad</a>
+                {{!-- Cada botón abre el registro en su pestaña; el «Registrarme» del header abre en la primera --}}
+                <a class="btn" href="/usuarios/nuevo?tipo=HUMANA">Quiero donar</a>
+                <a class="btn2" href="/usuarios/nuevo?tipo=ENTIDAD">Registrar mi entidad</a>
             </div>
         </div>
         <img class="hero-foto" src="/assets/img/home.jpg" alt="Voluntarios armando bolsas con alimentos donados">

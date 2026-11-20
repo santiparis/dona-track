@@ -40,10 +40,13 @@
     {{/if}}
 </main>
 
-<footer class="foot">
-    <span>DonaTrack</span>
-    <a href="/legal">Términos y privacidad</a>
-</footer>
+{{!-- El footer va solo en las páginas públicas; las de cada rol (las que traen "rol") no lo llevan --}}
+{{#unless rol}}
+    <footer class="foot">
+        <span>DonaTrack</span>
+        <a href="/legal">Términos y privacidad</a>
+    </footer>
+{{/unless}}
 
 </body>
 </html>
