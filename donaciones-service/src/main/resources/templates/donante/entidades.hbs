@@ -20,13 +20,14 @@
     {{#if entidades}}
         <div class="cols">
             {{#each entidades}}
-                <article class="card">
-                    <h2>{{nombre}}</h2>
+                {{!-- Toda la tarjeta lleva al detalle: el link del nombre la cubre entera (ver .card-enlace) --}}
+                <article class="card card-clickeable">
+                    <h2><a class="card-enlace" href="/donante/entidades/{{id}}">{{nombre}}</a></h2>
                     <p class="muted">{{direccion}} · {{telefono}}</p>
-                    {{!-- Hasta 3 necesidades; si tiene más, el link lleva al detalle con todas --}}
-                    {{#each necesidades}}{{#if (lt @index 3)}}{{> necesidad}}{{/if}}{{/each}}
-                    {{#if necesidades.[3]}}
-                        <a href="/donante/entidades/{{id}}">Ver todas las necesidades</a>
+                    {{!-- Hasta 2 necesidades; si tiene más, se avisa y el detalle las muestra todas --}}
+                    {{#each necesidades}}{{#if (lt @index 2)}}{{> necesidad}}{{/if}}{{/each}}
+                    {{#if necesidades.[2]}}
+                        <p class="mas-necesidades">Tiene más necesidades · Ver todas</p>
                     {{/if}}
                 </article>
             {{/each}}

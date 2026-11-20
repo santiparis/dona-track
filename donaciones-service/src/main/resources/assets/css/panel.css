@@ -146,3 +146,13 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 @media (max-width: 768px) {
     .con-menu > .menu-lateral { display: none; }
 }
+
+/* Tarjeta de entidad que lleva al detalle: el link del nombre se estira y cubre toda la tarjeta */
+.card-clickeable { position: relative; }
+.card-clickeable:hover { border-color: var(--color-principal-borde); }
+.card-enlace { color: inherit; text-decoration: none; }
+.card-enlace::after { content: ""; position: absolute; inset: 0; }
+.card-clickeable:hover .card-enlace { color: var(--color-principal-oscuro); }
+
+/* Aviso de que la entidad tiene más necesidades que las que entran en la tarjeta */
+.mas-necesidades { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-principal); }
