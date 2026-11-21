@@ -1,0 +1,40 @@
+Entrega 4
+
+Falta texto legal real.
+La pestaña debe decir en "donde estoy" primero. Actualmente dice "Donatrack -- .." primero, eso debe estar al final
+Cambiar "Inicio" por "Quienes somos?". Contar un poco la propuesta en vez de "Inicio".
+La pestaña y la web deben mostrar un logo. Puede ser una caja con un corazon dentro, simple que siga el tono de la pagina.
+En "Inicio" ambos botones "Quiero donar" y "Registrar mi entidad" llevan al mismo lugar. Pensar como resolver ese problema.
+Si estoy logueado se tiene que mantener la navegacion, los titulos de la parte del navbar. Pensar como resolver eso.
+Mejorar la experiencia de navegacion, "es rara".
+Actualmente el boton de "Mi cuenta" no redirige a ningun lado. Pensar como arreglar eso. (O sacar el boton o implementar una pagina de edicion de mis datos)
+Las pantallas/menu del admin no es consistente con el donante/entidad beneficiaria.
+Los formularios deben tener validaciones de formato de entrada de texto en español. Formato de mail, telefono, password, DNI, CUIT.
+Regla general de botones, tienen que funcionar, no pueden estar ahi si no llevan a ningun lado.
+Agregar foto opcional al momento de registrar donaciones.
+No hay subcategoria en Electrodomesticos, ver como arreglar esto.
+Arreglar pantalla registrar donacion.
+Fecha de vencimiento tiene que ser mas dinamico.
+La pantalla de seguimiento tiene que funcionar.
+El CRUD de camiones tiene que funcionar.
+Asignar donaciones tiene que funcionar.
+Importar por CSV esta bien que cargue por lo menos 100, no hace falta que sean 20000.
+Titulos descriptivos, por ejemplos "Mis necesidades" en vez de "Necesidades".
+Registrar Necesidad no debe estar al lado de mis necesidades.
+Mover las notificaciones del navbar, se puede poner una campanita a la izquierda al lado del nombre de usuario.
+Tiene que estar funcional el sistema de notificaciones reales.
+Arreglar la UX para que funcione tambien en dispositivos moviles (ultima prioridad).
+Tiene que estar funcionando los crons en el servidor, con un tiempo de 10 minutos aprox, para ver si se ejecutan durante la correccion.
+Elegir subcategoria antes de producto.
+Poder seleccionar unidades en registrar necesidad.
+Registrar necesidad recurrente y extraordinario puede estar en una misma pantalla.
+Poner boton para avisar que no recibi la donacion.
+No hace falta que haya crud de todo (importante, podemos dejar algunos crud para el final).
+No agregar pantallas hasta no corregir las actuales.
+Editar camion no edita.
+El boton de ejecutar algoritmos deberia funcionar, si ahora no hace nada dejarlo borrado temporalmente.
+Configurar el .env para local y el servidor.
+Revisar GRPC y que funcione todo.
+
+Vista de entidades. Mostrar como maximo 2 necesidades, si tiene mas mostrar un indicador (ver que podria ser mejor)
+Al clickear una card de entidades, debe redirigir a la vista de la entidad con su detalle (igual que lo hace expandir)

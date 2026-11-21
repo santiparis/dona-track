@@ -22,7 +22,7 @@
     color: var(--color-principal-oscuro);
 }
 
-.logo-box { width: 36px; height: 36px; border-radius: 8px; background: var(--color-principal); }
+.logo-box { width: 36px; height: 36px; }
 .nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
 .nav a {
@@ -63,3 +63,42 @@
 
 /* Nombre de quien inició sesión y el link para salir */
 .user { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+
+/* Campanita de notificaciones al lado del nombre, con el contador de no leídas arriba a la derecha */
+.campana { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; color: var(--color-principal-oscuro); }
+.campana:hover, .campana[aria-current="page"] { background: var(--color-principal-claro); }
+.campana svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.campana .badge { position: absolute; top: 2px; right: 0; margin-left: 0; min-width: 18px; height: 18px; padding: 0 4px; font-size: 11px; }
+
+/* Menú hamburguesa: solo en el celular, en lugar de los links y la sesión del header */
+.menu-movil { display: none; }
+.menu-movil summary { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; list-style: none; cursor: pointer; color: var(--color-principal-oscuro); }
+.menu-movil summary::-webkit-details-marker { display: none; }
+.menu-movil summary svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.menu-movil-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 24px 20px; background: var(--color-superficie); border-bottom: 1px solid var(--color-borde); box-shadow: 0 8px 16px var(--color-sombra); }
+.menu-movil-panel .menu-lateral { align-self: stretch; padding: 0; border: 0; }
+.menu-movil-panel .nav { flex-direction: column; align-items: stretch; align-self: stretch; border-top: 1px solid var(--color-borde); padding-top: 8px; }
+
+@media (max-width: 768px) {
+    .hdr { position: relative; flex-wrap: nowrap; justify-content: flex-start; padding: 0 16px; }
+    .hdr > .nav, .hdr > .row, .hdr > .user > :not(.campana) { display: none; }
+    .hdr > .user, .hdr > .row + .menu-movil { margin-left: auto; }
+    .menu-movil { display: block; }
+}
+
+/* Cuenta con la que se inició sesión, arriba de todo en el menú del celular */
+.menu-movil-cuenta { font-weight: 700; color: var(--color-principal-oscuro); }
+
+/* Mi panel marcado cuando se está en una pantalla del rol, con el celeste de la opción activa del menú */
+.user a[aria-current="true"] { background: var(--color-principal-claro); color: var(--color-principal-oscuro); font-weight: 700; }
+
+/* En el menú del celular, el menú del rol ocupa solo su alto (en escritorio tiene un mínimo de 220px) */
+.menu-movil-panel .menu-lateral { flex: none; }
+
+/* Desplegable de la cuenta: el nombre abre un panel chico con Cerrar sesión */
+.cuenta { position: relative; }
+.cuenta summary { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 8px; border-radius: 6px; list-style: none; cursor: pointer; }
+.cuenta summary::-webkit-details-marker { display: none; }
+.cuenta summary:hover, .cuenta[open] summary { background: var(--color-fondo); }
+.cuenta summary svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cuenta-panel { position: absolute; top: 100%; right: 0; z-index: 10; margin-top: 4px; padding: 8px; white-space: nowrap; background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: 8px; box-shadow: 0 8px 16px var(--color-sombra); }

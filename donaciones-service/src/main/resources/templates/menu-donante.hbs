@@ -1,0 +1,7 @@
+{{!-- Menú lateral de la persona donante: lo incluyen el layout y el menú del celular cuando rol es "donante" --}}
+<nav class="menu-lateral" aria-label="Mi cuenta">
+    <p>Mi cuenta</p>
+    {{> nav-link href="/donante/donaciones" clave="donaciones" texto="Mis donaciones"}}
+    {{> nav-link href="/donante/entidades" clave="entidades" texto="Entidades beneficiarias"}}
+    {{> nav-link href="/donante/seguimiento" clave="seguimiento" texto="Seguimiento de entregas"}}
+</nav>

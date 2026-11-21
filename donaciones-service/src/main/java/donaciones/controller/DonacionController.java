@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 public class DonacionController {
   private static final Logger logger = LoggerFactory.getLogger(DonacionController.class);
@@ -446,18 +445,15 @@ public class DonacionController {
               "email", d.getEmail())));
     }
 
-    // Paso 3: una fila por bien; "+ Agregar bien" recarga con ?filas=N+1 (sin JavaScript)
-    int cantidadFilas = ctx.queryParamAsClass("filas", Integer.class).getOrDefault(3);
-    model.put("filas", IntStream.rangeClosed(1, cantidadFilas)
-        .mapToObj(numero -> Map.of("indice", numero - 1, "numero", numero))
-        .toList());
-    model.put("masFilas", cantidadFilas + 1);
+    // Paso 2: los bienes se cargan de a uno en el navegador (donacion-nueva.js). Cada subcategoría avisa
+    // si pide estado (nuevo/usado) o vencimiento, para mostrar esos campos solo cuando hacen falta
     model.put("categorias", Arrays.stream(Categoria.values())
         .map(c -> Map.of(
             "texto", c.nombre(),
             "subcategorias", Arrays.stream(Subcategoria.values())
                 .filter(s -> s.getCategoria() == c)
-                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre(),
+                    "requiereEstado", s.requiereEstado(), "requiereVencimiento", s.requiereVencimiento()))
                 .toList()))
         .toList());
     return model;
@@ -598,7 +594,7 @@ public class DonacionController {
     String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
 
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Donaciones asignadas");
+    model.put("titulo", "Donaciones asignadas a mi entidad");
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
 

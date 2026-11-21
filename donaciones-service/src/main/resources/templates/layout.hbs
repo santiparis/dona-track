@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonaTrack — {{titulo}}</title>
+    <title>{{titulo}} — DonaTrack</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/img/logo.svg">
     {{!-- Lo que necesita solo alguna pantalla (ej: el mapa). Va antes que nuestros CSS para que estos le ganen --}}
     {{#block "dependencias"}}
     {{/block}}
@@ -18,11 +19,17 @@
 {{> header}}
 
 <main class="wrap">
-    {{#if (eq rol "admin")}}
-        {{!-- El admin tiene un menú lateral en vez del nav del header --}}
-        <div class="admin">
-            {{> menu-admin}}
-            <div class="admin-contenido">
+    {{#if rol}}
+        {{!-- Las pantallas de cada rol llevan su menú lateral; el header queda con los links públicos --}}
+        <div class="con-menu">
+            {{#if (eq rol "donante")}}
+                {{> menu-donante}}
+            {{else if (eq rol "entidad")}}
+                {{> menu-entidad}}
+            {{else}}
+                {{> menu-admin}}
+            {{/if}}
+            <div class="con-menu-contenido">
                 {{#block "contenido"}}
                 {{/block}}
             </div>
@@ -33,10 +40,13 @@
     {{/if}}
 </main>
 
-<footer class="foot">
-    <span>DonaTrack</span>
-    <a href="/legal">Términos y privacidad</a>
-</footer>
+{{!-- El footer va solo en las páginas públicas; las de cada rol (las que traen "rol") no lo llevan --}}
+{{#unless rol}}
+    <footer class="foot">
+        <span>DonaTrack</span>
+        <a href="/legal">Términos y privacidad</a>
+    </footer>
+{{/unless}}
 
 </body>
 </html>

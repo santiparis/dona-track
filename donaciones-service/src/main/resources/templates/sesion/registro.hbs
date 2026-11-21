@@ -20,7 +20,7 @@
                 <label>Razón social<input name="razonSocial" value="{{razonSocial}}" maxlength="255" required></label>
                 <label>Dirección completa<input name="direccion" value="{{direccion}}" maxlength="255" required></label>
                 <label>Correo electrónico de la cuenta<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
-                <label>Teléfono<input name="telefono" type="tel" value="{{telefono}}" maxlength="255"></label>
+                <label>Teléfono<input name="telefono" type="tel" value="{{telefono}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
                 <label>Correos de representantes (opcional)<textarea name="correos" maxlength="5000">{{correos}}</textarea><span class="hint">Uno por línea.</span></label>
             </div>
         {{else}}
