@@ -323,7 +323,16 @@ public class EntidadesBeneficiariasController {
   }
 
   public void registrarNecesidad(Context ctx) {
-    // Sin persistencia todavía: acá se arma la Necesidad con los datos del form y se registra en la entidad
+    // Lo mismo que POST /api/entidades-beneficiarias/{id}/necesidades, con la entidad de la sesión
+    NecesidadDTO dto = new NecesidadDTO(
+        ctx.formParam("descripcion"),
+        "RECURRENTE".equals(ctx.formParam("tipo")),
+        Map.of(ctx.formParam("subcategoria"), ctx.formParamAsClass("cantidad", Integer.class).get()),
+        ctx.formParam("fechaInicio"),
+        ctx.formParam("periodo"));
+    EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
+    entidad.registrarNecesidad(crearNecesidad(dto));
+    entidadesRepository.guardar(entidad);
     ctx.redirect("/entidad/necesidades");
   }
 

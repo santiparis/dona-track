@@ -30,7 +30,7 @@
         </div>
         <label>Descripción breve<input name="descripcion" placeholder="Ej: reposición de bancos tras la inundación" value="{{necesidad.descripcion}}"></label>
         <div class="f2">
-            <label>Desde<input name="fechaInicio" type="date"></label>
+            <label>Desde<input name="fechaInicio" type="date" required></label>
             <label class="solo-recurrente">Período
                 <select name="periodo">
                     <option value="SEMANAL" {{#if (eq necesidad.periodo "SEMANAL")}}selected{{/if}}>Semanal</option>
