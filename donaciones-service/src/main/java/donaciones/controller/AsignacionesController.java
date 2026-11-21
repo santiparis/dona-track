@@ -315,9 +315,9 @@ public class AsignacionesController {
   }
 
   public void ejecutarAlgoritmosAhora(Context ctx) {
-    // Sin conexión todavía: acá va lo mismo que POST /api/sugerencias
-    // this.limpiarSugerencias();
-    // this.procesarDonacionesEnDeposito();
+    // Lo mismo que POST /api/sugerencias
+    this.limpiarSugerencias();
+    this.procesarDonacionesEnDeposito();
     ctx.redirect("/admin/asignaciones?ejecutado");
   }
 }
