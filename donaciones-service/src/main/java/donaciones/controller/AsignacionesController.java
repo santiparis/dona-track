@@ -15,7 +15,6 @@ import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.web.DatosMock;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -309,8 +308,8 @@ public class AsignacionesController {
   }
 
   public void confirmarDestino(Context ctx) {
-    // Sin conexión todavía: acá va lo mismo que PATCH /api/sugerencias/{id}/asignaciones
-    // asignar(Long.valueOf(ctx.pathParam("id")), Long.valueOf(ctx.formParam("entidad")), null);
+    // Lo mismo que PATCH /api/sugerencias/{id}/asignaciones
+    asignar(Long.valueOf(ctx.pathParam("id")), ctx.formParamAsClass("entidad", Long.class).get(), null, ctx);
     ctx.redirect("/admin/asignaciones?asignada=" + ctx.pathParam("id"));
   }
 
