@@ -34,6 +34,9 @@ public class Entrega {
   @Column(unique = true)
   private String comprobante;
 
+  // Comentario o motivo que deja la entidad al confirmar o rechazar la entrega
+  private String justificacion;
+
 
   public Entrega(List<DonacionEncolada> listaDonaciones, String destino, String entidadNombre) {
     this.listaDonaciones = listaDonaciones;
@@ -96,5 +99,13 @@ public class Entrega {
       throw new IllegalStateException("No se puede reingresar a depósito desde " + estado);
     }
     this.estado = EstadoEntrega.PENDIENTE;
+  }
+
+  public void justificar(String justificacion) {
+    this.justificacion = justificacion;
+  }
+
+  public String getJustificacion() {
+    return justificacion;
   }
 }

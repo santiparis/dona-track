@@ -668,9 +668,10 @@ public class DonacionController {
       }
       // El estado lo cambia logística (como en No la recibí); se le avisa después del commit para no quedar trabados con el lock
       Long donacionId = donacion.getId();
+      String comentario = ctx.formParam("comentario");
       TransaccionPorRequest.despuesDelCommit(() -> {
         try {
-          ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
+          ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true, comentario);
           if (!response.getExito()) {
             ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
           }
@@ -739,7 +740,7 @@ public class DonacionController {
     try {
 
       // Simplemente notificamos a Logística por gRPC
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false);
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false, ctx.formParam("motivo"));
 
       if (!response.getExito()) {
         ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
