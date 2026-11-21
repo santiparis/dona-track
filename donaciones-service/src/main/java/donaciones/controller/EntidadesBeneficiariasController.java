@@ -215,13 +215,13 @@ public class EntidadesBeneficiariasController {
     Map<Subcategoria, Integer> cantidades = new HashMap<>();
     dto.cantidadesRequeridas().forEach((subcategoria, cantidad) -> cantidades.put(parsearSubcategoria(subcategoria), cantidad));
     boolean renovacion = dto.renovacion();
-    LocalDate fechaInicio = null;
+    // La fecha se guarda en los dos tipos (si viene); el período, solo en la recurrente
+    LocalDate fechaInicio = dto.fechaInicio() == null ? null : LocalDate.parse(dto.fechaInicio());
     Periodo periodo = null;
     if (renovacion) {
       if (dto.fechaInicio() == null || dto.periodo() == null) {
         throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
       }
-      fechaInicio = LocalDate.parse(dto.fechaInicio());
       periodo = parsearPeriodo(dto.periodo());
     }
     return new Necesidad(dto.descripcion(), renovacion, fechaInicio, periodo, cantidades);
@@ -338,13 +338,25 @@ public class EntidadesBeneficiariasController {
 
   public void modificarNecesidad(Context ctx) {
     verificarNecesidadPropia(ctx);
-    // Sin persistencia todavía: acá se busca la necesidad ctx.pathParam("id") y se actualiza con los datos del form
+    // Lo mismo que PUT /api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}, con la entidad de la sesión
+    NecesidadDTO dto = new NecesidadDTO(
+        ctx.formParam("descripcion"),
+        "RECURRENTE".equals(ctx.formParam("tipo")),
+        Map.of(ctx.formParam("subcategoria"), ctx.formParamAsClass("cantidad", Integer.class).get()),
+        ctx.formParam("fechaInicio"),
+        ctx.formParam("periodo"));
+    EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
+    entidad.actualizarNecesidadPorId(Long.valueOf(ctx.pathParam("id")), crearNecesidad(dto));
+    entidadesRepository.guardar(entidad);
     ctx.redirect("/entidad/necesidades");
   }
 
   public void eliminarNecesidad(Context ctx) {
     verificarNecesidadPropia(ctx);
-    // Sin persistencia todavía: acá va la baja de la necesidad ctx.pathParam("id")
+    // Lo mismo que DELETE /api/entidades-beneficiarias/{id}/necesidades/{idNecesidad}, con la entidad de la sesión
+    EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
+    entidad.eliminarNecesidadPorId(Long.valueOf(ctx.pathParam("id")));
+    entidadesRepository.guardar(entidad);
     ctx.redirect("/entidad/necesidades");
   }
 
@@ -363,17 +375,21 @@ public class EntidadesBeneficiariasController {
   private Map<String, String> necesidadParaVista(Necesidad necesidad, Subcategoria subcategoria, int cantidad) {
     int suplida = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
     boolean recurrente = necesidad.getPeriodo() != null;
-    return Map.of(
-        "id", necesidad.getId().toString(),
-        "descripcion", Objects.toString(necesidad.getDescripcion(), ""),
-        "subcategoria", subcategoria.name(),
-        "subcategoriaTexto", subcategoria.nombre(),
-        "cantidad", Integer.toString(cantidad),
-        "tipo", recurrente ? "RECURRENTE" : "EXTRAORDINARIA",
-        "tipoTexto", recurrente ? "Recurrente" : "Extraordinaria",
-        "periodo", Objects.toString(necesidad.getPeriodo(), ""),
-        "avance", suplida + " / " + cantidad,
-        "porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0));
+    // Map.ofEntries porque Map.of admite hasta 10 pares
+    return Map.ofEntries(
+        Map.entry("id", necesidad.getId().toString()),
+        Map.entry("descripcion", Objects.toString(necesidad.getDescripcion(), "")),
+        Map.entry("subcategoria", subcategoria.name()),
+        Map.entry("subcategoriaTexto", subcategoria.nombre()),
+        Map.entry("cantidad", Integer.toString(cantidad)),
+        Map.entry("tipo", recurrente ? "RECURRENTE" : "EXTRAORDINARIA"),
+        Map.entry("tipoTexto", recurrente ? "Recurrente" : "Extraordinaria"),
+        Map.entry("periodo", Objects.toString(necesidad.getPeriodo(), "")),
+        Map.entry("avance", suplida + " / " + cantidad),
+        Map.entry("porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0)),
+        // Para el formulario de edición: la fecha cargada y la cantidad mínima (no menos de lo ya recibido)
+        Map.entry("fechaInicio", Objects.toString(necesidad.getFechaInicio(), "")),
+        Map.entry("minimo", Integer.toString(Math.max(1, suplida))));
   }
 
   // Registrar necesidad, separada de Mis necesidades. Con ?editar={id} el formulario edita esa necesidad

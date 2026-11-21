@@ -86,15 +86,15 @@ public class Seed implements WithSimplePersistenceUnit {
         new ArrayList<>(List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar")),
         List.of(correoEscuela), correoEscuela,
         new Usuario("direccion@escuelarural10.edu.ar", "escuela123", Rol.ENTIDAD));
-    Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.BANCOS, 30));
+    Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.BANCOS, 30));
     bancosEscuela.registrarSuplido(new Bien(Subcategoria.BANCOS, 10, "unidades", null, null, EstadoBien.NUEVO, null));
-    Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.SILLAS, 30));
+    Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.SILLAS, 30));
     sillasEscuela.registrarSuplido(new Bien(Subcategoria.SILLAS, 6, "unidades", null, null, EstadoBien.USADO, null));
-    Necesidad mesasEscuela = new Necesidad(null, false, null, null, Map.of(Subcategoria.MESAS, 10));
+    Necesidad mesasEscuela = new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.MESAS, 10));
     Necesidad lecheEscuela = new Necesidad("Desayuno escolar",
         true, LocalDate.now(), Periodo.MENSUAL, Map.of(Subcategoria.LECHE, 50));
     lecheEscuela.registrarSuplido(new Bien(Subcategoria.LECHE, 40, "litros", null, null, null, vencimientoLeche));
-    Necesidad camperasEscuela = new Necesidad(null, false, null, null, Map.of(Subcategoria.CAMPERAS, 40));
+    Necesidad camperasEscuela = new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.CAMPERAS, 40));
     camperasEscuela.registrarSuplido(new Bien(Subcategoria.CAMPERAS, 5, "unidades", null, null, EstadoBien.USADO, null));
     escuela.registrarNecesidad(bancosEscuela);
     escuela.registrarNecesidad(sillasEscuela);
@@ -115,7 +115,7 @@ public class Seed implements WithSimplePersistenceUnit {
     EntidadBeneficiaria tutorias = new EntidadBeneficiaria("Espacio de Tutorías Barrio Norte", "Calle 14 N°560, La Plata",
         "(0221) 455-0000", new ArrayList<>(List.of("tutoriasbarrionorte@gmail.com")),
         List.of(correoTutorias), correoTutorias);
-    tutorias.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.MESAS, 5)));
+    tutorias.registrarNecesidad(new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.MESAS, 5)));
 
     // Las tres que aparecen en los rankings de Elegir entidad final
     Contacto correoBarrioSur = new ContactoPorEmail("comedorbarriosur@gmail.com");
@@ -128,7 +128,7 @@ public class Seed implements WithSimplePersistenceUnit {
     EntidadBeneficiaria sanJose = new EntidadBeneficiaria("Hogar San José", "Belgrano 780, Luján",
         "(02323) 42-5566", new ArrayList<>(List.of("hogarsanjose@gmail.com")),
         List.of(correoSanJose), correoSanJose);
-    sanJose.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.CAMPERAS, 20)));
+    sanJose.registrarNecesidad(new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.CAMPERAS, 20)));
 
     Contacto correoLosPibes = new ContactoPorEmail("merenderolospibes@gmail.com");
     EntidadBeneficiaria losPibes = new EntidadBeneficiaria("Merendero Los Pibes", "Calle 9 N°1120, Florencio Varela",

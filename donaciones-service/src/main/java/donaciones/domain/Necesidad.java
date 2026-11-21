@@ -30,16 +30,44 @@ public class Necesidad {
             Periodo periodo,
             Map<Subcategoria, Integer> cantidadesRequeridas
     ) {
+        asignarDatos(descripcion, renovacion, fechaInicio, periodo, cantidadesRequeridas);
+        this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
+        this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
+    }
+
+    // Edita la necesidad con los datos de otra que no se guarda; lo ya suplido se conserva
+    public void actualizarCon(Necesidad datos) {
+        if (!datos.cantidadesRequeridas.keySet().equals(this.cantidadesRequeridas.keySet())) {
+            throw new IllegalArgumentException("La subcategoría no se puede cambiar: eliminá la necesidad y registrá otra");
+        }
+        if (datos.isRenovacion() != this.isRenovacion()) {
+            throw new IllegalArgumentException("El tipo no se puede cambiar: eliminá la necesidad y registrá otra");
+        }
+        datos.cantidadesRequeridas.forEach((subcategoria, cantidad) -> {
+            if (cantidad < this.cantidadesSuplidas.getOrDefault(subcategoria, 0)) {
+                throw new IllegalArgumentException("La cantidad no puede ser menor a lo que ya se recibió");
+            }
+        });
+        asignarDatos(datos.descripcion, datos.isRenovacion(), datos.fechaInicio, datos.periodo, datos.cantidadesRequeridas);
+    }
+
+    private void asignarDatos(
+            String descripcion,
+            boolean renovacion,
+            LocalDate fechaInicio,
+            Periodo periodo,
+            Map<Subcategoria, Integer> cantidadesRequeridas
+    ) {
         this.descripcion = descripcion;
         if (renovacion && (fechaInicio == null || periodo == null)) {
             throw new IllegalArgumentException("Una necesidad renovable requiere fecha de inicio y período");
         }
         this.periodo = renovacion ? periodo : null;
-        this.fechaInicio = renovacion ? fechaInicio : null;
+        // La fecha de inicio se guarda en los dos tipos; solo la recurrente la usa para calcular la fecha de fin
+        this.fechaInicio = fechaInicio;
         this.fechaFin = calcularFechaFin();
-        this.cantidadesRequeridas = new HashMap<>(cantidadesRequeridas);
-        this.cantidadesSuplidas = new HashMap<>(cantidadesRequeridas);
-        this.cantidadesSuplidas.replaceAll(((subcategoria, integer) -> 0));
+        this.cantidadesRequeridas.clear();
+        this.cantidadesRequeridas.putAll(cantidadesRequeridas);
     }
 
     public Long getId() {
@@ -58,6 +86,7 @@ public class Necesidad {
         return Map.copyOf(cantidadesSuplidas);
     }
 
+    // Sin uso desde que actualizarNecesidadPorId edita la necesidad existente (para el clean up)
     public void setId(Long id) {
         this.id = id;
     }
