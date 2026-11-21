@@ -621,7 +621,6 @@ public class DonacionController {
     model.put("donacion", donacionParaVista(donacion));
     model.put("fotos", enlacesFotos(donacion, "entidad"));
     model.put("puedeConfirmar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
-    model.put("storageDisponible", fotosRecepcion.configurado());
     return model;
   }
 
@@ -635,23 +634,25 @@ public class DonacionController {
       errorRecepcion(ctx, 409, "Solo podés confirmar donaciones en traslado.");
       return;
     }
-    if (!fotosRecepcion.configurado()) {
-      errorRecepcion(ctx, 503, "El almacenamiento de fotos no está disponible.");
-      return;
-    }
     if (ctx.req().getContentLengthLong() > 16L * 1024 * 1024) {
       errorRecepcion(ctx, 413, "La carga completa supera el límite de 16 MB.");
       return;
     }
-    List<FotosRecepcion.Foto> fotos;
+    List<FotosRecepcion.Foto> fotos = List.of();
     if (!ctx.isMultipartFormData()) {
       errorRecepcion(ctx, 400, "Adjuntá las fotos con el formulario de recepción.");
       return;
     }
     ctx.req().setAttribute("org.eclipse.jetty.multipartConfig", new jakarta.servlet.MultipartConfigElement(
         System.getProperty("java.io.tmpdir"), FotosRecepcion.MAX_BYTES, 16L * 1024 * 1024, 0));
+    // Las fotos son opcionales por ahora: sin fotos no hace falta el almacenamiento
+    var archivos = ctx.uploadedFiles("fotos").stream().filter(archivo -> archivo.size() > 0).toList();
+    if (!archivos.isEmpty() && !fotosRecepcion.configurado()) {
+      errorRecepcion(ctx, 503, "El almacenamiento de fotos no está disponible.");
+      return;
+    }
     try {
-      fotos = fotosRecepcion.validar(ctx.uploadedFiles("fotos"));
+      if (!archivos.isEmpty()) fotos = fotosRecepcion.validar(archivos);
     } catch (IllegalStateException e) {
       errorRecepcion(ctx, 413, "La carga supera el tamaño permitido.");
       return;
@@ -665,13 +666,19 @@ public class DonacionController {
         fotosRecepcion.guardar(foto);
         donacion.agregarFotoRecepcion(foto.id(), foto.tipo());
       }
-      donacion.cambiarEstado(EstadoDonacion.ENTREGADA, "Recepción confirmada por la entidad");
-      donacionesRepository.entityManager().flush();
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacion.getId(), true);
-      if (!response.getExito()) {
-        ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
-        return;
-      }
+      // El estado lo cambia logística (como en No la recibí); se le avisa después del commit para no quedar trabados con el lock
+      Long donacionId = donacion.getId();
+      TransaccionPorRequest.despuesDelCommit(() -> {
+        try {
+          ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true);
+          if (!response.getExito()) {
+            ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
+          }
+        } catch (RuntimeException e) {
+          logger.warn("Falló el aviso a logística de la recepción {} ({})", donacionId, e.getClass().getSimpleName());
+          ctx.status(502).result("No se pudo avisar a logística. Volvé a intentarlo.");
+        }
+      });
       ctx.redirect("/entidad/donaciones", HttpStatus.SEE_OTHER);
     } catch (RuntimeException e) {
       logger.warn("Falló la confirmación de recepción de la donación {} ({})",
@@ -795,6 +802,18 @@ public class DonacionController {
     model.put("seccion", "entregadas");
     // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
     model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> noRecibida(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Informar entrega no recibida");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+
+    Donacion donacion = donacionDeLaEntidad(ctx);
+    model.put("donacion", donacionParaVista(donacion));
+    model.put("puedeInformar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
     return model;
   }
 }
