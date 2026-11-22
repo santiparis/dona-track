@@ -13,7 +13,10 @@ public enum Subcategoria {
     REMERAS(Categoria.ROPA, true, false,"Remeras"),
     PANTALONES(Categoria.ROPA, true, false,"Pantalones"),
     ROPA_INFANTIL(Categoria.ROPA, true, false,"Ropa infantil"),
-    FRAZADAS(Categoria.ROPA, true, false,"Frazadas");
+    FRAZADAS(Categoria.ROPA, true, false,"Frazadas"),
+    REFRIGERACION(Categoria.ELECTRODOMESTICOS, true, false,"Refrigeración"),
+    TELEVISORES(Categoria.ELECTRODOMESTICOS, true, false,"Televisores"),
+    ESTUFAS(Categoria.ELECTRODOMESTICOS, true, false,"Estufas");
 
     private final Categoria categoria;
     private final boolean requiereEstado;
