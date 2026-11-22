@@ -581,7 +581,7 @@ public class DonacionController {
             "cantidad", d.getBien().getCantidad(),
             "cambios", d.getHistorialEstados().stream()
                 .map(cambio -> Map.of(
-                    "fecha", Objects.toString(cambio.fecha(), ""),
+                    "fecha", cambio.fecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                     "descripcion", textoEstado(cambio.estadoNuevo()) + ": " + Objects.toString(cambio.justificacion(), "")))
                 .toList(),
             "fotos", enlacesFotos(d, "donante"))));
@@ -778,10 +778,10 @@ public class DonacionController {
     fila.put("id", donacion.getId().toString());
     fila.put("bien", bien.getSubcategoria().nombre());
     fila.put("cantidad", (bien.getCantidad() + " " + Objects.toString(bien.getUnidad(), "")).trim());
-    fila.put("fecha", Objects.toString(donacion.getFecha(), ""));
+    fila.put("fecha", donacion.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     fila.put("actualizado", donacion.getHistorialEstados().stream()
         .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.time.LocalDateTime::compareTo)
-        .map(java.time.LocalDateTime::toString).orElse(fila.get("fecha")));
+        .map(fecha -> fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).orElse(fila.get("fecha")));
     fila.put("estado", donacion.getEstado().name());
     if (!donacion.getFotosRecepcion().isEmpty()) fila.put("tieneFotos", "true");
     fila.put("estadoTexto", textoEstado(donacion.getEstado()));
