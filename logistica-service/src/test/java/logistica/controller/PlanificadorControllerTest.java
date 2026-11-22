@@ -5,7 +5,6 @@ import io.javalin.http.Context;
 import logistica.domain.Camion;
 import logistica.domain.DonacionEncolada;
 import logistica.domain.Ruta;
-import logistica.grpc.DonacionesGrpcClient;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.planificacion.ClientePlanificador;
 import logistica.repository.CamionesRepository;

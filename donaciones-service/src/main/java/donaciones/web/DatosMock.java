@@ -34,30 +34,6 @@ public class DatosMock {
     );
   }
 
-  public static Map<String, Object> donante() {
-    return Map.of("nombre", "Ana Pérez", "notificacionesSinLeer", 1);
-  }
-
-  // Todas las notificaciones juntas, como las devuelve el repositorio: cada controller filtra por destinatario
-  public static List<Map<String, Object>> notificaciones() {
-    return List.of(
-        Map.of("destinatario", "donante", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
-            "mensaje", "Tu donación de 6 sillas fue asignada a Escuela Rural N°10.",
-            "link", "/donante/donaciones", "linkTexto", "Ver donación"),
-        Map.of("destinatario", "donante", "tipo", "Entrega recibida", "fecha", "02/09/2026", "leida", true,
-            "mensaje", "Escuela Rural N°10 recibió tus 10 bancos. Camión AB123CD, 02/09/2026 11:40."),
-        Map.of("destinatario", "entidad", "tipo", "Donación asignada", "fecha", "Hoy 03:00", "leida", false,
-            "mensaje", "Se te asignaron 6 sillas usadas de Arcos Plateados S.A.",
-            "link", "/entidad/donaciones", "linkTexto", "Ver donaciones"),
-        Map.of("destinatario", "entidad", "tipo", "Recepción confirmada", "fecha", "02/09/2026", "leida", true,
-            "mensaje", "Registramos la recepción de 10 bancos. Comprobante: camión AB123CD, 02/09/2026 11:40.")
-    );
-  }
-
-  public static Map<String, Object> admin() {
-    return Map.of("nombre", "admin@donatrack", "notificacionesSinLeer", 0);
-  }
-
   // latitud y longitud ubican a la entidad en el mapa del seguimiento (EntidadBeneficiaria todavía no las tiene)
   public static Map<String, Object> entidad() {
     return Map.of("nombre", "Escuela Rural N°10", "notificacionesSinLeer", 1,
