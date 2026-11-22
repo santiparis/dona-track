@@ -48,7 +48,7 @@ public class ImportadorPersonas {
             String emailStr = record.get("Email");
             String telefonoStr = record.get("Teléfono");
             String nombreCompleto = record.get("Nombre/Razón Social");
-            TipoDoc tipoDoc = TipoDoc.valueOf(record.get("Donante.TipoDoc"));
+            TipoDoc tipoDoc = TipoDoc.valueOf(record.get("TipoDoc"));
             String documento = record.get("Documento");
             List<Contacto> contactos = crearContactos(emailStr, telefonoStr);
             Contacto medioPredeterminado = contactos.get(0);
