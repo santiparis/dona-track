@@ -18,7 +18,9 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
-import donaciones.web.DatosMock;
+import donaciones.domain.cargaCSV.ImportadorPersonas;
+import donaciones.domain.cargaCSV.MapeoCsvEnPersonaException;
+import donaciones.domain.cargaCSV.ResultadoImportacion;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -34,9 +36,11 @@ public class DonanteController {
   private static final Logger logger = LoggerFactory.getLogger(DonanteController.class);
 
   private final RepositorioPersonas personasRepository;
+  private final Notificador notificador;
 
-  public DonanteController(RepositorioPersonas personasRepository) {
+  public DonanteController(RepositorioPersonas personasRepository, Notificador notificador) {
     this.personasRepository = personasRepository;
+    this.notificador = notificador;
   }
 
   public void listar(Context ctx) {
@@ -234,7 +238,8 @@ public class DonanteController {
         .filter(contacto -> contacto.getEstrategia().contains(ctx.formParam("medio")))
         .findFirst()
         .orElse(contactos.get(0));
-    Usuario usuario = new Usuario(ctx.formParam("email"), "password_provisoria", Rol.DONANTE);
+    String passwordProvisoria = "password_provisoria";
+    Usuario usuario = new Usuario(ctx.formParam("email"), passwordProvisoria, Rol.DONANTE);
 
     Persona donante = "HUMANA".equals(ctx.formParam("tipo"))
         ? new PersonaHumana(ctx.formParam("nombre"), ctx.formParam("apellido"),
@@ -246,6 +251,7 @@ public class DonanteController {
             RazonSocial.valueOf(ctx.formParam("tipoJuridica")), ctx.formParam("rubro"), new ArrayList<>(),
             contactos, medioPredeterminado, usuario);
     personasRepository.agregar(donante);
+    notificador.bienvenida(donante, passwordProvisoria);
 
     // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
     if ("donacion".equals(ctx.formParam("siguiente"))) {
@@ -260,16 +266,21 @@ public class DonanteController {
     model.put("titulo", "Importar donantes");
     model.put("rol", "admin");
     model.put("seccion", "importacion");
-    // Después de importar se vuelve con ?importado para mostrar el resultado
-    if (ctx.queryParam("importado") != null) {
-      model.put("resultado", DatosMock.resultadoImportacion());   // MOCK
-    }
+    // Después de importar, el POST deja el resultado en la sesión y se muestra una sola vez
+    model.put("resultado", ctx.consumeSessionAttribute("resultadoImportacion"));
     return model;
   }
 
   public void importar(Context ctx) {
-    // Sin conexión todavía: acá se guarda ctx.uploadedFile("archivo") en un archivo temporal y se llama al importador ya hecho
-    // new ImportadorPersonas(repositorioPersonas).importarPersonasDesdeCSV(pathTemporal);
-    ctx.redirect("/admin/importacion?importado");
+    try {
+      ResultadoImportacion resultado = new ImportadorPersonas(personasRepository)
+          .importarPersonasDesdeCSV(ctx.uploadedFile("archivo").content());
+      ctx.sessionAttribute("resultadoImportacion", resultado);
+      ctx.redirect("/admin/importacion", HttpStatus.SEE_OTHER);
+    } catch (MapeoCsvEnPersonaException e) {
+      Map<String, Object> model = importacion(ctx);
+      model.put("error", "El archivo no tiene el formato esperado. No se importó ningún donante.");
+      ctx.status(400).render("admin/importacion", model);
+    }
   }
 }

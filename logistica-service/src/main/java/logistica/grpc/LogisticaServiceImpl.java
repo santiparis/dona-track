@@ -134,10 +134,12 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
         Ruta ruta = rutasRepository.buscarRutaPorEntregaId(entrega.getId())
             .orElseThrow(() -> new IllegalStateException("Entrega sin ruta: " + entrega.getId()));
 
+        entrega.justificar(request.getJustificacion());
         if (request.getExito()) {
           entrega.marcarEntregada();
+          String comprobante = entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + ruta.getCamion().getPatente();
           notificadorEntregas.avisarEntregada(entrega,
-              entrega.getComprobante() + ", " + LocalDateTime.now().format(FORMATO_FECHA) + ", " + ruta.getCamion().getPatente());
+              request.getJustificacion().isBlank() ? comprobante : comprobante + ". " + request.getJustificacion());
         } else {
           entrega.marcarNoRecibida();
           notificadorEntregas.avisarFallida(entrega);

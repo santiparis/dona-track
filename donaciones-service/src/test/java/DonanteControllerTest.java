@@ -1,4 +1,5 @@
 import donaciones.controller.DonanteController;
+import donaciones.controller.Notificador;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.dto.DonanteRequestDTO;
@@ -25,7 +26,7 @@ public class DonanteControllerTest implements SimplePersistenceTest {
     @BeforeEach
     void setUp() {
         personasRepository = new RepositorioPersonas();
-        controller = new DonanteController(personasRepository);
+        controller = new DonanteController(personasRepository, new Notificador());
         ctx = mock(Context.class, RETURNS_DEEP_STUBS);
     }
 

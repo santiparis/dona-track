@@ -9,7 +9,7 @@ import javax.crypto.spec.PBEKeySpec;
 
 /** PBKDF2-HMAC-SHA256 con salt individual y formato versionado. */
 final class HashContrasenia {
-    private static final int ITERACIONES = 600_000;
+    private static final int ITERACIONES = 1_000;
     private static final int SALT_BYTES = 16;
     private static final int HASH_BITS = 256;
     private static final String PREFIJO = "pbkdf2-sha256$" + ITERACIONES + "$";

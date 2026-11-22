@@ -87,6 +87,7 @@ message CambiarEstadoResponse {
 message ReportarEntregaRequest {
   int64 entrega_id = 1;
   bool exito = 2;
+  string justificacion = 3;
 }
 
 message ReportarEntregaResponse {

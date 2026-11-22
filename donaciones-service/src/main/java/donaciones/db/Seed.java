@@ -86,15 +86,15 @@ public class Seed implements WithSimplePersistenceUnit {
         new ArrayList<>(List.of("direccion@escuelarural10.edu.ar", "cooperadora@escuelarural10.edu.ar")),
         List.of(correoEscuela), correoEscuela,
         new Usuario("direccion@escuelarural10.edu.ar", "escuela123", Rol.ENTIDAD));
-    Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.BANCOS, 30));
+    Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.BANCOS, 30));
     bancosEscuela.registrarSuplido(new Bien(Subcategoria.BANCOS, 10, "unidades", null, null, EstadoBien.NUEVO, null));
-    Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, null, null, Map.of(Subcategoria.SILLAS, 30));
+    Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.SILLAS, 30));
     sillasEscuela.registrarSuplido(new Bien(Subcategoria.SILLAS, 6, "unidades", null, null, EstadoBien.USADO, null));
-    Necesidad mesasEscuela = new Necesidad(null, false, null, null, Map.of(Subcategoria.MESAS, 10));
+    Necesidad mesasEscuela = new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.MESAS, 10));
     Necesidad lecheEscuela = new Necesidad("Desayuno escolar",
         true, LocalDate.now(), Periodo.MENSUAL, Map.of(Subcategoria.LECHE, 50));
     lecheEscuela.registrarSuplido(new Bien(Subcategoria.LECHE, 40, "litros", null, null, null, vencimientoLeche));
-    Necesidad camperasEscuela = new Necesidad(null, false, null, null, Map.of(Subcategoria.CAMPERAS, 40));
+    Necesidad camperasEscuela = new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.CAMPERAS, 40));
     camperasEscuela.registrarSuplido(new Bien(Subcategoria.CAMPERAS, 5, "unidades", null, null, EstadoBien.USADO, null));
     escuela.registrarNecesidad(bancosEscuela);
     escuela.registrarNecesidad(sillasEscuela);
@@ -108,14 +108,14 @@ public class Seed implements WithSimplePersistenceUnit {
         List.of(correoComedor), correoComedor);
     Necesidad fideosComedor = new Necesidad(null,
         true, LocalDate.now(), Periodo.SEMANAL, Map.of(Subcategoria.FIDEOS, 100));
-    fideosComedor.registrarSuplido(new Bien(Subcategoria.FIDEOS, 60, "paquetes", null, null, null, null));
+    fideosComedor.registrarSuplido(new Bien(Subcategoria.FIDEOS, 60, "kg", null, null, null, null));
     comedor.registrarNecesidad(fideosComedor);
 
     Contacto correoTutorias = new ContactoPorEmail("tutoriasbarrionorte@gmail.com");
     EntidadBeneficiaria tutorias = new EntidadBeneficiaria("Espacio de Tutorías Barrio Norte", "Calle 14 N°560, La Plata",
         "(0221) 455-0000", new ArrayList<>(List.of("tutoriasbarrionorte@gmail.com")),
         List.of(correoTutorias), correoTutorias);
-    tutorias.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.MESAS, 5)));
+    tutorias.registrarNecesidad(new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.MESAS, 5)));
 
     // Las tres que aparecen en los rankings de Elegir entidad final
     Contacto correoBarrioSur = new ContactoPorEmail("comedorbarriosur@gmail.com");
@@ -128,7 +128,7 @@ public class Seed implements WithSimplePersistenceUnit {
     EntidadBeneficiaria sanJose = new EntidadBeneficiaria("Hogar San José", "Belgrano 780, Luján",
         "(02323) 42-5566", new ArrayList<>(List.of("hogarsanjose@gmail.com")),
         List.of(correoSanJose), correoSanJose);
-    sanJose.registrarNecesidad(new Necesidad(null, false, null, null, Map.of(Subcategoria.CAMPERAS, 20)));
+    sanJose.registrarNecesidad(new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.CAMPERAS, 20)));
 
     Contacto correoLosPibes = new ContactoPorEmail("merenderolospibes@gmail.com");
     EntidadBeneficiaria losPibes = new EntidadBeneficiaria("Merendero Los Pibes", "Calle 9 N°1120, Florencio Varela",
@@ -146,7 +146,7 @@ public class Seed implements WithSimplePersistenceUnit {
     // Donaciones en todos los estados
     LocalDate hoy = LocalDate.now();
 
-    Donacion fideosPastas = new Donacion(pastas, new Bien(Subcategoria.FIDEOS, 100, "paquetes", "Fideos tirabuzón 500 g", null, null, null));
+    Donacion fideosPastas = new Donacion(pastas, new Bien(Subcategoria.FIDEOS, 100, "kg", "Fideos tirabuzón 500 g", null, null, null));
     persist(fideosPastas);
     persist(new Donacion(pastas, new Bien(Subcategoria.LECHE, 30, "litros", "Leche entera larga vida", null, null, hoy.plusDays(3))));
     persist(new Donacion(ana, new Bien(Subcategoria.LECHE, 20, "litros", "Leche descremada", null, null, hoy.plusMonths(2))));
@@ -187,13 +187,13 @@ public class Seed implements WithSimplePersistenceUnit {
     sillas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     persist(sillas);
 
-    Donacion fideosEnTraslado = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 100, "paquetes", "Fideos mostachol 500 g", null, null, null));
+    Donacion fideosEnTraslado = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 100, "kg", "Fideos mostachol 500 g", null, null, null));
     fideosEnTraslado.asignarA(comedor);
     fideosEnTraslado.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     fideosEnTraslado.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     persist(fideosEnTraslado);
 
-    Donacion fideosEntregados = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 40, "paquetes", "Fideos spaghetti", null, null, null));
+    Donacion fideosEntregados = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 40, "kg", "Fideos spaghetti", null, null, null));
     fideosEntregados.asignarA(comedor);
     fideosEntregados.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     fideosEntregados.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);

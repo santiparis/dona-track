@@ -176,3 +176,17 @@ img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
     border-top: 1px solid var(--color-borde);
     background: var(--color-superficie);
 }
+
+/* Spinner de Importar donantes: el form lo muestra al enviarse y se va con la página del resultado */
+.importando::before {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    vertical-align: -2px;
+    border: 3px solid var(--color-principal-claro);
+    border-top-color: var(--color-principal);
+    border-radius: 999px;
+    animation: girar 0.8s linear infinite;
+}

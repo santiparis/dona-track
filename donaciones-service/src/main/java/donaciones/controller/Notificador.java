@@ -2,6 +2,7 @@ package donaciones.controller;
 
 import donaciones.domain.Donacion;
 import donaciones.domain.PersonaAdministradora;
+import donaciones.domain.donante.Persona;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.Notificacion;
 import donaciones.db.TransaccionPorRequest;
@@ -74,5 +75,10 @@ public class Notificador {
         notificacionRepository.guardar(notificacion);
       }
     });
+  }
+
+  public void bienvenida(Persona donante, String passwordProvisoria) {
+    this.notificar(donante, "Bienvenido/a a DonaTrack. Para su primer acceso ingrese con el usuario "
+        + donante.getUsuario().getNombreUsuario() + " y la contraseña provisoria " + passwordProvisoria + ".");
   }
 }

@@ -61,7 +61,7 @@ public class DonacionCambioDeEstadoTest {
 
         assertEquals(EstadoDonacion.ENTREGA_FALLIDA, donacion.getEstado());
 
-        RegistroCambioEstado<EstadoDonacion> ultimo = donacion.getHistorialEstados().get(2);
+        RegistroCambioEstado ultimo = donacion.getHistorialEstados().get(2);
         assertEquals(EstadoDonacion.ASIGNADA, ultimo.estadoAnterior());
         assertEquals(EstadoDonacion.ENTREGA_FALLIDA, ultimo.estadoNuevo());
         assertEquals("Tocamos timbre pero nadie respondió", ultimo.justificacion());

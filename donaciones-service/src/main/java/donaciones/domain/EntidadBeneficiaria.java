@@ -186,8 +186,7 @@ public class EntidadBeneficiaria implements Notificable {
         for (int i = 0; i < this.necesidades.size(); i++) {
             Necesidad actual = this.necesidades.get(i);
             if (actual.getId() != null && actual.getId().equals(idNecesidad)) {
-                necesidad.setId(idNecesidad);
-                this.necesidades.set(i, necesidad);
+                actual.actualizarCon(necesidad);
                 return;
             }
         }

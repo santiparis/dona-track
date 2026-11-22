@@ -6,31 +6,35 @@
         {{!-- Recurrente y extraordinaria en el mismo formulario: el tipo elegido muestra sus campos (ver form.css) --}}
         <fieldset>
             <legend>Tipo de necesidad</legend>
+            {{!-- Al editar, el tipo tampoco se cambia: igual que la subcategoría --}}
+            {{#if necesidad.id}}<input type="hidden" name="tipo" value="{{tipo}}">{{/if}}
             <div class="row">
-                <label class="radio"><input type="radio" name="tipo" value="EXTRAORDINARIA" {{#unless (eq tipo "RECURRENTE")}}checked{{/unless}}>Extraordinaria</label>
-                <label class="radio"><input type="radio" name="tipo" value="RECURRENTE" {{#if (eq tipo "RECURRENTE")}}checked{{/if}}>Recurrente</label>
+                <label class="radio"><input type="radio" name="tipo" value="EXTRAORDINARIA" {{#unless (eq tipo "RECURRENTE")}}checked{{/unless}} {{#if necesidad.id}}disabled{{/if}}>Extraordinaria</label>
+                <label class="radio"><input type="radio" name="tipo" value="RECURRENTE" {{#if (eq tipo "RECURRENTE")}}checked{{/if}} {{#if necesidad.id}}disabled{{/if}}>Recurrente</label>
             </div>
             <p class="hint solo-extraordinaria">Situación excepcional (mudanza, inundación, incendio). Se satisface al alcanzar la cantidad, aunque llegue en partes.</p>
             <p class="hint solo-recurrente">Consumo habitual: la cantidad objetivo se renueva cada período.</p>
         </fieldset>
 
         <div class="f2">
+            {{!-- Al editar, la subcategoría no se cambia: el select queda bloqueado y el valor viaja oculto --}}
+            {{#if necesidad.id}}<input type="hidden" name="subcategoria" value="{{necesidad.subcategoria}}">{{/if}}
             <label>Subcategoría
-                <select name="subcategoria">
+                <select name="subcategoria" {{#if necesidad.id}}disabled{{/if}}>
                     {{#each categorias}}
                         <optgroup label="{{texto}}">
                             {{#each subcategorias}}
-                                <option value="{{valor}}" {{#if (eq valor ../../necesidad.subcategoria)}}selected{{/if}}>{{texto}}</option>
+                                <option value="{{valor}}" data-unidad="{{unidad}}" {{#if (eq valor ../../necesidad.subcategoria)}}selected{{/if}}>{{texto}}</option>
                             {{/each}}
                         </optgroup>
                     {{/each}}
                 </select>
             </label>
-            <label>Cantidad<input name="cantidad" type="number" min="1" value="{{necesidad.cantidad}}" required></label>
+            <label>Cantidad<span class="con-unidad"><input name="cantidad" type="number" min="{{#if necesidad.minimo}}{{necesidad.minimo}}{{else}}1{{/if}}" value="{{necesidad.cantidad}}" required><output id="unidad"></output></span></label>
         </div>
         <label>Descripción breve<input name="descripcion" placeholder="Ej: reposición de bancos tras la inundación" value="{{necesidad.descripcion}}"></label>
         <div class="f2">
-            <label>Desde<input name="fechaInicio" type="date"></label>
+            <label>Desde<input name="fechaInicio" type="date" value="{{necesidad.fechaInicio}}" required></label>
             <label class="solo-recurrente">Período
                 <select name="periodo">
                     <option value="SEMANAL" {{#if (eq necesidad.periodo "SEMANAL")}}selected{{/if}}>Semanal</option>
@@ -44,6 +48,14 @@
             <button class="btn" type="submit">Guardar necesidad</button>
         </div>
     </form>
+
+    {{!-- La unidad la define la subcategoría y se muestra pegada a la cantidad --}}
+    <script>
+        const subcategoria = document.querySelector("select[name=subcategoria]");
+        const mostrarUnidad = () => document.getElementById("unidad").value = subcategoria.selectedOptions[0].dataset.unidad;
+        subcategoria.onchange = mostrarUnidad;
+        mostrarUnidad();
+    </script>
 {{/partial}}
 
 {{> layout}}

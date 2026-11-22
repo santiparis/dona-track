@@ -13,10 +13,7 @@ import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.NotificacionRepository;
-import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
-import donaciones.retrofit_client.LogisticaAPICalls;
-import donaciones.retrofit_client.RetrofitConfig;
 import donaciones.web.Router;
 import donaciones.web.SesionUsuario;
 import donaciones.repository.UsuarioRepository;
@@ -56,8 +53,7 @@ public class Main {
         System.getenv("AZURE_STORAGE_CONTAINER_URL"), System.getenv("AZURE_STORAGE_SAS"));
     DonacionController controller = new DonacionController(donacionesRepository, personasRepository,
         administradorasRepo, notificador, logisticaGrpcClient, fotosRecepcion);
-    DonanteController donanteController = new DonanteController(personasRepository);
-    IntegracionLogisticaController integracionLogisticaController = new IntegracionLogisticaController();
+    DonanteController donanteController = new DonanteController(personasRepository, notificador);
     SugerenciaAsignacionRepository sugerenciasRepository = new SugerenciaAsignacionRepository();
 
     EntidadesBeneficiariasController entidadesController = new EntidadesBeneficiariasController(entidadRepo);

@@ -4,7 +4,10 @@
         <p class="muted">Si el correo ya existe se actualiza el donante; si no, se le crea un usuario.</p>
     </div>
 
-    <form class="card" action="/admin/importacion" method="post" enctype="multipart/form-data">
+    {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
+
+    <form class="card" action="/admin/importacion" method="post" enctype="multipart/form-data"
+          onsubmit="this.querySelector('.importando').hidden = false; this.querySelector('button').disabled = true">
         <div class="carga-archivo">
             <label class="subtitulo">Elegí el archivo CSV
                 <input type="file" name="archivo" accept=".csv,text/csv" required>
@@ -13,6 +16,7 @@
         </div>
         <div class="row acciones">
             <button class="btn" type="submit">Importar</button>
+            <p class="importando muted" hidden>Importando…</p>
         </div>
     </form>
 
@@ -40,26 +44,12 @@
 
     {{#with resultado}}
         <section class="card" aria-live="polite">
-            <div class="titulo-con-chip">
-                <h2>Resultado de la importación</h2>
-                <span class="muted">{{fecha}}</span>
-            </div>
+            <h2>Resultado de la importación</h2>
             <div class="estadisticas">
                 <div class="estadistica"><span class="muted">Filas leídas</span><strong>{{leidas}}</strong></div>
                 <div class="estadistica"><span class="muted">Usuarios creados</span><strong>{{creados}}</strong></div>
                 <div class="estadistica"><span class="muted">Actualizados</span><strong>{{actualizados}}</strong></div>
-                <div class="estadistica"><span class="muted">Con error</span><strong>{{conError}}</strong></div>
             </div>
-            {{#if errores}}
-                <details>
-                    <summary>Ver filas con error</summary>
-                    <ul class="historial">
-                        {{#each errores}}
-                            <li>{{this}}</li>
-                        {{/each}}
-                    </ul>
-                </details>
-            {{/if}}
         </section>
     {{/with}}
 {{/partial}}
