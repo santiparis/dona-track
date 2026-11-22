@@ -158,6 +158,6 @@ class DonacionControllerTest implements SimplePersistenceTest {
 
     private DonacionRequestDTO dto(Long idDonante, String subcategoria) {
         return new DonacionRequestDTO(idDonante, "desc",
-                List.of(new BienDTO(false, false, subcategoria, 5, "kg", "descripción", null, null, null)));
+                List.of(new BienDTO(false, false, subcategoria, 5, "descripción", null, null, null)));
     }
 }

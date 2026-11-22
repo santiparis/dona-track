@@ -108,7 +108,7 @@ public class Seed implements WithSimplePersistenceUnit {
         List.of(correoComedor), correoComedor);
     Necesidad fideosComedor = new Necesidad(null,
         true, LocalDate.now(), Periodo.SEMANAL, Map.of(Subcategoria.FIDEOS, 100));
-    fideosComedor.registrarSuplido(new Bien(Subcategoria.FIDEOS, 60, "paquetes", null, null, null, null));
+    fideosComedor.registrarSuplido(new Bien(Subcategoria.FIDEOS, 60, "kg", null, null, null, null));
     comedor.registrarNecesidad(fideosComedor);
 
     Contacto correoTutorias = new ContactoPorEmail("tutoriasbarrionorte@gmail.com");
@@ -146,7 +146,7 @@ public class Seed implements WithSimplePersistenceUnit {
     // Donaciones en todos los estados
     LocalDate hoy = LocalDate.now();
 
-    Donacion fideosPastas = new Donacion(pastas, new Bien(Subcategoria.FIDEOS, 100, "paquetes", "Fideos tirabuzón 500 g", null, null, null));
+    Donacion fideosPastas = new Donacion(pastas, new Bien(Subcategoria.FIDEOS, 100, "kg", "Fideos tirabuzón 500 g", null, null, null));
     persist(fideosPastas);
     persist(new Donacion(pastas, new Bien(Subcategoria.LECHE, 30, "litros", "Leche entera larga vida", null, null, hoy.plusDays(3))));
     persist(new Donacion(ana, new Bien(Subcategoria.LECHE, 20, "litros", "Leche descremada", null, null, hoy.plusMonths(2))));
@@ -187,13 +187,13 @@ public class Seed implements WithSimplePersistenceUnit {
     sillas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     persist(sillas);
 
-    Donacion fideosEnTraslado = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 100, "paquetes", "Fideos mostachol 500 g", null, null, null));
+    Donacion fideosEnTraslado = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 100, "kg", "Fideos mostachol 500 g", null, null, null));
     fideosEnTraslado.asignarA(comedor);
     fideosEnTraslado.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     fideosEnTraslado.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     persist(fideosEnTraslado);
 
-    Donacion fideosEntregados = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 40, "paquetes", "Fideos spaghetti", null, null, null));
+    Donacion fideosEntregados = new Donacion(ana, new Bien(Subcategoria.FIDEOS, 40, "kg", "Fideos spaghetti", null, null, null));
     fideosEntregados.asignarA(comedor);
     fideosEntregados.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     fideosEntregados.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);

@@ -38,21 +38,20 @@
         {{!-- Los campos del bien no tienen name: no viajan en el submit, los copia el JS a la fila de la tabla --}}
         <fieldset id="bien" hidden>
             <legend id="bien-titulo">Nuevo bien</legend>
-            <div class="f3">
+            <div class="f2">
                 <label>Subcategoría
                     <select id="bien-subcategoria">
                         <option value="">Elegí una subcategoría</option>
                         {{#each categorias}}
                             <optgroup label="{{texto}}">
                                 {{#each subcategorias}}
-                                    <option value="{{valor}}" {{#if requiereEstado}}data-estado="si" {{/if}} {{#if requiereVencimiento}}data-vence="si"{{/if}}>{{texto}}</option>
+                                    <option value="{{valor}}" {{#if requiereEstado}}data-estado="si" {{/if}} {{#if requiereVencimiento}}data-vence="si"{{/if}} data-unidad="{{unidad}}">{{texto}}</option>
                                 {{/each}}
                             </optgroup>
                         {{/each}}
                     </select>
                 </label>
-                <label>Cantidad<input id="bien-cantidad" type="number" min="1"></label>
-                <label>Unidad<input id="bien-unidad" placeholder="unidades, kg…"></label>
+                <label>Cantidad<span class="con-unidad"><input id="bien-cantidad" type="number" min="1"><output id="bien-unidad"></output></span></label>
             </div>
             <div class="f3">
                 <label>Descripción<input id="bien-descripcion" placeholder="Ej: sillas de oficina"></label>

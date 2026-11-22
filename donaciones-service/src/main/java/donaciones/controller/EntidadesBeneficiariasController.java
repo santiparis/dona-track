@@ -268,7 +268,7 @@ public class EntidadesBeneficiariasController {
     for (Necesidad necesidad : entidad.getNecesidades()) {
       necesidad.getCantidadesRequeridas().forEach((subcategoria, requerido) -> {
         int suplido = necesidad.getCantidadesSuplidas().getOrDefault(subcategoria, 0);
-        String detalle = suplido + " de " + requerido;
+        String detalle = suplido + " de " + requerido + " " + subcategoria.unidad();
         if (necesidad.getPeriodo() == Periodo.SEMANAL) {
           detalle += " esta semana";
         } else if (necesidad.getPeriodo() == Periodo.MENSUAL) {
@@ -385,7 +385,7 @@ public class EntidadesBeneficiariasController {
         Map.entry("tipo", recurrente ? "RECURRENTE" : "EXTRAORDINARIA"),
         Map.entry("tipoTexto", recurrente ? "Recurrente" : "Extraordinaria"),
         Map.entry("periodo", Objects.toString(necesidad.getPeriodo(), "")),
-        Map.entry("avance", suplida + " / " + cantidad),
+        Map.entry("avance", suplida + " / " + cantidad + " " + subcategoria.unidad()),
         Map.entry("porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0)),
         // Para el formulario de edición: la fecha cargada y la cantidad mínima (no menos de lo ya recibido)
         Map.entry("fechaInicio", Objects.toString(necesidad.getFechaInicio(), "")),
@@ -424,7 +424,7 @@ public class EntidadesBeneficiariasController {
             "texto", c.nombre(),
             "subcategorias", Arrays.stream(Subcategoria.values())
                 .filter(s -> s.getCategoria() == c)
-                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre(), "unidad", s.unidad()))
                 .toList()))
         .toList());
     return model;

@@ -13,7 +13,7 @@ public class DatosMock {
         Map.of("entidad", "Escuela Rural N°10", "bien", "Bancos", "cantidad", "30 unidades", "fecha", "12/10/2026",
             "latitud", -34.4705, "longitud", -59.4890,
             "foto", commons + "e/e9/Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg/960px-Classroom_-_Basic_Desks_-_Loxton_Historical_Village_%282020-10-22_09.30.20_by_Michael_Coghlan%29.jpg"),
-        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Fideos", "cantidad", "100 paquetes", "fecha", "08/10/2026",
+        Map.of("entidad", "Comedor Escobar Sonrisas", "bien", "Fideos", "cantidad", "100 kg", "fecha", "08/10/2026",
             "latitud", -34.3467, "longitud", -58.7920,
             "foto", commons + "2/26/Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg/960px-Pasta_products_from_the_Albert_Heijn%2C_Winschoten_%282018%29.jpg"),
         Map.of("entidad", "Escuela Rural N°10", "bien", "Sillas", "cantidad", "30 unidades", "fecha", "05/10/2026",
@@ -28,7 +28,7 @@ public class DatosMock {
         Map.of("entidad", "Hogar Escuela Bariloche (Río Negro)", "bien", "Camperas", "cantidad", "40 unidades", "fecha", "22/09/2026",
             "latitud", -41.1335, "longitud", -71.3103,
             "foto", commons + "e/e9/Blazer_Jackets_on_Rack_%28Unsplash%29.jpg/960px-Blazer_Jackets_on_Rack_%28Unsplash%29.jpg"),
-        Map.of("entidad", "Comedor Los Changuitos (Salta)", "bien", "Fideos", "cantidad", "80 paquetes", "fecha", "18/09/2026",
+        Map.of("entidad", "Comedor Los Changuitos (Salta)", "bien", "Fideos", "cantidad", "80 kg", "fecha", "18/09/2026",
             "latitud", -24.7883, "longitud", -65.4106,
             "foto", "https://upload.wikimedia.org/wikipedia/commons/a/a8/Pates_pas_fraiches.jpg")
     );

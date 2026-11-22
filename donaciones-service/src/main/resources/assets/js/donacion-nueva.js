@@ -1,7 +1,7 @@
 // Registrar donación: los bienes se cargan de a uno en el recuadro "bien" y se suman a la tabla.
 // Cada fila lleva sus datos en inputs ocultos (bienes[0].cantidad, ...): el submit del form manda todos juntos.
 const bienes = [];
-const datos = ["subcategoria", "cantidad", "unidad", "descripcion", "estado", "vencimiento"];
+const datos = ["subcategoria", "cantidad", "descripcion", "estado", "vencimiento"];
 let editando = null; // posición del bien que se está editando; null si se carga uno nuevo
 
 const campo = id => document.getElementById(id);
@@ -19,6 +19,7 @@ function cerrar() {
     campo("bien-error").hidden = true;
     campo("bien").hidden = true;
     editando = null;
+    mostrarUnidad();
 }
 
 function validar(bien, opcion) {
@@ -39,7 +40,7 @@ function agregarBien() {
     campo("bien-error").hidden = !error;
     if (error) return;
 
-    bien.unidad = bien.unidad || "unidades";
+    bien.unidad = opcion.dataset.unidad;
     if (!opcion.dataset.estado) bien.estado = "";
     if (!opcion.dataset.vence) bien.vencimiento = "";
     if (editando === null) bienes.push(bien);
@@ -51,6 +52,7 @@ function agregarBien() {
 function editarBien(posicion) {
     editando = posicion;
     datos.forEach(dato => campo("bien-" + dato).value = bienes[posicion][dato]);
+    mostrarUnidad();
     abrir("Editar bien " + (posicion + 1));
 }
 
@@ -94,3 +96,10 @@ campo("bien").onkeydown = evento => {
         agregarBien();
     }
 };
+
+// La unidad la define la subcategoría: se muestra al lado de la cantidad
+function mostrarUnidad() {
+    campo("bien-unidad").value = campo("bien-subcategoria").selectedOptions[0].dataset.unidad || "";
+}
+
+campo("bien-subcategoria").onchange = mostrarUnidad;

@@ -317,7 +317,7 @@ public class DonacionController {
           return new Bien(
               subcat,
               bienDto.cantidad(),
-              bienDto.unidad(),
+              subcat.unidad(),
               bienDto.descripcion(),
               bienDto.foto(),
               estado,
@@ -453,7 +453,8 @@ public class DonacionController {
             "subcategorias", Arrays.stream(Subcategoria.values())
                 .filter(s -> s.getCategoria() == c)
                 .map(s -> Map.of("valor", s.name(), "texto", s.nombre(),
-                    "requiereEstado", s.requiereEstado(), "requiereVencimiento", s.requiereVencimiento()))
+                    "requiereEstado", s.requiereEstado(), "requiereVencimiento", s.requiereVencimiento(),
+                    "unidad", s.unidad()))
                 .toList()))
         .toList());
     return model;
@@ -470,7 +471,6 @@ public class DonacionController {
       bienes.add(new BienDTO(false, false,
           ctx.formParam(fila + "subcategoria"),
           Integer.valueOf(ctx.formParam(fila + "cantidad")),
-          ctx.formParam(fila + "unidad"),
           ctx.formParam(fila + "descripcion"),
           vacioANull(ctx.formParam(fila + "estado")),
           vacioANull(ctx.formParam(fila + "vencimiento")),

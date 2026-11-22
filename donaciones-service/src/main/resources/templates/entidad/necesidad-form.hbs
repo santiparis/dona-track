@@ -24,13 +24,13 @@
                     {{#each categorias}}
                         <optgroup label="{{texto}}">
                             {{#each subcategorias}}
-                                <option value="{{valor}}" {{#if (eq valor ../../necesidad.subcategoria)}}selected{{/if}}>{{texto}}</option>
+                                <option value="{{valor}}" data-unidad="{{unidad}}" {{#if (eq valor ../../necesidad.subcategoria)}}selected{{/if}}>{{texto}}</option>
                             {{/each}}
                         </optgroup>
                     {{/each}}
                 </select>
             </label>
-            <label>Cantidad<input name="cantidad" type="number" min="{{#if necesidad.minimo}}{{necesidad.minimo}}{{else}}1{{/if}}" value="{{necesidad.cantidad}}" required></label>
+            <label>Cantidad<span class="con-unidad"><input name="cantidad" type="number" min="{{#if necesidad.minimo}}{{necesidad.minimo}}{{else}}1{{/if}}" value="{{necesidad.cantidad}}" required><output id="unidad"></output></span></label>
         </div>
         <label>Descripción breve<input name="descripcion" placeholder="Ej: reposición de bancos tras la inundación" value="{{necesidad.descripcion}}"></label>
         <div class="f2">
@@ -48,6 +48,14 @@
             <button class="btn" type="submit">Guardar necesidad</button>
         </div>
     </form>
+
+    {{!-- La unidad la define la subcategoría y se muestra pegada a la cantidad --}}
+    <script>
+        const subcategoria = document.querySelector("select[name=subcategoria]");
+        const mostrarUnidad = () => document.getElementById("unidad").value = subcategoria.selectedOptions[0].dataset.unidad;
+        subcategoria.onchange = mostrarUnidad;
+        mostrarUnidad();
+    </script>
 {{/partial}}
 
 {{> layout}}
