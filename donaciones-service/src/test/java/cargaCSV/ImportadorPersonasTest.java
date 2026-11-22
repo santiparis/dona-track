@@ -32,12 +32,12 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
     @Test
     void procesarArchivoInvalidoLanzaExcepcionDeMapeo() {
         assertThrows(MapeoCsvEnPersonaException.class,
-                () -> importador.importarPersonasDesdeCSV("donantes_invalidos.csv"));
+                () -> importador.importarPersonasDesdeCSV(getClass().getClassLoader().getResourceAsStream("donantes_invalidos.csv")));
     }
 
     @Test
     void importarPersonasHumanasLasPersisteEnHsqldb() {
-        importador.importarPersonasDesdeCSV("donantes_solo_persona_humana.csv");
+        importador.importarPersonasDesdeCSV(getClass().getClassLoader().getResourceAsStream("donantes_solo_persona_humana.csv"));
 
         assertEquals(6, repositorioPersonas.obtenerTodas().size());
         assertTrue(repositorioPersonas.buscarPorDocumento("28456905").isPresent());
@@ -45,7 +45,7 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
 
     @Test
     void importarPersonasJuridicasLasPersisteEnHsqldb() {
-        importador.importarPersonasDesdeCSV("donantes_solo_persona_juridica.csv");
+        importador.importarPersonasDesdeCSV(getClass().getClassLoader().getResourceAsStream("donantes_solo_persona_juridica.csv"));
 
         assertEquals(6, repositorioPersonas.obtenerTodas().size());
         assertTrue(repositorioPersonas.buscarPorDocumento("30-52235350-3").isPresent());
@@ -59,7 +59,7 @@ class ImportadorPersonasTest implements SimplePersistenceTest {
                 "Av. Siempre Viva 742", List.of(contacto), contacto, new Usuario("ana_viejo", "passVieja", Rol.DONANTE));
         repositorioPersonas.agregar(existente);
 
-        importador.importarPersonasDesdeCSV("donantes_solo_persona_humana.csv");
+        importador.importarPersonasDesdeCSV(getClass().getClassLoader().getResourceAsStream("donantes_solo_persona_humana.csv"));
 
         List<Persona> personas = repositorioPersonas.obtenerTodas();
         assertEquals(6, personas.size());

@@ -74,12 +74,4 @@ public class DatosMock {
             "estado", "NO_DISPONIBLE", "estadoTexto", "No disponible")
     );
   }
-
-  // Resumen de una importación de donantes por CSV (hoy ImportadorPersonas no devuelve resumen: es solo para la vista)
-  public static Map<String, Object> resultadoImportacion() {
-    return Map.of(
-        "fecha", "Hoy 10:15",
-        "leidas", "20.000", "creados", "18.450", "actualizados", "1.520", "conError", "30",
-        "errores", List.of("Fila 1.204: falta el correo electrónico", "Fila 7.881: TipoDoc inválido"));
-  }
 }

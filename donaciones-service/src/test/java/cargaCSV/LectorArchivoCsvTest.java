@@ -5,6 +5,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,8 +16,8 @@ public class LectorArchivoCsvTest {
 
     @BeforeAll
     static void setUp() {
-        String pathCsv = "donantes_import_20000_UTF8_BOM.csv";
-        LectorArchivoCsv lectorArchivoCsv = new LectorArchivoCsv(pathCsv);
+        InputStream archivo = LectorArchivoCsvTest.class.getClassLoader().getResourceAsStream("donantes_import_20000_UTF8_BOM.csv");
+        LectorArchivoCsv lectorArchivoCsv = new LectorArchivoCsv(archivo);
         registros = lectorArchivoCsv.leerRegistros();
     }
 

@@ -8,22 +8,26 @@ import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.donante.Usuario;
 import donaciones.domain.donante.Rol;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
 import org.apache.commons.csv.CSVRecord;
 
 public class ImportadorPersonas {
+    private static final int TANDA_DE_EMAILS = 1000;
     private final RepositorioPersonas repositorioPersonas;
 
     public ImportadorPersonas(RepositorioPersonas repositorioPersonas) {
         this.repositorioPersonas = repositorioPersonas;
     }
 
-    public void importarPersonasDesdeCSV(String pathArchivo) {
-        LectorArchivoCsv lector = new LectorArchivoCsv(pathArchivo);
+    public ResultadoImportacion importarPersonasDesdeCSV(InputStream archivo) {
+        LectorArchivoCsv lector = new LectorArchivoCsv(archivo);
         List<CSVRecord> registros = lector.leerRegistros();
 
         List<Persona> donantesPotenciales = registros.stream()
@@ -31,15 +35,30 @@ public class ImportadorPersonas {
                 .flatMap(Optional::stream)
                 .toList();
 
+        Map<String, Persona> existentes = buscarExistentes(donantesPotenciales);
+        int creados = 0;
         for (Persona personaPotencial : donantesPotenciales) {
-            Optional<Persona> personaExistenteOpt = repositorioPersonas.buscarPorEmail(personaPotencial.getEmail());
-            if (personaExistenteOpt.isPresent()) {
-                Persona personaAActualizar = personaExistenteOpt.get();
-                personaAActualizar.actualizarseDesde(personaPotencial);
+            Persona personaExistente = existentes.get(personaPotencial.getEmail());
+            if (personaExistente != null) {
+                personaExistente.actualizarseDesde(personaPotencial);
             } else {
                 repositorioPersonas.agregar(personaPotencial);
+                existentes.put(personaPotencial.getEmail(), personaPotencial); // mail repetido en el archivo
+                creados++;
             }
         }
+        return new ResultadoImportacion(registros.size(), creados, donantesPotenciales.size() - creados);
+    }
+
+    // Una consulta cada TANDA_DE_EMAILS mails, en vez de una por fila
+    private Map<String, Persona> buscarExistentes(List<Persona> personas) {
+        List<String> emails = personas.stream().map(Persona::getEmail).toList();
+        Map<String, Persona> existentes = new HashMap<>();
+        for (int desde = 0; desde < emails.size(); desde += TANDA_DE_EMAILS) {
+            List<String> tanda = emails.subList(desde, Math.min(desde + TANDA_DE_EMAILS, emails.size()));
+            repositorioPersonas.buscarPorEmails(tanda).forEach(persona -> existentes.put(persona.getEmail(), persona));
+        }
+        return existentes;
     }
 
     private Optional<Persona> mapearPersona(CSVRecord record) {
