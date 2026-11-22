@@ -1,19 +1,19 @@
 package donaciones.domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "registro_cambio_estado")
-public class RegistroCambioEstado<T> {
+public class RegistroCambioEstado {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "registro_id") private Long id;
     @Enumerated(EnumType.STRING) @Column(name = "estado_anterior") private EstadoDonacion estadoAnterior;
     @Enumerated(EnumType.STRING) @Column(name = "estado_nuevo", nullable = false) private EstadoDonacion estadoNuevo;
-    @Temporal(TemporalType.TIMESTAMP) private Date fecha;
+    private LocalDateTime fecha;
     private String justificacion;
 
     protected RegistroCambioEstado() { }
-    public RegistroCambioEstado(EstadoDonacion estadoAnterior, EstadoDonacion estadoNuevo, Date fecha, String justificacion) {
+    public RegistroCambioEstado(EstadoDonacion estadoAnterior, EstadoDonacion estadoNuevo, LocalDateTime fecha, String justificacion) {
         this.estadoAnterior = estadoAnterior;
         this.estadoNuevo = estadoNuevo;
         this.fecha = fecha;
@@ -22,6 +22,6 @@ public class RegistroCambioEstado<T> {
     public Long getId() { return id; }
     public EstadoDonacion estadoAnterior() { return estadoAnterior; }
     public EstadoDonacion estadoNuevo() { return estadoNuevo; }
-    public Date fecha() { return fecha; }
+    public LocalDateTime fecha() { return fecha; }
     public String justificacion() { return justificacion; }
 }

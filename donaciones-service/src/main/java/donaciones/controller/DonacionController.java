@@ -266,11 +266,11 @@ public class DonacionController {
     );
   }
 
-  private static RegistroCambioEstadoDTO toRegistroDTO(RegistroCambioEstado<?> registro) {
+  private static RegistroCambioEstadoDTO toRegistroDTO(RegistroCambioEstado registro) {
     return new RegistroCambioEstadoDTO(
         registro.estadoAnterior() == null ? null : registro.estadoAnterior().toString(),
         registro.estadoNuevo() == null ? null : registro.estadoNuevo().toString(),
-        registro.fecha() == null ? null : registro.fecha().toInstant().toString(),
+        registro.fecha() == null ? null : registro.fecha().toString(),
         registro.justificacion()
     );
   }
@@ -780,8 +780,8 @@ public class DonacionController {
     fila.put("cantidad", (bien.getCantidad() + " " + Objects.toString(bien.getUnidad(), "")).trim());
     fila.put("fecha", Objects.toString(donacion.getFecha(), ""));
     fila.put("actualizado", donacion.getHistorialEstados().stream()
-        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.util.Date::compareTo)
-        .map(java.util.Date::toString).orElse(fila.get("fecha")));
+        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.time.LocalDateTime::compareTo)
+        .map(java.time.LocalDateTime::toString).orElse(fila.get("fecha")));
     fila.put("estado", donacion.getEstado().name());
     if (!donacion.getFotosRecepcion().isEmpty()) fila.put("tieneFotos", "true");
     fila.put("estadoTexto", textoEstado(donacion.getEstado()));
