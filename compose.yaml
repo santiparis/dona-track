@@ -51,6 +51,12 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    # Claves de SendGrid y Twilio (fuera de git); sin los archivos, el envío queda simulado
+    env_file:
+      - path: sendgrid.env
+        required: false
+      - path: twilio.env
+        required: false
 
   logistica-api:
     build:

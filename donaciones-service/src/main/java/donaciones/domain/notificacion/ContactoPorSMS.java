@@ -25,7 +25,7 @@ public class ContactoPorSMS extends Contacto {
         String fromNumber = System.getenv("TWILIO_PHONE_NUMBER");
 
         // Modo simulado: sin credenciales se registra el envío y se retorna éxito, para no
-        // consumir cuota externa ni exigir configuración al correr mvn test o la importación masiva.
+        // consumir cuota externa ni exigir configuración al correr mvn test.
         if (estaSinConfigurar(accountSid) || estaSinConfigurar(authToken) || estaSinConfigurar(fromNumber)) {
             logger.info("[SIMULADO] SMS a {}: {}", getValor(), mensaje);
             return true;
