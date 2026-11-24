@@ -231,9 +231,6 @@ public class DonanteController {
     if (!ctx.formParam("telefono").isBlank()) {
       contactos.add(new ContactoPorSMS(ctx.formParam("telefono")));
     }
-    if (!ctx.formParam("whatsapp").isBlank()) {
-      contactos.add(new ContactoPorWhatsApp(ctx.formParam("whatsapp")));
-    }
     Contacto medioPredeterminado = contactos.stream()
         .filter(contacto -> contacto.getEstrategia().contains(ctx.formParam("medio")))
         .findFirst()

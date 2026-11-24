@@ -8,7 +8,7 @@
             <label>Apellido<input name="apellido" value="{{apellido}}" maxlength="255" required></label>
             <label>Tipo de documento<select name="tipoDoc"><option value="DNI">DNI</option></select></label>
             <label>Número de documento<input name="documento" value="{{documento}}" maxlength="255" pattern="\d{7,8}" title="7 u 8 números, sin puntos. Ej: 12345678" required></label>
-            <label>Edad<input name="edad" type="number" min="0" max="150" value="{{edad}}"></label>
+            <label>Edad<input name="edad" type="number" min="0" max="100" value="{{edad}}"></label>
             <label>Género
                 <select name="genero">
                     <option value="FEMENINO" {{#if (eq genero "FEMENINO")}}selected{{/if}}>Femenino</option>
@@ -50,12 +50,10 @@
     <div class="f2">
         <label>Correo electrónico<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
         <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
-        <label>WhatsApp (opcional)<input name="whatsapp" type="tel" value="{{whatsapp}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
     </div>
     <p class="subtitulo">Medio predeterminado para las notificaciones</p>
     <div class="row">
         <label class="radio"><input type="radio" name="medio" value="EMAIL" {{#unless medio}}checked{{/unless}}{{#if (eq medio "EMAIL")}}checked{{/if}}>Correo</label>
         <label class="radio"><input type="radio" name="medio" value="SMS" {{#if (eq medio "SMS")}}checked{{/if}}>SMS</label>
-        <label class="radio"><input type="radio" name="medio" value="WHATSAPP" {{#if (eq medio "WHATSAPP")}}checked{{/if}}>WhatsApp</label>
     </div>
 </fieldset>
