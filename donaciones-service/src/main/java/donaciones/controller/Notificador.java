@@ -8,7 +8,6 @@ import donaciones.domain.notificacion.Notificacion;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class Notificador {
@@ -37,9 +36,16 @@ public class Notificador {
     donaciones.forEach(donacion -> this.inicioDeTraslado(donacion, urlMapa));
   }
 
-  public void entregaConfirmada(Donacion donacion, String nombreCamion) {
-    String mensaje = "Entrega realizada. Fecha/Hora: " + LocalDate.now()
-        + " | Camión: " + nombreCamion;
+  // comprobante: lo arma logística con la entrega, la fecha y hora y la patente del camión
+  public void entregaConfirmada(Donacion donacion, String comprobante) {
+    String mensaje = "¡La donación llegó a destino!\n\n"
+        + "Qué se entregó: " + donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad()
+        + " de " + donacion.getBien().getSubcategoria().nombre() + "\n"
+        + "Donado por: " + donacion.getDonante().getNombre() + "\n"
+        + "Para: " + donacion.getEntidadBeneficiaria().getRazonSocial() + "\n"
+        + "Dirección: " + donacion.getEntidadBeneficiaria().getDireccion() + "\n"
+        + "Comprobante: " + comprobante + "\n\n"
+        + "¡Gracias por hacer posible esta ayuda!";
     this.avisarADonanteYEntidad(donacion, mensaje);
   }
 

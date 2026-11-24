@@ -156,3 +156,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 
 /* Aviso de que la entidad tiene más necesidades que las que entran en la tarjeta */
 .mas-necesidades { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-principal); }
+
+/* Los avisos traen saltos de línea */
+.notificacion-texto p { white-space: pre-line; }
