@@ -5,6 +5,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,8 +16,8 @@ public class LectorArchivoCsvTest {
 
     @BeforeAll
     static void setUp() {
-        String pathCsv = "donantes_import_20000_UTF8_BOM.csv";
-        LectorArchivoCsv lectorArchivoCsv = new LectorArchivoCsv(pathCsv);
+        InputStream archivo = LectorArchivoCsvTest.class.getClassLoader().getResourceAsStream("donantes_import_20000_UTF8_BOM.csv");
+        LectorArchivoCsv lectorArchivoCsv = new LectorArchivoCsv(archivo);
         registros = lectorArchivoCsv.leerRegistros();
     }
 
@@ -34,7 +35,7 @@ public class LectorArchivoCsvTest {
         assertTrue(primerRegistro.isMapped("Email"), "Debería contener la columna 'Email'.");
         assertTrue(primerRegistro.isMapped("Teléfono"), "Debería contener la columna 'Teléfono'.");
         assertTrue(primerRegistro.isMapped("Nombre/Razón Social"), "Debería contener la columna 'Nombre/Razón Social'.");
-        assertTrue(primerRegistro.isMapped("Donante.TipoDoc"), "Debería contener la columna 'Donante.TipoDoc'.");
+        assertTrue(primerRegistro.isMapped("TipoDoc"), "Debería contener la columna 'TipoDoc'.");
         assertTrue(primerRegistro.isMapped("Documento"), "Debería contener la columna 'Documento'.");
     }
 }

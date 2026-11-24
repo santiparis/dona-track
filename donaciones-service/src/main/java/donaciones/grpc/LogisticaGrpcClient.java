@@ -56,10 +56,11 @@ public class LogisticaGrpcClient {
     return blockingStub.obtenerUbicacionCamiones(request);
   }
 
-  public ReportarEntregaResponse reportarEntrega(Long entregaId, boolean exito) {
+  public ReportarEntregaResponse reportarEntrega(Long entregaId, boolean exito, String justificacion) {
     ReportarEntregaRequest request = ReportarEntregaRequest.newBuilder()
         .setEntregaId(entregaId)
         .setExito(exito)
+        .setJustificacion(justificacion != null ? justificacion : "")
         .build();
     return blockingStub.withDeadlineAfter(10, java.util.concurrent.TimeUnit.SECONDS).reportarEntrega(request);
   }

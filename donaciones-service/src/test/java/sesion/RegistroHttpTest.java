@@ -295,7 +295,7 @@ class RegistroHttpTest {
         var salida = new java.io.ByteArrayOutputStream();
         javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_RGB), "png", salida);
         byte[] png = salida.toByteArray();
-        org.mockito.Mockito.when(logistica.reportarEntrega(ids[0], true))
+        org.mockito.Mockito.when(logistica.reportarEntrega(ids[0], true, null))
                 .thenReturn(ReportarEntregaResponse.getDefaultInstance(),
                         ReportarEntregaResponse.newBuilder().setExito(true).build());
         assertEquals(502, subirFoto(recepcion, png).statusCode());

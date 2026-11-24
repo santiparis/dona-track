@@ -8,7 +8,6 @@ import donaciones.domain.algoritmos.OrganizadorAsignaciones;
 import donaciones.domain.algoritmos.PrioridadSubAtendidos;
 import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.domain.donante.*;
-import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.dto.AsignacionRequestDTO;
 import donaciones.grpc.LogisticaGrpcClient;

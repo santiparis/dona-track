@@ -3,11 +3,11 @@ package donaciones.domain;
 import donaciones.domain.donante.Persona;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.*;
 
 @Entity
@@ -18,7 +18,7 @@ public class Donacion {
     @ManyToOne(cascade = CascadeType.PERSIST) @JoinColumn(name = "entidad_id") private EntidadBeneficiaria entidadBeneficiaria;
     @OneToOne(optional = false, cascade = CascadeType.ALL) @JoinColumn(name = "bien_id") private Bien bien;
     @Enumerated(EnumType.STRING) @Column(name = "donacion_estado", nullable = false) private EstadoDonacion estado = EstadoDonacion.EN_DEPOSITO;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "donacion_id") private List<RegistroCambioEstado<EstadoDonacion>> historialEstados = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) @JoinColumn(name = "donacion_id") private List<RegistroCambioEstado> historialEstados = new ArrayList<>();
     private LocalDate fecha;
     @ElementCollection
     @CollectionTable(name = "foto_recepcion", joinColumns = @JoinColumn(name = "donacion_id"))
@@ -44,7 +44,7 @@ public class Donacion {
         this.donante = donante;
         this.bien = bien;
         this.fecha = LocalDate.now();
-        this.historialEstados.add(new RegistroCambioEstado<>(null, this.estado, new Date(), null));
+        this.historialEstados.add(new RegistroCambioEstado(null, this.estado, LocalDateTime.now(), null));
     }
 
     public void actualizarDatos(Persona donante, Bien bien) {
@@ -63,7 +63,7 @@ public class Donacion {
 
     public void cambiarEstado(EstadoDonacion nuevo, String justificacion) {
         if (this.estado != nuevo) {
-            this.historialEstados.add(new RegistroCambioEstado<>(this.estado, nuevo, new Date(), justificacion));
+            this.historialEstados.add(new RegistroCambioEstado(this.estado, nuevo, LocalDateTime.now(), justificacion));
         }
         this.estado = nuevo;
     }
@@ -76,7 +76,7 @@ public class Donacion {
         return this.estado;
     }
 
-    public List<RegistroCambioEstado<EstadoDonacion>> getHistorialEstados() {
+    public List<RegistroCambioEstado> getHistorialEstados() {
         return historialEstados;
     }
 

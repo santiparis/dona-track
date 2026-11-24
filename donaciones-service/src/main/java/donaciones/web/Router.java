@@ -85,6 +85,8 @@ public class Router {
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad(ctx)));
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad(ctx)));
+    app.get("/entidad/necesidades/nueva", ctx -> ctx.render("entidad/necesidad-form", entidadesController.formularioNecesidad(ctx)));
+    app.get("/entidad/donaciones/{id}/no-recibida", ctx -> ctx.render("entidad/no-recibida", donacionController.noRecibida(ctx)));
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
     app.post("/admin/donantes", donanteController::registrarDonante);

@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 public class DonacionController {
   private static final Logger logger = LoggerFactory.getLogger(DonacionController.class);
@@ -267,11 +266,11 @@ public class DonacionController {
     );
   }
 
-  private static RegistroCambioEstadoDTO toRegistroDTO(RegistroCambioEstado<?> registro) {
+  private static RegistroCambioEstadoDTO toRegistroDTO(RegistroCambioEstado registro) {
     return new RegistroCambioEstadoDTO(
         registro.estadoAnterior() == null ? null : registro.estadoAnterior().toString(),
         registro.estadoNuevo() == null ? null : registro.estadoNuevo().toString(),
-        registro.fecha() == null ? null : registro.fecha().toInstant().toString(),
+        registro.fecha() == null ? null : registro.fecha().toString(),
         registro.justificacion()
     );
   }
@@ -318,7 +317,7 @@ public class DonacionController {
           return new Bien(
               subcat,
               bienDto.cantidad(),
-              bienDto.unidad(),
+              subcat.unidad(),
               bienDto.descripcion(),
               bienDto.foto(),
               estado,
@@ -446,18 +445,16 @@ public class DonacionController {
               "email", d.getEmail())));
     }
 
-    // Paso 3: una fila por bien; "+ Agregar bien" recarga con ?filas=N+1 (sin JavaScript)
-    int cantidadFilas = ctx.queryParamAsClass("filas", Integer.class).getOrDefault(3);
-    model.put("filas", IntStream.rangeClosed(1, cantidadFilas)
-        .mapToObj(numero -> Map.of("indice", numero - 1, "numero", numero))
-        .toList());
-    model.put("masFilas", cantidadFilas + 1);
+    // Paso 2: los bienes se cargan de a uno en el navegador (donacion-nueva.js). Cada subcategoría avisa
+    // si pide estado (nuevo/usado) o vencimiento, para mostrar esos campos solo cuando hacen falta
     model.put("categorias", Arrays.stream(Categoria.values())
         .map(c -> Map.of(
             "texto", c.nombre(),
             "subcategorias", Arrays.stream(Subcategoria.values())
                 .filter(s -> s.getCategoria() == c)
-                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre(),
+                    "requiereEstado", s.requiereEstado(), "requiereVencimiento", s.requiereVencimiento(),
+                    "unidad", s.unidad()))
                 .toList()))
         .toList());
     return model;
@@ -474,7 +471,6 @@ public class DonacionController {
       bienes.add(new BienDTO(false, false,
           ctx.formParam(fila + "subcategoria"),
           Integer.valueOf(ctx.formParam(fila + "cantidad")),
-          ctx.formParam(fila + "unidad"),
           ctx.formParam(fila + "descripcion"),
           vacioANull(ctx.formParam(fila + "estado")),
           vacioANull(ctx.formParam(fila + "vencimiento")),
@@ -585,7 +581,7 @@ public class DonacionController {
             "cantidad", d.getBien().getCantidad(),
             "cambios", d.getHistorialEstados().stream()
                 .map(cambio -> Map.of(
-                    "fecha", Objects.toString(cambio.fecha(), ""),
+                    "fecha", cambio.fecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                     "descripcion", textoEstado(cambio.estadoNuevo()) + ": " + Objects.toString(cambio.justificacion(), "")))
                 .toList(),
             "fotos", enlacesFotos(d, "donante"))));
@@ -598,7 +594,7 @@ public class DonacionController {
     String estado = Objects.requireNonNullElse(ctx.queryParam("estado"), "");
 
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Donaciones asignadas");
+    model.put("titulo", "Donaciones asignadas a mi entidad");
     model.put("rol", "entidad");
     model.put("seccion", "donaciones");
 
@@ -625,7 +621,6 @@ public class DonacionController {
     model.put("donacion", donacionParaVista(donacion));
     model.put("fotos", enlacesFotos(donacion, "entidad"));
     model.put("puedeConfirmar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
-    model.put("storageDisponible", fotosRecepcion.configurado());
     return model;
   }
 
@@ -639,23 +634,25 @@ public class DonacionController {
       errorRecepcion(ctx, 409, "Solo podés confirmar donaciones en traslado.");
       return;
     }
-    if (!fotosRecepcion.configurado()) {
-      errorRecepcion(ctx, 503, "El almacenamiento de fotos no está disponible.");
-      return;
-    }
     if (ctx.req().getContentLengthLong() > 16L * 1024 * 1024) {
       errorRecepcion(ctx, 413, "La carga completa supera el límite de 16 MB.");
       return;
     }
-    List<FotosRecepcion.Foto> fotos;
+    List<FotosRecepcion.Foto> fotos = List.of();
     if (!ctx.isMultipartFormData()) {
       errorRecepcion(ctx, 400, "Adjuntá las fotos con el formulario de recepción.");
       return;
     }
     ctx.req().setAttribute("org.eclipse.jetty.multipartConfig", new jakarta.servlet.MultipartConfigElement(
         System.getProperty("java.io.tmpdir"), FotosRecepcion.MAX_BYTES, 16L * 1024 * 1024, 0));
+    // Las fotos son opcionales por ahora: sin fotos no hace falta el almacenamiento
+    var archivos = ctx.uploadedFiles("fotos").stream().filter(archivo -> archivo.size() > 0).toList();
+    if (!archivos.isEmpty() && !fotosRecepcion.configurado()) {
+      errorRecepcion(ctx, 503, "El almacenamiento de fotos no está disponible.");
+      return;
+    }
     try {
-      fotos = fotosRecepcion.validar(ctx.uploadedFiles("fotos"));
+      if (!archivos.isEmpty()) fotos = fotosRecepcion.validar(archivos);
     } catch (IllegalStateException e) {
       errorRecepcion(ctx, 413, "La carga supera el tamaño permitido.");
       return;
@@ -669,13 +666,20 @@ public class DonacionController {
         fotosRecepcion.guardar(foto);
         donacion.agregarFotoRecepcion(foto.id(), foto.tipo());
       }
-      donacion.cambiarEstado(EstadoDonacion.ENTREGADA, "Recepción confirmada por la entidad");
-      donacionesRepository.entityManager().flush();
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacion.getId(), true);
-      if (!response.getExito()) {
-        ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
-        return;
-      }
+      // El estado lo cambia logística (como en No la recibí); se le avisa después del commit para no quedar trabados con el lock
+      Long donacionId = donacion.getId();
+      String comentario = ctx.formParam("comentario");
+      TransaccionPorRequest.despuesDelCommit(() -> {
+        try {
+          ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true, comentario);
+          if (!response.getExito()) {
+            ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
+          }
+        } catch (RuntimeException e) {
+          logger.warn("Falló el aviso a logística de la recepción {} ({})", donacionId, e.getClass().getSimpleName());
+          ctx.status(502).result("No se pudo avisar a logística. Volvé a intentarlo.");
+        }
+      });
       ctx.redirect("/entidad/donaciones", HttpStatus.SEE_OTHER);
     } catch (RuntimeException e) {
       logger.warn("Falló la confirmación de recepción de la donación {} ({})",
@@ -736,7 +740,7 @@ public class DonacionController {
     try {
 
       // Simplemente notificamos a Logística por gRPC
-      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false);
+      ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, false, ctx.formParam("motivo"));
 
       if (!response.getExito()) {
         ctx.status(500).result("Error al notificar a logística: " + response.getMensaje());
@@ -774,10 +778,10 @@ public class DonacionController {
     fila.put("id", donacion.getId().toString());
     fila.put("bien", bien.getSubcategoria().nombre());
     fila.put("cantidad", (bien.getCantidad() + " " + Objects.toString(bien.getUnidad(), "")).trim());
-    fila.put("fecha", Objects.toString(donacion.getFecha(), ""));
+    fila.put("fecha", donacion.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     fila.put("actualizado", donacion.getHistorialEstados().stream()
-        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.util.Date::compareTo)
-        .map(java.util.Date::toString).orElse(fila.get("fecha")));
+        .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.time.LocalDateTime::compareTo)
+        .map(fecha -> fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).orElse(fila.get("fecha")));
     fila.put("estado", donacion.getEstado().name());
     if (!donacion.getFotosRecepcion().isEmpty()) fila.put("tieneFotos", "true");
     fila.put("estadoTexto", textoEstado(donacion.getEstado()));
@@ -799,6 +803,18 @@ public class DonacionController {
     model.put("seccion", "entregadas");
     // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
     model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    return model;
+  }
+
+  public Map<String, Object> noRecibida(Context ctx) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("titulo", "Informar entrega no recibida");
+    model.put("rol", "entidad");
+    model.put("seccion", "donaciones");
+
+    Donacion donacion = donacionDeLaEntidad(ctx);
+    model.put("donacion", donacionParaVista(donacion));
+    model.put("puedeInformar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
     return model;
   }
 }

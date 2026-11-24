@@ -75,3 +75,17 @@ Si falla la carga o Logística rechaza la confirmación, Donaciones revierte la 
 4. Iniciar sesión como la entidad destinataria, abrir «Confirmar recepción», adjuntar una foto y confirmar. Abrir «Ver fotos» y repetir desde el historial del donante. La misma URL debe quedar bloqueada para otra cuenta. Reiniciar Donaciones y comprobar que la foto siga disponible.
 
 La prueba automatizada usa HTTP y MySQL se sustituye por HSQLDB en memoria. Las respuestas de Blob Storage y Logística se simulan localmente. Se ejecuta con `mvn -pl donaciones-service "-Dtest=RegistroHttpTest" test`.
+
+## Menú del celular: cuenta arriba, Cerrar sesión abajo
+
+En el celular, el menú hamburguesa junta el menú del rol, los links públicos y la sesión. El nombre de la cuenta va arriba de todo, para que se vea enseguida con qué cuenta se está operando: es el encabezado de cuenta que propone Material Design para el menú lateral. «Cerrar sesión» va abajo de todo y separado del resto, porque se usa poco y no se puede deshacer: lejos de los links que se tocan seguido, se evita apretarlo sin querer. Es el mismo orden que usan apps conocidas como Gmail o Mercado Libre.
+
+Referencias: guía del *Navigation drawer* de Material Design 3 (m3.material.io), Human Interface Guidelines de Apple (navegación) y los artículos de Nielsen Norman Group sobre menús hamburguesa.
+
+## Registrar donación: un bien por vez, un solo envío
+
+La administradora carga los bienes de a uno: «+ Agregar bien» abre un recuadro con los datos de un bien y «Agregar a la lista» lo suma a una tabla, donde se puede editar o quitar. Así no hace falta mostrar filas vacías de entrada, que antes rompían el envío si quedaban sin completar, y la pantalla sirve igual para 1 bien o para 80.
+
+La donación se sigue registrando en una única operación, como pide el enunciado: la tabla no guarda nada en el servidor. Cada fila lleva sus datos en inputs ocultos (`bienes[0].subcategoria`, `bienes[0].cantidad`, ...) y «Registrar donación» es el submit normal del formulario, que manda todos los bienes juntos para que el sistema arme una donación por subcategoría. Por eso no hay rutas nuevas y el controller lee los bienes igual que antes.
+
+Es el segundo lugar con JavaScript propio (`donacion-nueva.js`), porque agregar filas sin recargar la página no se puede hacer solo con HTML: sin JS, cada bien nuevo sería un pedido al servidor y se perdería lo ya escrito. El archivo solo maneja la tabla: lee el recuadro, valida los datos y dibuja las filas. Mostrar estado o vencimiento según lo que pida la subcategoría elegida lo resuelve el CSS (`:has`), sin JS. La foto del bien se suma cuando se implemente su guardado (C11).

@@ -1,14 +1,14 @@
 {{#partial "contenido"}}
-    <h1>Camiones</h1>
+    <h1>Administrar camiones</h1>
 
     {{!-- Con camion.id el formulario edita ese camión; sin id, da de alta uno nuevo --}}
     <form class="card" action="/admin/camiones{{#if camion.id}}/{{camion.id}}{{/if}}" method="post">
         <h2>{{#if camion.id}}Editar camión {{camion.patente}}{{else}}Agregar camión{{/if}}</h2>
         <div class="f4 alineado-abajo">
-            <label>Patente<input name="patente" placeholder="AB123CD" value="{{camion.patente}}" required></label>
-            <label>Volumen (m³)<input name="volumen" type="number" step="0.1" min="0" value="{{camion.volumen}}" required></label>
-            <label>Altura (m)<input name="altura" type="number" step="0.1" min="0" value="{{camion.altura}}" required></label>
-            <label>Carga máx. (kg)<input name="cargaMax" type="number" min="0" value="{{camion.cargaMax}}" required></label>
+            <label>Patente<input name="patente" placeholder="AB123CD" value="{{camion.patente}}" pattern="[A-Za-z]{2}\d{3}[A-Za-z]{2}|[A-Za-z]{3}\d{3}" title="Sin espacios ni guiones. Ej: AB123CD o ABC123" required></label>
+            <label>Volumen (m³)<input name="volumen" type="number" step="0.1" min="0.1" value="{{camion.volumen}}" required></label>
+            <label>Altura (m)<input name="altura" type="number" step="0.1" min="0.1" value="{{camion.altura}}" required></label>
+            <label>Carga máx. (kg)<input name="cargaMax" type="number" min="1" value="{{camion.cargaMax}}" required></label>
         </div>
         <div class="row acciones">
             {{#if camion.id}}<a class="btn2" href="/admin/camiones">Cancelar</a>{{/if}}

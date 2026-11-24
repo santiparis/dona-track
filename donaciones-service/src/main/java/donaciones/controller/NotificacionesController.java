@@ -7,6 +7,7 @@ import donaciones.web.SesionUsuario;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public class NotificacionesController {
@@ -32,7 +33,7 @@ public class NotificacionesController {
   private Map<String, Object> bandeja(String rol, String tipo, Long id) {
     return Map.of("titulo", "Notificaciones", "rol", rol, "seccion", "notificaciones",
         "notificaciones", notificacionRepository.buscarPorReceptor(tipo, id).stream()
-            .map(n -> Map.of("fecha", n.getFecha().toString(), "mensaje", n.getMensaje()))
+            .map(n -> Map.of("fecha", n.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), "mensaje", n.getMensaje()))
             .toList());
   }
 }

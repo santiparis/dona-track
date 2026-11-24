@@ -1,0 +1,45 @@
+Donaciones
+
+-Las transacciones deberían ser atomicas en repositorios. No debería bloquearse, si falla deberíamos volver para atrás. Básicamente usar transacctions.
+-No debería haber una transacción abierta mucho tiempo.
+-Por cada request debería existir una sola transacción.
+- Discriminated value de Persona.
+-Cambiar ReconstruirPersona. Modelo relacional es bidireccional.
+-Eliminar @Transient
+-Poner @ManyToMany y @ManyToOne en Necesidad.java
+-ElementCollection se usa para cosas que no son entidades.
+-En el DER cambiar los que son Entidad pero en el código son ElementCollection. CantidadSuplida, etc.
+-Necesidad es Embebida?
+-ContactoID se tiene que ir.
+-Cambiar Subcategoria en el DER (Esta como Entity pero es un enum).
+-Corregir relaciones en Donaciones (diagramas).
+-Actualizar las justificaciones de diseño de la persistencia
+
+
+Estado al 04/11/2026 (revisión de los commits c04e95d, 3aa2af2 y 34820e9 de Santiago, rama dev en 092e822)
+
+Corregido
+- Una sola transacción por request: TransaccionPorRequest con before/after en Main.
+- reconstruirPersona: se borró reconstruirContactos y los contactos pasaron a @OneToMany. El contacto no conoce a su dueño.
+- ContactoId: se borró. El contacto tiene PK propia contacto_id (hay script en db/migracion_contactos.sql).
+- Subcategoria en el DER: se sacó la tabla.
+
+Parcial
+- Transacciones atómicas y sin bloqueos: hay commit y rollback, pero se agregaron locks pesimistas (PESSIMISTIC_WRITE/READ, timeout 2 s) en buscarPorIdParaActualizar/ParaReferencia, usados en 24 lugares. Eso es bloquear.
+- Transacción abierta mucho tiempo: el cron ProcesarAsignaciones procesa todas las donaciones en depósito en un solo withTransaction. La importación del CSV (20.000 filas) iría en la transacción del request cuando se conecte.
+- Eliminar @Transient: quedan medioPredeterminado (Persona, EntidadBeneficiaria, PersonaAdministradora), Necesidad.renovacion y SugerenciaAsignacion.entidadesPorAlgoritmo.
+- DER con ElementCollection: CantidadRequerida y CantidadSuplida siguen dibujadas como entidades; solo cambió la PK.
+- Relaciones en los diagramas: el DER cambió las cardinalidades, pero 3aa2af2 sacó las etiquetas y las notas, y ahora Notificación y Contacto parecen FK reales. Los diagramas de clases de la E3 no se tocan desde el 17/9.
+
+Pendiente
+- @ManyToMany y @ManyToOne en Necesidad: sigue con @ElementCollection de Map<Subcategoria, Integer> y sin @ManyToOne a la entidad. Ojo: un @ManyToMany a Subcategoria exige que sea entidad, y la cátedra pide que siga siendo enum.
+- Justificaciones de persistencia: no se actualizaron. Siguen hablando de ContactoId, contactos @Transient y ContactoRepository.
+
+Sin cambios o sin respuesta
+- Discriminated value de Persona: @DiscriminatorValue HUMANA/JURIDICA ya estaba antes. Preguntarle a Santiago qué pidió la cátedra.
+- ElementCollection para no entidades: se usa para correos y cantidades, que son valores. Parece que la cátedra espera otro mapeo en Necesidad.
+- ¿Necesidad embebida?: sigue como @Entity con id y no está justificado.
+
+Fuera de la lista, pero a tener en cuenta
+- Donaciones sigue en MySQL 8 y el enunciado de la E3 pide PostgreSQL o MariaDB.
+- RegistroCambioEstado sigue con java.util.Date y el genérico <T> (venía de las correcciones de la E2).

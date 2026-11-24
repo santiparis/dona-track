@@ -5,7 +5,6 @@ public record BienDTO(
         boolean requiereVencimiento,
         String nombreSubcategoria,
         Integer cantidad,
-        String unidad,
         String descripcion,
         String estado,
         String vencimiento,

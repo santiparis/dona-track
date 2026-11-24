@@ -1,3 +1,7 @@
+{{#partial "dependencias"}}
+    <script defer src="/assets/js/donacion-nueva.js"></script>
+{{/partial}}
+
 {{#partial "contenido"}}
     <h1>Registrar donación</h1>
 
@@ -20,60 +24,74 @@
         {{/if}}
     </section>
 
-    {{#if donante}}
-        <form class="card" action="/admin/donaciones" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="donante" value="{{donante.id}}">
+    {{!-- Paso 2: los bienes se cargan de a uno en el recuadro "bien" y se suman a la tabla (donacion-nueva.js).
+          Cada fila lleva sus datos en inputs ocultos: el submit final manda todos los bienes juntos, en una sola operación --}}
+    <form class="card" action="/admin/donaciones" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="donante" value="{{donante.id}}">
+        <div class="encabezado-con-accion">
+            <h2 id="bienes-titulo">2. Bienes</h2>
+            <button class="btn2" type="button" id="nuevo-bien" {{#unless donante}}disabled{{/unless}}>+ Agregar bien</button>
+        </div>
+        {{#unless donante}}<p class="hint">Primero elegí el donante.</p>{{/unless}}
+        <label>Descripción general (opcional)<input name="descripcion" placeholder="Ej: mobiliario de oficina usado"></label>
 
-            <h2>2. Descripción general</h2>
-            <label>Descripción<input name="descripcion" placeholder="Ej: mobiliario de oficina usado"></label>
-
-            <h2>3. Bienes</h2>
-            {{#each filas}}
-                <fieldset>
-                    <legend>Bien {{numero}}</legend>
-                    <div class="f4">
-                        <label>Subcategoría
-                            <select name="bienes[{{indice}}].subcategoria">
-                                <option value="">Elegí una</option>
-                                {{#each ../categorias}}
-                                    <optgroup label="{{texto}}">
-                                        {{#each subcategorias}}
-                                            <option value="{{valor}}">{{texto}}</option>
-                                        {{/each}}
-                                    </optgroup>
+        {{!-- Los campos del bien no tienen name: no viajan en el submit, los copia el JS a la fila de la tabla --}}
+        <fieldset id="bien" hidden>
+            <legend id="bien-titulo">Nuevo bien</legend>
+            <div class="f2">
+                <label>Subcategoría
+                    <select id="bien-subcategoria">
+                        <option value="">Elegí una subcategoría</option>
+                        {{#each categorias}}
+                            <optgroup label="{{texto}}">
+                                {{#each subcategorias}}
+                                    <option value="{{valor}}" {{#if requiereEstado}}data-estado="si" {{/if}} {{#if requiereVencimiento}}data-vence="si"{{/if}} data-unidad="{{unidad}}">{{texto}}</option>
                                 {{/each}}
-                            </select>
-                        </label>
-                        <label>Cantidad<input name="bienes[{{indice}}].cantidad" type="number" min="1"></label>
-                        <label>Unidad<input name="bienes[{{indice}}].unidad" placeholder="unidades, kg…"></label>
-                        <label>Estado
-                            <select name="bienes[{{indice}}].estado">
-                                <option value="">No aplica</option>
-                                <option value="NUEVO">Nuevo</option>
-                                <option value="USADO">Usado</option>
-                            </select>
-                            <span class="hint">Mobiliario y vestimenta</span>
-                        </label>
-                    </div>
-                    <div class="f4">
-                        <label class="fila-completa">Descripción<input name="bienes[{{indice}}].descripcion"></label>
-                        <label>Vencimiento<input name="bienes[{{indice}}].vencimiento" type="date"><span class="hint">Solo perecederos</span></label>
-                        <label>Foto (opcional)<input name="bienes[{{indice}}].foto" type="file" accept="image/*"></label>
-                    </div>
-                </fieldset>
-            {{/each}}
+                            </optgroup>
+                        {{/each}}
+                    </select>
+                </label>
+                <label>Cantidad<span class="con-unidad"><input id="bien-cantidad" type="number" min="1"><output id="bien-unidad"></output></span></label>
+            </div>
+            <div class="f3">
+                <label>Descripción<input id="bien-descripcion" placeholder="Ej: sillas de oficina"></label>
+                <label id="campo-estado">Estado
+                    <select id="bien-estado">
+                        <option value="">Elegí</option>
+                        <option value="NUEVO">Nuevo</option>
+                        <option value="USADO">Usado</option>
+                    </select>
+                </label>
+                <label id="campo-vencimiento">Vencimiento<input id="bien-vencimiento" type="date"></label>
+            </div>
+            <p class="error-form" id="bien-error" role="alert" hidden></p>
             <div class="row">
-                <a class="btn2" href="/admin/donaciones/nueva?donante={{busqueda}}&filas={{masFilas}}">+ Agregar bien</a>
-                <p class="hint">Agregá las filas antes de completarlas: al agregar una se recarga la página. Las filas vacías se ignoran.</p>
+                <button class="btn" type="button" id="agregar-bien">Agregar a la lista</button>
+                <button class="btn2" type="button" id="cancelar-bien">Cancelar</button>
             </div>
+        </fieldset>
 
-            <p class="aviso">Al guardar se genera una donación por cada subcategoría (y por fecha de vencimiento en perecederos). Todas quedan “En depósito”.</p>
-            <div class="row acciones">
-                <a class="btn2" href="/admin/donaciones">Cancelar</a>
-                <button class="btn" type="submit">Registrar donación</button>
-            </div>
-        </form>
-    {{/if}}
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Subcategoría</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Detalle</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="bienes"></tbody>
+            </table>
+        </div>
+        <p class="muted" id="sin-bienes">Todavía no agregaste bienes.</p>
+
+        <p class="aviso">Al guardar se genera una donación por cada subcategoría (y por fecha de vencimiento en perecederos). Todas quedan “En depósito”.</p>
+        <div class="row acciones">
+            <a class="btn2" href="/admin/donaciones">Cancelar</a>
+            <button class="btn" type="submit" id="registrar" disabled>Registrar donación</button>
+        </div>
+    </form>
 {{/partial}}
 
 {{> layout}}

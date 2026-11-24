@@ -7,7 +7,7 @@ public class PublicoController {
 
   public Map<String, Object> inicio() {
     Map<String, Object> model = new HashMap<>();
-    model.put("titulo", "Inicio");
+    model.put("titulo", "¿Quiénes somos?");
     model.put("seccion", "inicio");
     return model;
   }

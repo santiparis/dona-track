@@ -30,7 +30,12 @@ public class RepositorioPersonas implements WithSimplePersistenceUnit {
         return Optional.ofNullable(find(Persona.class, id));
     }
 
-    public Optional<Persona> buscarPorEmail(String email) { return obtenerTodas().stream().filter(p -> email.equals(p.getEmail())).findFirst(); }
+    public Optional<Persona> buscarPorEmail(String email) {
+        return createQuery("select p from Persona p join p.contactos c where c.valor = :email", Persona.class)
+            .setParameter("email", email)
+            .getResultStream()
+            .findFirst();
+    }
 
     public Optional<Persona> buscarPorDocumento(String documento) {
         return createQuery("from Persona p where p.documento = :documento", Persona.class)
@@ -53,5 +58,13 @@ public class RepositorioPersonas implements WithSimplePersistenceUnit {
 
     public List<Persona> obtenerTodas() {
         return createQuery("from Persona", Persona.class).getResultList();
+    }
+
+    // Trae también el usuario y todos los contactos para no hacer una consulta más por persona
+    public List<Persona> buscarPorEmails(List<String> emails) {
+        return createQuery("select distinct p from Persona p left join fetch p.usuario join fetch p.contactos "
+                + "join p.contactos c where c.valor in :emails", Persona.class)
+            .setParameter("emails", emails)
+            .getResultList();
     }
 }
