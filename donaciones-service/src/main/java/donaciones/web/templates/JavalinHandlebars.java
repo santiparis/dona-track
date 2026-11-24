@@ -6,6 +6,7 @@ import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import io.javalin.http.Context;
 import io.javalin.rendering.FileRenderer;
 import donaciones.web.SesionUsuario;
+import donaciones.repository.NotificacionRepository;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -33,7 +34,8 @@ public class JavalinHandlebars implements FileRenderer {
       vista.remove("usuario");
       var usuario = SesionUsuario.actual(context);
       if (usuario != null) {
-        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario(), "rol", usuario.getRol().name()));
+        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario(), "rol", usuario.getRol().name(),
+            "notificacionesSinLeer", new NotificacionRepository().contarNoLeidasDelUsuario(usuario.getId())));
         vista.put("inicioUsuario", SesionUsuario.destino(usuario.getRol()));
         context.header("Cache-Control", "no-store");
       }

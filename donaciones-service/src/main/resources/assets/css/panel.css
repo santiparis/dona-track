@@ -159,3 +159,9 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 
 /* Los avisos traen saltos de línea */
 .notificacion-texto p { white-space: pre-line; }
+
+/* En el celular el botón de marcar como leída baja abajo del texto */
+@media (max-width: 768px) {
+    .notificacion { flex-wrap: wrap; }
+    .notificacion form { flex-basis: 100%; padding-left: 26px; box-sizing: border-box; }
+}
