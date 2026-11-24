@@ -1,19 +1,20 @@
 # Notificaciones de DonaTrack
 
-Los avisos salen por mail (SendGrid) o por SMS (Twilio), según el medio predeterminado de quien los recibe. Cada aviso se guarda en la tabla `notificacion` como `COMPLETADA` o `FALLIDA` y se ve en la bandeja del donante y de la entidad.
+Los avisos salen por mail (SendGrid) o por SMS (Twilio), según el medio predeterminado de quien los recibe. La bienvenida es la excepción: va siempre por mail, como pide el enunciado. Cada aviso se guarda en la tabla `notificacion` como `COMPLETADA` o `FALLIDA` y se ve en la bandeja del donante y de la entidad.
 
 ## Para seguir el código
 
 Todo en `donaciones-service`:
 
-1. `domain/notificacion/Contacto.java` y sus subclases: cada medio sabe enviar con `enviar(mensaje)`. `ContactoPorEmail` usa el SDK de SendGrid y `ContactoPorSMS` el de Twilio (Adapter). `ContactoPorWhatsApp` no se implemento porque se bloquea la cuenta del emisor.
+1. `domain/notificacion/Contacto.java` y sus subclases: cada medio sabe enviar con `enviar(mensaje)`. `ContactoPorEmail` usa el SDK de SendGrid y `ContactoPorSMS` el de Twilio (Adapter). `ContactoPorWhatsApp` no se implemento porque se bloquea la cuenta del emisor. El SMS no lleva el texto completo: avisa que hay algo nuevo y deja el link a la web, porque la cuenta de prueba de Twilio solo entrega mensajes de un segmento (error 30044).
 2. `domain/notificacion/Notificable.java`: lo implementan `Persona`, `EntidadBeneficiaria` y `PersonaAdministradora`. Tienen contactos y un medio predeterminado; si no hay, se usa el primero.
-3. `controller/Notificador.java`: arma el texto de cada aviso y decide a quién va. Manda y guarda recién después del commit del request: si el request falla, no sale nada.
+3. `controller/Notificador.java`: arma el texto de cada aviso y decide a quién va. Todos empiezan con «Hola, {nombre}», detallan la donación (qué, cuánto, de quién, para quién y dónde) y terminan con la firma del equipo. Manda y guarda recién después del commit del request: si el request falla, no sale nada.
 4. Quién llama al `Notificador`:
    - `DonanteController.registrarDonante`: bienvenida.
    - `AsignacionesController.confirmarAsignacion`: donación asignada, al donante y a la entidad.
-   - `DonacionController` (PATCH de estado): inicio de ruta, entrega exitosa y entrega fallida.
-5. `planificacion/NotificarPersonasInactivas.java`: cron de ausencia (20 días sin actividad).
+   - `grpc/DonacionesServiceImpl.cambiarEstadoDonacion`: inicio de ruta, entrega exitosa y entrega fallida, cuando logística informa el cambio por gRPC. Avisa después de confirmar el cambio de estado.
+   - `DonacionController` (PATCH de estado): los mismos tres avisos, cuando el cambio llega por la API REST.
+5. `planificacion/NotificarPersonasInactivas.java`: cron de ausencia. Busca con `RepositorioPersonas.buscarInactivasDesde` a los donantes con más de 20 días sin actividad y les avisa con `Notificador.ausencia`. La actividad se actualiza cuando el donante inicia sesión (`SesionController.ingresar`).
 6. `repository/NotificacionRepository.java`, `controller/NotificacionesController.java` y `templates/notificaciones.hbs`: guardado y bandeja.
 
 ## Claves
@@ -39,7 +40,7 @@ Si falta alguna variable, el envío se simula: el log muestra `[SIMULADO]` y la 
 
 ## Probar con Docker
 
-`compose.yaml` le pasa los dos archivos al contenedor `donaciones-api` con `env_file` (opcionales). Después de crearlos o cambiarlos, recrear el contenedor:
+`compose.yaml` le pasa los dos archivos al contenedor `donaciones-api` con `env_file` (opcionales). También le pasa `DONACIONES_URL_PUBLICA`, la dirección de la web que va en los links de los avisos (por defecto `http://localhost:8081`). Después de crearlos o cambiarlos, recrear el contenedor:
 
 ```powershell
 docker compose up -d donaciones-api
@@ -111,7 +112,9 @@ scp sendgrid.env twilio.env usuario@IP-del-servidor:/ruta/a/dona-track/
 docker compose -f compose.yaml -f docker-compose.azure.yaml up -d donaciones-api
 ```
 
+Además hay que definir `DONACIONES_URL_PUBLICA` con la dirección pública (por ejemplo `http://IP-del-servidor:8081`); si no, los links de los avisos apuntan a `localhost`.
+
 ## Cuentas
 
 - SendGrid: cuenta de prueba de 60 días con 100 mails por día, creada el 23/11/2026. El remitente tiene que estar verificado (Settings → Sender Authentication).
-- Twilio: cuenta de prueba con saldo. Solo manda a números verificados (Phone Numbers → Verified Caller IDs), en formato `+549...`, y antepone «Sent from your Twilio trial account». Argentina tiene que estar habilitada en Messaging → Settings → Geo permissions.
+- Twilio: cuenta de prueba con saldo. Solo manda a números verificados (Phone Numbers → Verified Caller IDs), en formato `+549...`, y antepone «Sent from your Twilio trial account». Solo entrega mensajes de un segmento (160 caracteres sin acentos). Argentina tiene que estar habilitada en Messaging → Settings → Geo permissions.
