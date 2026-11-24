@@ -51,6 +51,8 @@ public class SesionController {
     }
 
     SesionUsuario.iniciar(ctx, usuario);
+    // Solo los donantes tienen Persona: cuenta para el aviso de inactividad
+    new RepositorioPersonas().buscarPorUsuario(usuario.getId()).ifPresent(Persona::registrarInteraccion);
     ctx.redirect(SesionUsuario.destino(usuario.getRol()), HttpStatus.SEE_OTHER);
   }
 
