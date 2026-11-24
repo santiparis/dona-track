@@ -73,10 +73,10 @@ public class DonacionesServiceImpl extends DonacionesServiceGrpc.DonacionesServi
     }
   }
 
-  // Igual que DonacionController.cambiarEstado; datosAdicionales depende del estado (url del mapa, comprobante o motivo)
+  // Igual que DonacionController.cambiarEstado; datosAdicionales depende del estado (comprobante o motivo)
   private void avisar(Donacion donacion, EstadoDonacion estado, String datosAdicionales) {
     switch (estado) {
-      case EN_TRASLADO -> notificador.inicioDeTraslado(donacion, datosAdicionales);
+      case EN_TRASLADO -> notificador.inicioDeTraslado(donacion);
       case ENTREGADA -> notificador.entregaConfirmada(donacion, datosAdicionales);
       case ENTREGA_FALLIDA -> notificador.entregaFallida(donacion, datosAdicionales, administradorasRepository.obtenerTodos());
       default -> { }

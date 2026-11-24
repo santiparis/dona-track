@@ -156,19 +156,19 @@ public class DonacionController {
     }
   }
 
-  // Logistica informa el nuevo estado; datosAdicionales depende del estado (url del mapa, patente o motivo)
+  // Logistica informa el nuevo estado; datosAdicionales depende del estado (patente o motivo)
   private void cambiarEstado(Donacion donacion, DonacionPatchDTO dto) {
     switch (EstadoDonacion.valueOf(dto.estado())) {
-      case EN_TRASLADO -> this.marcarEnTraslado(donacion, dto.datosAdicionales());
+      case EN_TRASLADO -> this.marcarEnTraslado(donacion);
       case ENTREGADA -> this.confirmarEntrega(donacion, dto.datosAdicionales());
       case ENTREGA_FALLIDA -> this.registrarEntregaFallida(donacion, dto.datosAdicionales());
       default -> throw new IllegalArgumentException("Estado no soportado: " + dto.estado());
     }
   }
 
-  private void marcarEnTraslado(Donacion donacion, String urlMapa) {
+  private void marcarEnTraslado(Donacion donacion) {
     donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
-    notificador.inicioDeTraslado(donacion, urlMapa);
+    notificador.inicioDeTraslado(donacion);
   }
 
   private void confirmarEntrega(Donacion donacion, String patenteCamion) {

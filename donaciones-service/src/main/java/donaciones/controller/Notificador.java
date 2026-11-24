@@ -9,8 +9,12 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Notificador {
+  // Dirección pública de la web de donaciones, para los links de los avisos
+  private static final String URL_PUBLICA =
+      Objects.requireNonNullElse(System.getenv("DONACIONES_URL_PUBLICA"), "http://localhost:8081");
   private final NotificacionRepository notificacionRepository;
 
   public Notificador() {
@@ -27,13 +31,15 @@ public class Notificador {
     this.notificar(donacion.getEntidadBeneficiaria(), "Se le ha asignado satisfactoriamente una nueva donación.");
   }
 
-  public void inicioDeTraslado(Donacion donacion, String urlMapa) {
-    String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: " + urlMapa;
-    this.avisarADonanteYEntidad(donacion, mensaje);
+  // El link lleva a la pantalla de seguimiento de cada uno (pide iniciar sesión)
+  public void inicioDeTraslado(Donacion donacion) {
+    String mensaje = "Su entrega está en camino. Siga el recorrido en tiempo real aquí: ";
+    this.notificar(donacion.getDonante(), mensaje + URL_PUBLICA + "/donante/seguimiento");
+    this.notificar(donacion.getEntidadBeneficiaria(), mensaje + URL_PUBLICA + "/entidad/seguimiento");
   }
 
-  public void rutaIniciada(List<Donacion> donaciones, String urlMapa) {
-    donaciones.forEach(donacion -> this.inicioDeTraslado(donacion, urlMapa));
+  public void rutaIniciada(List<Donacion> donaciones) {
+    donaciones.forEach(this::inicioDeTraslado);
   }
 
   // comprobante: lo arma logística con la entrega, la fecha y hora y la patente del camión
