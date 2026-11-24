@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class NotificarPersonasInactivas {
@@ -18,17 +17,13 @@ public class NotificarPersonasInactivas {
   private static final int DIAS_INACTIVIDAD = 20;
 
   public static List<Persona> notificarInactivos(RepositorioPersonas repositorio, Notificador notificador) {
-    List<Persona> notificadas = new ArrayList<>();
-    LocalDateTime umbralInactividad = LocalDateTime.now().minusDays(DIAS_INACTIVIDAD);
+    List<Persona> inactivas = repositorio.buscarInactivasDesde(LocalDateTime.now().minusDays(DIAS_INACTIVIDAD));
 
-    for (Persona persona : repositorio.obtenerTodas()) {
-      if (persona.getUltimaInteraccion().isBefore(umbralInactividad)) {
-        notificador.ausencia(persona, DIAS_INACTIVIDAD);
-        notificadas.add(persona);
-        logger.info("Se generó una notificación para la persona: {}", persona.getNombre());
-      }
+    for (Persona persona : inactivas) {
+      notificador.ausencia(persona, DIAS_INACTIVIDAD);
+      logger.info("Se generó una notificación para la persona: {}", persona.getNombre());
     }
-    return notificadas;
+    return inactivas;
   }
 
   public static void main(String[] args) {
