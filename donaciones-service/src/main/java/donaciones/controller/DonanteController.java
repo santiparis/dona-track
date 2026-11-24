@@ -15,6 +15,7 @@ import donaciones.dto.DonanteRequestDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.ContactoDTO;
 import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.repository.UsuarioRepository;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
@@ -226,6 +227,17 @@ public class DonanteController {
   }
 
   public void registrarDonante(Context ctx) {
+    // Como en el registro público: un correo ya usado vuelve al form con el aviso, en vez de un 500
+    if (new UsuarioRepository().buscarPorNombreUsuario(ctx.formParam("email")).isPresent()) {
+      Map<String, Object> model = this.donanteNuevo(ctx);
+      for (String campo : List.of("tipo", "nombre", "apellido", "edad", "tipoDoc", "documento", "genero", "direccion",
+          "razonSocial", "tipoJuridica", "rubro", "email", "telefono", "medio")) {
+        model.put(campo, Objects.requireNonNullElse(ctx.formParam(campo), ""));
+      }
+      model.put("error", "Ya existe un donante con ese correo electrónico.");
+      ctx.status(HttpStatus.CONFLICT).render("admin/donante-nuevo", model);
+      return;
+    }
     List<Contacto> contactos = new ArrayList<>();
     contactos.add(new ContactoPorEmail(ctx.formParam("email")));
     if (!ctx.formParam("telefono").isBlank()) {

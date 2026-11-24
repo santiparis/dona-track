@@ -4,6 +4,8 @@ import donaciones.domain.Donacion;
 import donaciones.domain.PersonaAdministradora;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.notificacion.Contacto;
+import donaciones.domain.notificacion.ContactoPorEmail;
+import donaciones.domain.notificacion.Notificable;
 import donaciones.domain.notificacion.Notificacion;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
@@ -77,8 +79,7 @@ public class Notificador {
     this.notificar(donacion.getEntidadBeneficiaria(), donacion.getEntidadBeneficiaria().getRazonSocial(), mensaje);
   }
 
-  // Todos los avisos llevan el saludo con el nombre de quien lo recibe y la firma del equipo
-  private void notificar(donaciones.domain.notificacion.Notificable receptor, String nombre, String cuerpo) {
+  private void notificar(Notificable receptor, String nombre, String cuerpo) {
     Contacto medio = receptor.getMedioPredeterminado();
     if (medio == null && receptor.getContactos() != null && !receptor.getContactos().isEmpty()) {
       medio = receptor.getContactos().get(0);
@@ -86,12 +87,15 @@ public class Notificador {
     if (medio == null) {
       return;
     }
+    this.enviarPor(medio, receptor, nombre, cuerpo);
+  }
 
+  // Todos los avisos llevan el saludo con el nombre de quien lo recibe y la firma del equipo
+  private void enviarPor(Contacto medio, Notificable receptor, String nombre, String cuerpo) {
     String mensaje = "Hola, " + nombre + ":\n\n" + cuerpo + FIRMA;
-    Contacto medioNotificacion = medio;
     Notificacion notificacion = new Notificacion(receptor, mensaje);
     TransaccionPorRequest.despuesDelCommit(() -> {
-      if (medioNotificacion.enviar(mensaje)) {
+      if (medio.enviar(mensaje)) {
         notificacion.marcarComoCompletada();
       } else {
         notificacion.marcarComoFallida();
@@ -102,8 +106,10 @@ public class Notificador {
     });
   }
 
+  // El enunciado pide un mail de bienvenida: va al correo de la cuenta, sea cual sea el medio predeterminado
   public void bienvenida(Persona donante, String passwordProvisoria) {
-    this.notificar(donante, donante.getNombre(), "¡Te damos la bienvenida a DonaTrack!\n\n"
+    this.enviarPor(new ContactoPorEmail(donante.getUsuario().getNombreUsuario()), donante, donante.getNombre(),
+        "¡Te damos la bienvenida a DonaTrack!\n\n"
         + "Para tu primer acceso, ingresá con estos datos:\n"
         + "Usuario: \"" + donante.getUsuario().getNombreUsuario() + "\"\n"
         + "Contraseña provisoria: \"" + passwordProvisoria + "\"");
