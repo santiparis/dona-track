@@ -47,7 +47,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/donaciones
       AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
       AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
-      DONACIONES_URL_PUBLICA: ${DONACIONES_URL_PUBLICA:-http://localhost:8081}
+      DONACIONES_URL: ${DONACIONES_URL:-http://localhost:8081}
 
     depends_on:
       mysql:
