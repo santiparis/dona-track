@@ -28,7 +28,30 @@ docker compose \
 ```
 
 
-admin del seed:                             donaciones-api java -cp /app/app.jar donaciones.CrearAdministradora
+admin del seed:
 
 adminUsuario: laura.admin@donatrack.org
 adminPassword: laura123
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RENOVAR
+
+AZURE_STORAGE_CONTAINER_URL=https://storagetestdds.blob.core.windows.net/containerdds
+AZURE_STORAGE_SAS='sp=racwdli&st=2026-11-06T19:36:03Z&se=2026-11-07T03:51:03Z&spr=https&sv=2026-02-06&sr=c&sig=5Y5l4eX1qRUkIvuP%2B8Aa8o%2FNkIqB5Vs9zF%2F57XaJTBE%3D'
