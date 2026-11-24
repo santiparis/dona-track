@@ -69,12 +69,16 @@ Cada expresión en `crontab` consta de 5 campos de tiempo seguidos por el comand
 
 ### Ejemplos Prácticos
 
+`mvn package` genera el `.jar` en `donaciones-service/target/notificador-personas-inactivas-jar-with-dependencies.jar`.
+
 1. **Ejecutar el `.jar` cada minuto:**
    ```cron
-   * * * * * java -jar "/mnt/c/Users/usuario/dona-track/target/notificador-usuarios-inactivos.jar" >> /mnt/c/Users/usuario/log_cron.txt 2>&1
+   * * * * * java -jar "/mnt/c/Users/usuario/dona-track/donaciones-service/target/notificador-personas-inactivas-jar-with-dependencies.jar" >> /mnt/c/Users/usuario/log_cron.txt 2>&1
    ```
 
 2. **Ejecutar el `.jar` a las 3 am de lunes a viernes:**
    ```cron
-   0 3 * * 1-5 java -jar "/mnt/c/Users/usuario/dona-track/target/notificador-usuarios-inactivos.jar" >> /mnt/c/Users/usuario/log_cron.txt 2>&1
+   0 3 * * 1-5 java -jar "/mnt/c/Users/usuario/dona-track/donaciones-service/target/notificador-personas-inactivas-jar-with-dependencies.jar" >> /mnt/c/Users/usuario/log_cron.txt 2>&1
    ```
+
+El crontab completo del proyecto (asignaciones a las 2:00 e inactivos a las 2:30) está en `crontab-dona-track`, en esta misma carpeta.

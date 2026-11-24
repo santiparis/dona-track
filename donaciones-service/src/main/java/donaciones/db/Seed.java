@@ -23,6 +23,7 @@ import donaciones.domain.notificacion.ContactoPorWhatsApp;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,6 +76,13 @@ public class Seed implements WithSimplePersistenceUnit {
     persist(juan);
     persist(arcos);
     persist(pastas);
+
+    // Donante con 25 días sin actividad: lo avisa el cron NotificarPersonasInactivas
+    Contacto correoCarlos = new ContactoPorEmail("juanignaciopereyra01@gmail.com");
+    PersonaHumana carlos = new PersonaHumana("Carlos Inactivo", "Pérez", 45, TipoDoc.DNI, "11111111",
+        Genero.MASCULINO, "Av. Siempre Viva 742", List.of(correoCarlos), correoCarlos, null);
+    carlos.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
+    persist(carlos);
 
     // Entidades beneficiarias con sus necesidades, una por subcategoría como en la UI.
     // Lo suplido se carga con registrarSuplido, como si ya hubieran recibido parte.
