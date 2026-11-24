@@ -1,3 +1,5 @@
+package notificaciones;
+
 import donaciones.domain.EntidadBeneficiaria;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;

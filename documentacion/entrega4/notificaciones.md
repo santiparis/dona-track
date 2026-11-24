@@ -47,16 +47,16 @@ docker compose up -d donaciones-api
 
 ## Probar desde la terminal
 
-Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `src/test/java`) mandan un mensaje real sin tocar la base. Desde Git Bash, en la raíz del repo:
+Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `donaciones-service/src/test/java/notificaciones`) mandan un mensaje real sin tocar la base. Desde Git Bash, en la raíz del repo:
 
 ```bash
 source sendgrid.env
-mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionEmailReal" -Dexec.classpathScope="test" -Dexec.args="destino@mail.com"
+mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionEmailReal" -Dexec.classpathScope="test" -Dexec.args="destino@mail.com"
 ```
 
 ```bash
 source twilio.env
-mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionSmsReal" -Dexec.classpathScope="test" -Dexec.args="+549..."
+mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionSmsReal" -Dexec.classpathScope="test" -Dexec.args="+549..."
 ```
 
 Para saber si las variables se cargaron: `echo ${#SENDGRID_API_KEY}` tiene que dar 69. Si sale bien, se ve `-> Envío Email finalizado con éxito.` o `-> Envío SMS finalizado`. Si se ve `[SIMULADO]`, repetir el `source` en la misma terminal.
@@ -65,7 +65,7 @@ Desde IntelliJ: en la Run Configuration de la clase, cargar el archivo `.env` co
 
 ## Prueba rápida con las clases de prueba
 
-Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `donaciones-service/src/test/java`) mandan un mensaje real sin levantar la app ni tocar la base. Sirven para comprobar que las claves andan.
+Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `donaciones-service/src/test/java/notificaciones`) mandan un mensaje real sin levantar la app ni tocar la base. Sirven para comprobar que las claves andan.
 
 1. En IntelliJ, abrir la pestaña Terminal (Git Bash) y pararse en la raíz del repo (`dona-track`).
 2. Cargar las claves en esa terminal. No muestra nada:
@@ -85,7 +85,7 @@ Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `donaci
 4. Mandar un mail, poniendo el destino en `exec.args`:
 
    ```bash
-   mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionEmailReal" -Dexec.classpathScope="test" -Dexec.args="destino@mail.com"
+   mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionEmailReal" -Dexec.classpathScope="test" -Dexec.args="destino@mail.com"
    ```
 
    Tiene que aparecer `-> Envío Email finalizado con éxito.` Revisar la bandeja de entrada y spam.
@@ -93,7 +93,7 @@ Las clases `EnvioNotificacionEmailReal` y `EnvioNotificacionSmsReal` (en `donaci
 5. Mandar un SMS a un número verificado en Twilio:
 
    ```bash
-   mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionSmsReal" -Dexec.classpathScope="test" -Dexec.args="+549..."
+   mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionSmsReal" -Dexec.classpathScope="test" -Dexec.args="+549..."
    ```
 
    Tiene que aparecer `-> Envío SMS finalizado`.

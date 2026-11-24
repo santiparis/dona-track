@@ -1,8 +1,8 @@
 package planificacion;
 
+import donaciones.controller.Notificador;
 import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.RepositorioPersonas;
-import donaciones.domain.notificacion.Notificacion;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
 import org.slf4j.Logger;
@@ -17,32 +17,18 @@ public class NotificarPersonasInactivas {
   private static final Logger logger = LoggerFactory.getLogger(NotificarPersonasInactivas.class);
   private static final int DIAS_INACTIVIDAD = 20;
 
-  public static List<Notificacion> notificarInactivos(RepositorioPersonas repositorio) {
-    return notificarInactivos(repositorio, null);
-    }
-
-    public static List<Notificacion> notificarInactivos(
-      RepositorioPersonas repositorio,
-      NotificacionRepository notificacionRepository
-    ) {
-    List<Notificacion> historial = new ArrayList<>();
+  public static List<Persona> notificarInactivos(RepositorioPersonas repositorio, Notificador notificador) {
+    List<Persona> notificadas = new ArrayList<>();
     LocalDateTime umbralInactividad = LocalDateTime.now().minusDays(DIAS_INACTIVIDAD);
 
     for (Persona persona : repositorio.obtenerTodas()) {
       if (persona.getUltimaInteraccion().isBefore(umbralInactividad)) {
-        String mensaje = "¡Hola " + persona.getNombre() + "! Notamos más de " + DIAS_INACTIVIDAD
-            + " días sin actividad. ¡Te invitamos a realizar una nueva donación en la plataforma!";
-        Notificacion notificacion = persona.notificar(mensaje);
-        if (notificacion != null) {
-          if (notificacionRepository != null) {
-            notificacionRepository.guardar(notificacion);
-          }
-          historial.add(notificacion);
-        }
+        notificador.ausencia(persona, DIAS_INACTIVIDAD);
+        notificadas.add(persona);
         logger.info("Se generó una notificación para la persona: {}", persona.getNombre());
       }
     }
-    return historial;
+    return notificadas;
   }
 
   public static void main(String[] args) {
@@ -50,10 +36,10 @@ public class NotificarPersonasInactivas {
 
     try {
       RepositorioPersonas repositorio = new RepositorioPersonas();
-      NotificacionRepository notificacionRepository = new NotificacionRepository();
+      Notificador notificador = new Notificador(new NotificacionRepository());
       new TransaccionPorRequest().withTransaction(() -> {
-        List<Notificacion> notificaciones = notificarInactivos(repositorio, notificacionRepository);
-        logger.info("Total de personas notificadas: {}", notificaciones.size());
+        List<Persona> notificadas = notificarInactivos(repositorio, notificador);
+        logger.info("Total de personas notificadas: {}", notificadas.size());
       });
       logger.info("Notificación de personas inactivas finalizada con éxito");
     } catch (RuntimeException e) {

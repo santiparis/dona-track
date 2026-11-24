@@ -81,4 +81,9 @@ public class Notificador {
     this.notificar(donante, "Bienvenido/a a DonaTrack. Para su primer acceso ingrese con el usuario "
         + donante.getUsuario().getNombreUsuario() + " y la contraseña provisoria " + passwordProvisoria + ".");
   }
+
+  public void ausencia(Persona donante, int diasInactividad) {
+    this.notificar(donante, "¡Hola " + donante.getNombre() + "! Notamos más de " + diasInactividad
+        + " días sin actividad. ¡Te invitamos a realizar una nueva donación en la plataforma!");
+  }
 }

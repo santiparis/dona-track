@@ -1,3 +1,5 @@
+package notificaciones;
+
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
@@ -12,7 +14,7 @@ import java.util.List;
  * 1. Carga las variables de entorno de Twilio:
  *    source twilio.env
  * 2. Ejecuta esta clase desde tu IDE o con Maven, parado en la raíz del repo:
- *    mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionSmsReal" -Dexec.classpathScope="test"
+ *    mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionSmsReal" -Dexec.classpathScope="test"
  * -
  * Para ejecutarlo desde el intelliJ:
  * 1. Editar la Run Configuration

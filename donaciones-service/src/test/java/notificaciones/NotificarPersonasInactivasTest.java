@@ -1,10 +1,13 @@
+package notificaciones;
+
+import donaciones.controller.Notificador;
 import donaciones.domain.donante.Genero;
+import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.domain.donante.TipoDoc;
 import donaciones.domain.notificacion.ContactoPorEmail;
 
-import donaciones.domain.notificacion.Notificacion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import io.github.flbulgarelli.jpa.extras.test.SimplePersistenceTest;
@@ -36,7 +39,7 @@ public class NotificarPersonasInactivasTest implements SimplePersistenceTest {
 
     @Test
     public void testCrontabSimuladoDetectaInactividadYNotificaDirectamente() {
-        List<Notificacion> historial = NotificarPersonasInactivas.notificarInactivos(repositorioPersonas);
+        List<Persona> historial = NotificarPersonasInactivas.notificarInactivos(repositorioPersonas, new Notificador());
 
         assertEquals(1, historial.size(), "Debe haberse generado exactamente una notificación para la persona ausente");
     }
