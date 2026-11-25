@@ -11,8 +11,9 @@
                     {{/each}}
                 </select>
             </label>
+            {{!-- Al cambiar la categoría se destildan las subcategorías de la anterior y se filtra, para mostrar las nuevas --}}
             <label>Categoría
-                <select name="categoria">
+                <select name="categoria" onchange="this.form.querySelectorAll('[name=subcategoria]').forEach(c => c.checked = false); this.form.submit()">
                     <option value="">Todas</option>
                     {{#each categorias}}
                         <option value="{{valor}}" {{#if (eq valor ../categoriaElegida)}}selected{{/if}}>{{texto}}</option>
