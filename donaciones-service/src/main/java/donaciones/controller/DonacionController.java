@@ -485,8 +485,8 @@ public class DonacionController {
   }
 
   public Map<String, Object> deposito(Context ctx) {
-    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA
-    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    // Los filtros viajan en la URL: ?subcategoria=...&vence=VENCIDA
+    String subcategoria = Objects.requireNonNullElse(ctx.queryParam("subcategoria"), "");
     String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
 
     Map<String, Object> model = new HashMap<>();
@@ -498,7 +498,7 @@ public class DonacionController {
     model.put("donaciones", donacionesRepository.obtenerTodas().stream()
         // Las vencidas siguen en el depósito, marcadas: las marca a mano la administradora
         .filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO || d.getEstado() == EstadoDonacion.VENCIDA)
-        .filter(d -> categoria.isEmpty() || categoria.equals(d.getBien().getSubcategoria().getCategoria().name()))
+        .filter(d -> subcategoria.isEmpty() || subcategoria.equals(d.getBien().getSubcategoria().name()))
         .filter(d -> vence.isEmpty() || d.getEstado() == EstadoDonacion.VENCIDA)
         .map(d -> Map.of(
             "id", d.getId().toString(),
@@ -511,10 +511,16 @@ public class DonacionController {
             "vencimiento", d.getEstado() == EstadoDonacion.VENCIDA ? "VENCIDA"
                 : d.getBien().getVencimiento() == null ? "NO_APLICA" : ""))
         .toList());
+    // Como en Registrar donación: cada categoría con sus subcategorías
     model.put("categorias", Arrays.stream(Categoria.values())
-        .map(c -> Map.of("valor", c.name(), "texto", c.nombre()))
+        .map(c -> Map.of(
+            "texto", c.nombre(),
+            "subcategorias", Arrays.stream(Subcategoria.values())
+                .filter(s -> s.getCategoria() == c)
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .toList()))
         .toList());
-    model.put("categoriaElegida", categoria);
+    model.put("subcategoriaElegida", subcategoria);
     model.put("venceElegido", vence);
     return model;
   }
