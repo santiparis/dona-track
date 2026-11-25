@@ -477,6 +477,7 @@ public class DonacionController {
           null));
     }
     crearDonacion(new DonacionRequestDTO(Long.valueOf(ctx.formParam("donante")), ctx.formParam("descripcion"), bienes));
+    ctx.sessionAttribute("aviso", "Donación registrada.");
     ctx.redirect("/admin/donaciones");
   }
 
@@ -672,7 +673,9 @@ public class DonacionController {
       TransaccionPorRequest.despuesDelCommit(() -> {
         try {
           ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true, comentario);
-          if (!response.getExito()) {
+          if (response.getExito()) {
+            ctx.sessionAttribute("aviso", "Recepción confirmada.");
+          } else {
             ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
           }
         } catch (RuntimeException e) {
@@ -747,6 +750,7 @@ public class DonacionController {
         return;
       }
 
+      ctx.sessionAttribute("aviso", "Registramos que no recibiste la donación.");
       ctx.redirect("/entidad/donaciones");
     } catch (Exception e) {
       ctx.status(500).result("Error al procesar el rechazo: " + e.getMessage());
