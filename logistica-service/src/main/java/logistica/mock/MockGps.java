@@ -34,16 +34,22 @@ public class MockGps {
   private static final List<String> PATENTES = List.of("AB123CD", "XY987ZW");
 
   public static void main(String[] args) throws InterruptedException {
-    // arrancan todos desde el deposito (aprox. Medrano, CABA)
-    double lat = -34.598;
-    double lon = -58.420;
+    // arrancan todos desde el deposito (aprox. Medrano, CABA) hacia el destino de la ruta del seed
+    // (Escuela Rural N°10, San Andres de Giles): todo el trayecto es por tierra
+    double latDeposito = -34.598;
+    double lonDeposito = -58.420;
+    double latDestino = -34.4705;
+    double lonDestino = -59.4890;
+    int pasos = 300; // llega en 25 minutos y vuelve a salir del deposito
+    int paso = 0;
 
     System.out.println("mock-gps: reportando ubicacion cada " + (INTERVALO_MS / 1000) + "s");
 
     while (true) {
       // simula el avance del camion sobre la ruta
-      lat += 0.001;
-      lon += 0.001;
+      double lat = latDeposito + (latDestino - latDeposito) * paso / pasos;
+      double lon = lonDeposito + (lonDestino - lonDeposito) * paso / pasos;
+      paso = (paso + 1) % (pasos + 1);
       double velocidad = 30 + Math.random() * 30; // 30-60 km/h
 
       for (String patente : PATENTES) {

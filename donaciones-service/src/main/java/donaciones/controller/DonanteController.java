@@ -286,6 +286,7 @@ public class DonanteController {
       ResultadoImportacion resultado = new ImportadorPersonas(personasRepository)
           .importarPersonasDesdeCSV(ctx.uploadedFile("archivo").content());
       ctx.sessionAttribute("resultadoImportacion", resultado);
+      ctx.sessionAttribute("aviso", "Importación terminada.");
       ctx.redirect("/admin/importacion", HttpStatus.SEE_OTHER);
     } catch (MapeoCsvEnPersonaException e) {
       Map<String, Object> model = importacion(ctx);

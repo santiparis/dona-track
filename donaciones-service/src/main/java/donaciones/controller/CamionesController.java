@@ -162,8 +162,9 @@ public class CamionesController {
         "donacion", donacion.getBien().getSubcategoria().nombre() + " · " + donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad(),
         "destino", donacion.getEntidadBeneficiaria().getRazonSocial(),
         "avance", "—",   // logística no informa el avance de la ruta
-        "latitud", ubicacion.getLatitud(),
-        "longitud", ubicacion.getLongitud(),
+        // A 4 decimales (unos 10 metros): el GPS manda valores como -34.308000000000675
+        "latitud", Math.round(ubicacion.getLatitud() * 10000) / 10000.0,
+        "longitud", Math.round(ubicacion.getLongitud() * 10000) / 10000.0,
         "velocidad", (int) ubicacion.getVelocidad() + " km/h",
         // ultimaActualizacion viene en ISO-8601: se muestra la hora (HH:mm)
         "actualizacion", ubicacion.getUltimaActualizacion().isEmpty() ? "—" : ubicacion.getUltimaActualizacion().substring(11, 16));
