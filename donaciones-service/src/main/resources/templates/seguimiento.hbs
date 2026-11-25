@@ -17,7 +17,7 @@
             <h1>{{titulo}}</h1>
             <p class="muted">{{subtitulo}}</p>
         </div>
-        <a class="btn2" href="/{{rol}}/seguimiento">Actualizar</a>
+        {{#if camiones}}<a class="btn2" href="/{{rol}}/seguimiento">Actualizar</a>{{/if}}
     </div>
 
     {{#if camiones}}
