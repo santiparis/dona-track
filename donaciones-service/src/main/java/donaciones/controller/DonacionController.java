@@ -517,16 +517,6 @@ public class DonacionController {
         .toList());
     model.put("categoriaElegida", categoria);
     model.put("venceElegido", vence);
-
-    // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
-    String idVencida = ctx.queryParam("vencida");
-    if (idVencida != null) {
-      donacionesRepository.buscarPorId(Long.parseLong(idVencida))
-          .ifPresent(d -> model.put("marcadaVencida", Map.of(
-              "id", idVencida,
-              "bien", d.getBien().getSubcategoria().nombre(),
-              "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad())));
-    }
     return model;
   }
 
@@ -534,7 +524,9 @@ public class DonacionController {
     Donacion donacion = donacionesRepository.buscarPorId(Long.parseLong(ctx.pathParam("id")))
         .orElseThrow(NotFoundResponse::new);
     donacion.cambiarEstado(EstadoDonacion.VENCIDA, null);
-    ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
+    ctx.sessionAttribute("aviso", "La donación #" + donacion.getId() + " (" + donacion.getBien().getSubcategoria().nombre()
+        + " · " + donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad() + ") se marcó como vencida.");
+    ctx.redirect("/admin/donaciones");
   }
 
   public Map<String, Object> misDonaciones(Context ctx) {
