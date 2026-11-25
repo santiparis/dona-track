@@ -190,3 +190,44 @@ img.foto { width: 100%; object-fit: cover; border-radius: 8px; }
     border-radius: 999px;
     animation: girar 0.8s linear infinite;
 }
+
+/* Aviso de acción exitosa: arriba a la derecha, debajo del header, y se va solo a los 5 s */
+.aviso-ok {
+    position: fixed;
+    top: 84px;
+    right: 24px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 360px;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background: var(--color-ok-fondo);
+    color: var(--color-ok-texto);
+    border: 1px solid var(--color-ok-texto);
+    font-size: 14px;
+    animation: desaparecer 0.3s ease-in 5s forwards;
+}
+
+.aviso-ok button {
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+@keyframes desaparecer { to { opacity: 0; visibility: hidden; } }
+
+/* En el celular va arriba, a todo el ancho, y empuja el contenido: queda hasta cerrarlo para no dejar un hueco */
+@media (max-width: 768px) {
+    .aviso-ok {
+        position: static;
+        max-width: none;
+        margin: 12px 12px 0;
+        justify-content: space-between;
+        animation: none;
+    }
+}

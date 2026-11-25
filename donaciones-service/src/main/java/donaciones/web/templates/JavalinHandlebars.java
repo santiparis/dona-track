@@ -39,6 +39,8 @@ public class JavalinHandlebars implements FileRenderer {
         vista.put("inicioUsuario", SesionUsuario.destino(usuario.getRol()));
         context.header("Cache-Control", "no-store");
       }
+      // Aviso de la última acción (crear, editar, eliminar): lo deja el POST y se muestra una sola vez
+      vista.put("aviso", context.consumeSessionAttribute("aviso"));
       return handlebars.compile(filePath).apply(vista);
     } catch (IOException e) {
       throw new UncheckedIOException("No se pudo renderizar la plantilla " + filePath, e);

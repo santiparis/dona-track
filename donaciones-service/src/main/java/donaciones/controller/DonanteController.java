@@ -261,6 +261,7 @@ public class DonanteController {
             contactos, medioPredeterminado, usuario);
     personasRepository.agregar(donante);
     notificador.bienvenida(donante, passwordProvisoria);
+    ctx.sessionAttribute("aviso", "Donante registrado. Le enviamos el mail de bienvenida.");
 
     // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
     if ("donacion".equals(ctx.formParam("siguiente"))) {
