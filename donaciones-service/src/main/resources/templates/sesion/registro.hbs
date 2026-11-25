@@ -31,8 +31,8 @@
             <legend>Acceso</legend>
             <p class="hint">Vas a ingresar con el correo electrónico de esta cuenta. La contraseña debe tener entre 8 y 128 caracteres.</p>
             <div class="f2">
-                <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
-                <label>Repetir contraseña<input name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+                <label>Contraseña<span class="con-ojo"><input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="ojo" type="button" aria-label="Mostrar contraseña" aria-pressed="false" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.setAttribute('aria-pressed', i.type === 'text')"><svg class="ojo-abierto" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-tachado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></span></label>
+                <label>Repetir contraseña<span class="con-ojo"><input name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button class="ojo" type="button" aria-label="Mostrar contraseña" aria-pressed="false" onclick="const i = this.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; this.setAttribute('aria-pressed', i.type === 'text')"><svg class="ojo-abierto" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ojo-tachado" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></span></label>
             </div>
         </fieldset>
 
