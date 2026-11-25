@@ -74,4 +74,15 @@ public class RepositorioPersonas implements WithSimplePersistenceUnit {
             .setParameter("umbral", umbral)
             .getResultList();
     }
+
+    // Búsqueda parcial para Registrar donación. El DNI se guarda sin puntos: se le sacan al texto buscado.
+    // De los contactos solo se miran los correos, no los teléfonos
+    public List<Persona> buscarPorNombreDocumentoOEmail(String texto) {
+        return createQuery("select distinct p from Persona p left join p.contactos c "
+                + "where lower(p.nombre) like :texto or p.documento like :documento "
+                + "or (type(c) = ContactoPorEmail and lower(c.valor) like :texto)", Persona.class)
+            .setParameter("texto", "%" + texto.toLowerCase() + "%")
+            .setParameter("documento", "%" + texto.replace(".", "") + "%")
+            .getResultList();
+    }
 }

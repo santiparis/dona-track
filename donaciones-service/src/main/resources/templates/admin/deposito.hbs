@@ -4,16 +4,17 @@
         <a class="btn" href="/admin/donaciones/nueva">Registrar donación</a>
     </div>
 
-    {{#if marcadaVencida}}
-        <p class="aviso" role="status">La donación #{{marcadaVencida.id}} ({{marcadaVencida.bien}} · {{marcadaVencida.cantidad}}) se marcó como vencida.</p>
-    {{/if}}
-
     <form class="buscador" action="/admin/donaciones" method="get">
-        <label class="buscador-filtro">Categoría
-            <select name="categoria">
+        {{!-- Mismo formato que en Registrar donación: la categoría es el título y se elige la subcategoría --}}
+        <label class="buscador-filtro">Subcategoría
+            <select name="subcategoria">
                 <option value="">Todas</option>
                 {{#each categorias}}
-                    <option value="{{valor}}" {{#if (eq valor ../categoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                    <optgroup label="{{texto}}">
+                        {{#each subcategorias}}
+                            <option value="{{valor}}" {{#if (eq valor ../../subcategoriaElegida)}}selected{{/if}}>{{texto}}</option>
+                        {{/each}}
+                    </optgroup>
                 {{/each}}
             </select>
         </label>
@@ -23,7 +24,8 @@
                 <option value="VENCIDA" {{#if (eq venceElegido "VENCIDA")}}selected{{/if}}>Vencidas</option>
             </select>
         </label>
-        <button class="btn2" type="submit">Filtrar</button>
+        <button class="btn" type="submit">Filtrar</button>
+        <a class="btn2" href="/admin/donaciones">Limpiar filtros</a>
     </form>
 
     {{#if donaciones}}

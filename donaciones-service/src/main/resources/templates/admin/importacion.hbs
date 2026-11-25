@@ -6,6 +6,18 @@
 
     {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
 
+    {{!-- Arriba de todo, para que se vea al volver de importar sin hacer scroll --}}
+    {{#with resultado}}
+        <section class="card" aria-live="polite">
+            <h2>Resultado de la importación</h2>
+            <div class="estadisticas">
+                <div class="estadistica"><span class="muted">Filas leídas</span><strong>{{leidas}}</strong></div>
+                <div class="estadistica"><span class="muted">Usuarios creados</span><strong>{{creados}}</strong></div>
+                <div class="estadistica"><span class="muted">Actualizados</span><strong>{{actualizados}}</strong></div>
+            </div>
+        </section>
+    {{/with}}
+
     <form class="card" action="/admin/importacion" method="post" enctype="multipart/form-data"
           onsubmit="this.querySelector('.importando').hidden = false; this.querySelector('button').disabled = true">
         <div class="carga-archivo">
@@ -41,17 +53,6 @@
             </table>
         </div>
     </section>
-
-    {{#with resultado}}
-        <section class="card" aria-live="polite">
-            <h2>Resultado de la importación</h2>
-            <div class="estadisticas">
-                <div class="estadistica"><span class="muted">Filas leídas</span><strong>{{leidas}}</strong></div>
-                <div class="estadistica"><span class="muted">Usuarios creados</span><strong>{{creados}}</strong></div>
-                <div class="estadistica"><span class="muted">Actualizados</span><strong>{{actualizados}}</strong></div>
-            </div>
-        </section>
-    {{/with}}
 {{/partial}}
 
 {{> layout}}

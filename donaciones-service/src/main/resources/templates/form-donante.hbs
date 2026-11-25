@@ -49,7 +49,7 @@
     <legend>Medios de contacto</legend>
     <div class="f2">
         <label>Correo electrónico<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
-        <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="255" pattern="\+?[\d \-]{8,20}" title="Solo números, espacios y guiones, con + al inicio si querés (entre 8 y 20 caracteres). Ej: +54 11 5555-5555"></label>
+        <label>Teléfono (opcional)<input name="telefono" type="tel" value="{{telefono}}" maxlength="20" placeholder="+54 9 11 5555-5555" pattern="\+54 ?9[\d \-]{10,15}" title="Con código de país y 9, sin 0 ni 15. Ej: +54 9 11 5555-5555"></label>
     </div>
     <p class="subtitulo">Medio predeterminado para las notificaciones</p>
     <div class="row">

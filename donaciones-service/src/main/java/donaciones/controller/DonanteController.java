@@ -261,6 +261,7 @@ public class DonanteController {
             contactos, medioPredeterminado, usuario);
     personasRepository.agregar(donante);
     notificador.bienvenida(donante, passwordProvisoria);
+    ctx.sessionAttribute("aviso", "Donante registrado. Le enviamos el mail de bienvenida.");
 
     // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
     if ("donacion".equals(ctx.formParam("siguiente"))) {
@@ -285,6 +286,7 @@ public class DonanteController {
       ResultadoImportacion resultado = new ImportadorPersonas(personasRepository)
           .importarPersonasDesdeCSV(ctx.uploadedFile("archivo").content());
       ctx.sessionAttribute("resultadoImportacion", resultado);
+      ctx.sessionAttribute("aviso", "Importación terminada.");
       ctx.redirect("/admin/importacion", HttpStatus.SEE_OTHER);
     } catch (MapeoCsvEnPersonaException e) {
       Map<String, Object> model = importacion(ctx);

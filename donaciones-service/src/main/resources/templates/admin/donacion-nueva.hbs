@@ -9,16 +9,24 @@
     <section class="card">
         <h2>1. Donante</h2>
         <form class="buscador" action="/admin/donaciones/nueva" method="get">
-            <label class="buscador-texto">Buscar por documento o correo<input name="donante" type="search" value="{{busqueda}}" required></label>
+            <label class="buscador-texto">Buscar por nombre, documento o correo<input name="donante" type="search" value="{{busqueda}}" required></label>
             <button class="btn2" type="submit">Buscar</button>
         </form>
         {{#if donante}}
             <div class="encontrado">
                 <span><strong>{{donante.nombre}}</strong> · {{donante.documento}} · {{donante.email}}</span>
             </div>
+        {{else if resultados}}
+            {{!-- Un recuadro por resultado en vez de una tabla, para que el botón Elegir se vea en el celular --}}
+            {{#each resultados}}
+                <div class="encontrado">
+                    <span><strong>{{nombre}}</strong> · {{documento}} · {{email}}</span>
+                    <a class="btn2 chico" href="/admin/donaciones/nueva?elegido={{id}}">Elegir</a>
+                </div>
+            {{/each}}
         {{else if busqueda}}
             <div class="encontrado">
-                <span>No hay un donante con ese documento o correo.</span>
+                <span>No hay un donante con ese nombre, documento o correo.</span>
                 <a href="/admin/donantes/nuevo">Registrar donante</a>
             </div>
         {{/if}}

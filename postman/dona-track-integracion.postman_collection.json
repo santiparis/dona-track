@@ -164,7 +164,7 @@
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"idDonante\": {{donanteId}},\n  \"descripcion\": \"Donación de prueba E2E\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}", "options": { "raw": { "language": "json" } } },
+            "body": { "mode": "raw", "raw": "{\n  \"idDonante\": {{donanteId}},\n  \"descripcion\": \"Donación de prueba E2E\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}", "options": { "raw": { "language": "json" } } },
             "url": "{{donacionesBaseUrl}}/donaciones"
           }
         },

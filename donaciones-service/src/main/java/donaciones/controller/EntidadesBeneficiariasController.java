@@ -333,6 +333,7 @@ public class EntidadesBeneficiariasController {
     EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
     entidad.registrarNecesidad(crearNecesidad(dto));
     entidadesRepository.guardar(entidad);
+    ctx.sessionAttribute("aviso", "Necesidad registrada.");
     ctx.redirect("/entidad/necesidades");
   }
 
@@ -348,6 +349,7 @@ public class EntidadesBeneficiariasController {
     EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
     entidad.actualizarNecesidadPorId(Long.valueOf(ctx.pathParam("id")), crearNecesidad(dto));
     entidadesRepository.guardar(entidad);
+    ctx.sessionAttribute("aviso", "Necesidad actualizada.");
     ctx.redirect("/entidad/necesidades");
   }
 
@@ -357,6 +359,7 @@ public class EntidadesBeneficiariasController {
     EntidadBeneficiaria entidad = entidadDeLaSesion(ctx);
     entidad.eliminarNecesidadPorId(Long.valueOf(ctx.pathParam("id")));
     entidadesRepository.guardar(entidad);
+    ctx.sessionAttribute("aviso", "Necesidad eliminada.");
     ctx.redirect("/entidad/necesidades");
   }
 
