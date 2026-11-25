@@ -432,17 +432,16 @@ public class DonacionController {
     model.put("rol", "admin");
     model.put("seccion", "donacion-nueva");
 
-    // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
-    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
+    // Paso 1: el donante se busca con un form GET aparte (?donante=parte del nombre, documento o correo)
+    // y se elige de los resultados (?elegido={id})
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "").strip();
     model.put("busqueda", busqueda);
     if (!busqueda.isEmpty()) {
-      personasRepository.buscarPorDocumento(busqueda)
-          .or(() -> personasRepository.buscarPorEmail(busqueda))
-          .ifPresent(d -> model.put("donante", Map.of(
-              "id", d.getId().toString(),
-              "nombre", d.getNombre(),
-              "documento", d.getDocumento(),
-              "email", d.getEmail())));
+      model.put("resultados", personasRepository.buscarPorNombreDocumentoOEmail(busqueda));
+    }
+    String elegido = ctx.queryParam("elegido");
+    if (elegido != null) {
+      personasRepository.buscarPorId(Long.valueOf(elegido)).ifPresent(d -> model.put("donante", d));
     }
 
     // Paso 2: los bienes se cargan de a uno en el navegador (donacion-nueva.js). Cada subcategoría avisa
