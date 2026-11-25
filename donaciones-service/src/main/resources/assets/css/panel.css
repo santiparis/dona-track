@@ -156,3 +156,15 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 
 /* Aviso de que la entidad tiene más necesidades que las que entran en la tarjeta */
 .mas-necesidades { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-principal); }
+
+/* Los avisos traen saltos de línea */
+.notificacion-texto p { white-space: pre-line; }
+
+/* En el celular el botón de marcar como leída baja abajo del texto */
+@media (max-width: 768px) {
+    .notificacion { flex-wrap: wrap; }
+    .notificacion form { flex-basis: 100%; padding-left: 26px; box-sizing: border-box; }
+}
+
+/* "Mi panel" arriba del menú lateral, como el botón del header: más grande que los títulos de cada grupo */
+.menu-lateral .menu-titulo { margin: 6px 10px 2px; font-size: 17px; letter-spacing: normal; text-transform: none; }

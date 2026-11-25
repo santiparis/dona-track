@@ -15,6 +15,7 @@ import donaciones.dto.DonanteRequestDTO;
 import donaciones.dto.DonanteResponseDTO;
 import donaciones.dto.ContactoDTO;
 import donaciones.domain.donante.RepositorioPersonas;
+import donaciones.repository.UsuarioRepository;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorSMS;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
@@ -226,13 +227,21 @@ public class DonanteController {
   }
 
   public void registrarDonante(Context ctx) {
+    // Como en el registro público: un correo ya usado vuelve al form con el aviso, en vez de un 500
+    if (new UsuarioRepository().buscarPorNombreUsuario(ctx.formParam("email")).isPresent()) {
+      Map<String, Object> model = this.donanteNuevo(ctx);
+      for (String campo : List.of("tipo", "nombre", "apellido", "edad", "tipoDoc", "documento", "genero", "direccion",
+          "razonSocial", "tipoJuridica", "rubro", "email", "telefono", "medio")) {
+        model.put(campo, Objects.requireNonNullElse(ctx.formParam(campo), ""));
+      }
+      model.put("error", "Ya existe un donante con ese correo electrónico.");
+      ctx.status(HttpStatus.CONFLICT).render("admin/donante-nuevo", model);
+      return;
+    }
     List<Contacto> contactos = new ArrayList<>();
     contactos.add(new ContactoPorEmail(ctx.formParam("email")));
     if (!ctx.formParam("telefono").isBlank()) {
       contactos.add(new ContactoPorSMS(ctx.formParam("telefono")));
-    }
-    if (!ctx.formParam("whatsapp").isBlank()) {
-      contactos.add(new ContactoPorWhatsApp(ctx.formParam("whatsapp")));
     }
     Contacto medioPredeterminado = contactos.stream()
         .filter(contacto -> contacto.getEstrategia().contains(ctx.formParam("medio")))
@@ -252,6 +261,7 @@ public class DonanteController {
             contactos, medioPredeterminado, usuario);
     personasRepository.agregar(donante);
     notificador.bienvenida(donante, passwordProvisoria);
+    ctx.sessionAttribute("aviso", "Donante registrado. Le enviamos el mail de bienvenida.");
 
     // "Registrar y cargar donación" manda siguiente=donacion para seguir directo con la donación
     if ("donacion".equals(ctx.formParam("siguiente"))) {
@@ -276,6 +286,7 @@ public class DonanteController {
       ResultadoImportacion resultado = new ImportadorPersonas(personasRepository)
           .importarPersonasDesdeCSV(ctx.uploadedFile("archivo").content());
       ctx.sessionAttribute("resultadoImportacion", resultado);
+      ctx.sessionAttribute("aviso", "Importación terminada.");
       ctx.redirect("/admin/importacion", HttpStatus.SEE_OTHER);
     } catch (MapeoCsvEnPersonaException e) {
       Map<String, Object> model = importacion(ctx);

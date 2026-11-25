@@ -20,13 +20,16 @@ import donaciones.domain.donante.Usuario;
 import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.ContactoPorWhatsApp;
+import donaciones.domain.notificacion.Notificacion;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Datos de prueba para la UI. Se cargan solo si la base no tiene personas. */
 public class Seed implements WithSimplePersistenceUnit {
@@ -43,8 +46,9 @@ public class Seed implements WithSimplePersistenceUnit {
   private void cargar() {
     // Administradora
     Contacto correoLaura = new ContactoPorEmail("laura.admin@donatrack.org");
-    persist(new PersonaAdministradora("Laura Méndez", List.of(correoLaura), correoLaura,
-        new Usuario("laura.admin@donatrack.org", "laura123", Rol.ADMINISTRADORA)));
+    PersonaAdministradora laura = new PersonaAdministradora("Laura Méndez", List.of(correoLaura), correoLaura,
+        new Usuario("laura.admin@donatrack.org", "laura123", Rol.ADMINISTRADORA));
+    persist(laura);
 
     // Donantes
     Contacto correoAna = new ContactoPorEmail("ana@mail.com");
@@ -75,6 +79,13 @@ public class Seed implements WithSimplePersistenceUnit {
     persist(juan);
     persist(arcos);
     persist(pastas);
+
+    // Donante con 25 días sin actividad: lo avisa el cron NotificarPersonasInactivas
+    Contacto correoCarlos = new ContactoPorEmail("juanignaciopereyra01@gmail.com");
+    PersonaHumana carlos = new PersonaHumana("Carlos Inactivo", "Pérez", 45, TipoDoc.DNI, "11111111",
+        Genero.MASCULINO, "Av. Siempre Viva 742", List.of(correoCarlos), correoCarlos, null);
+    carlos.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
+    persist(carlos);
 
     // Entidades beneficiarias con sus necesidades, una por subcategoría como en la UI.
     // Lo suplido se carga con registrarSuplido, como si ya hubieran recibido parte.
@@ -210,5 +221,127 @@ public class Seed implements WithSimplePersistenceUnit {
     Donacion lecheVencida = new Donacion(juan, new Bien(Subcategoria.LECHE, 12, "litros", "Leche chocolatada", null, null, hoy.minusDays(2)));
     lecheVencida.cambiarEstado(EstadoDonacion.VENCIDA, null);
     persist(lecheVencida);
+
+    // Notificaciones de la bandeja, con el mismo texto que arma el Notificador: en cada perfil una ya leída y el resto sin leer
+    String firma = "\n\n\nGracias,\nde parte de todo el equipo de DonaTrack";
+    String urlPublica = Objects.requireNonNullElse(System.getenv("DONACIONES_URL_PUBLICA"), "http://localhost:8081");
+    String sillasDeAna = "Donación: 6 unidades de Sillas (Sillas de madera)\nDonada por: Ana\nPara: Escuela Rural N°10\nDirección: Ruta 5 km 32, San Andrés de Giles";
+    String fideosDeAna = "Donación: 40 kg de Fideos (Fideos spaghetti)\nDonada por: Ana\nPara: Comedor Escobar Sonrisas\nDirección: Av. Tapia de Cruz 1200, Escobar";
+    String lecheDeJuan = "Donación: 24 litros de Leche (Leche entera)\nDonada por: Juan\nPara: Comedor Escobar Sonrisas\nDirección: Av. Tapia de Cruz 1200, Escobar";
+    String mesaDeArcos = "Donación: 1 unidades de Mesas (Mesa de madera)\nDonada por: Arcos Plateados S.A.\nPara: Escuela Rural N°10\nDirección: Ruta 5 km 32, San Andrés de Giles";
+    String bancosDeArcos = "Donación: 10 unidades de Bancos (Bancos escolares)\nDonada por: Arcos Plateados S.A.\nPara: Escuela Rural N°10\nDirección: Ruta 5 km 32, San Andrés de Giles";
+
+    Notificacion sillasAsignadasAna = new Notificacion(ana, "Hola, Ana:\n\n¡Tu donación ya tiene destino!\n\n" + sillasDeAna
+        + "\n\nTe vamos a avisar cuando el camión salga a entregarla." + firma);
+    sillasAsignadasAna.marcarComoLeida();
+    persist(sillasAsignadasAna);
+    persist(new Notificacion(ana, "Hola, Ana:\n\n¡La donación llegó a destino!\n\n" + fideosDeAna
+        + "\nComprobante: ENT-1, 22/11/2026 15:40, AB123CD\n\n¡Gracias por hacer posible esta ayuda!" + firma));
+    persist(new Notificacion(ana, "Hola, Ana:\n\n¡La donación está en camino!\n\n" + sillasDeAna
+        + "\n\nSeguí el recorrido del camión en tiempo real:\n" + urlPublica + "/donante/seguimiento" + firma));
+
+    Notificacion lecheAsignadaJuan = new Notificacion(juan, "Hola, Juan:\n\n¡Tu donación ya tiene destino!\n\n" + lecheDeJuan
+        + "\n\nTe vamos a avisar cuando el camión salga a entregarla." + firma);
+    lecheAsignadaJuan.marcarComoLeida();
+    persist(lecheAsignadaJuan);
+    persist(new Notificacion(juan, "Hola, Juan:\n\nNo pudimos completar una entrega.\n\n" + lecheDeJuan
+        + "\nMotivo: Tocamos timbre pero nadie respondió\n\nLa donación vuelve al depósito para volver a entregarla." + firma));
+
+    Notificacion mesaAsignadaArcos = new Notificacion(arcos, "Hola, Arcos Plateados S.A.:\n\n¡Tu donación ya tiene destino!\n\n" + mesaDeArcos
+        + "\n\nTe vamos a avisar cuando el camión salga a entregarla." + firma);
+    mesaAsignadaArcos.marcarComoLeida();
+    persist(mesaAsignadaArcos);
+    persist(new Notificacion(arcos, "Hola, Arcos Plateados S.A.:\n\n¡Tu donación ya tiene destino!\n\n" + bancosDeArcos
+        + "\n\nTe vamos a avisar cuando el camión salga a entregarla." + firma));
+
+    Notificacion bienvenidaPastas = new Notificacion(pastas, "Hola, Pastas del Sur:\n\n¡Te damos la bienvenida a DonaTrack!\n\n"
+        + "Para tu primer acceso, ingresá con estos datos:\nUsuario: \"ventas@pastasdelsur.com\"\nContraseña provisoria: \"pastas123\"" + firma);
+    bienvenidaPastas.marcarComoLeida();
+    persist(bienvenidaPastas);
+    persist(new Notificacion(pastas, "Hola, Pastas del Sur:\n\nHace más de 20 días que no te vemos por DonaTrack.\n\n"
+        + "Hay entidades que siguen necesitando ayuda: te invitamos a hacer una nueva donación en la plataforma." + firma));
+
+    Notificacion mesaAsignadaEscuela = new Notificacion(escuela, "Hola, Escuela Rural N°10:\n\n¡Les asignamos una nueva donación!\n\n" + mesaDeArcos
+        + "\n\nLes vamos a avisar cuando el camión salga a entregarla." + firma);
+    mesaAsignadaEscuela.marcarComoLeida();
+    persist(mesaAsignadaEscuela);
+    persist(new Notificacion(escuela, "Hola, Escuela Rural N°10:\n\n¡Les asignamos una nueva donación!\n\n" + bancosDeArcos
+        + "\n\nLes vamos a avisar cuando el camión salga a entregarla." + firma));
+    persist(new Notificacion(escuela, "Hola, Escuela Rural N°10:\n\n¡La donación está en camino!\n\n" + sillasDeAna
+        + "\n\nSeguí el recorrido del camión en tiempo real:\n" + urlPublica + "/entidad/seguimiento" + firma));
+
+    // Un intento anterior de entregar las sillas de Ana, que después se volvieron a despachar
+    Notificacion sillasFallidaLaura = new Notificacion(laura, "Hola, Laura Méndez:\n\nNo pudimos completar una entrega.\n\n" + sillasDeAna
+        + "\nMotivo: No había nadie para recibirla\n\nLa donación vuelve al depósito para volver a entregarla." + firma);
+    sillasFallidaLaura.marcarComoLeida();
+    persist(sillasFallidaLaura);
+    persist(new Notificacion(laura, "Hola, Laura Méndez:\n\nNo pudimos completar una entrega.\n\n" + lecheDeJuan
+        + "\nMotivo: Tocamos timbre pero nadie respondió\n\nLa donación vuelve al depósito para volver a entregarla." + firma));
+
+    // Entidades y entregas del mapa público de Donaciones entregadas (DatosMock.donacionesEntregadas).
+    // Van al final para no cambiar los ids de las donaciones 8 y 9 que usa el seed de logística
+    Contacto correoMitai = new ContactoPorEmail("merenderomitai@gmail.com");
+    EntidadBeneficiaria mitai = new EntidadBeneficiaria("Merendero Mitaí", "Av. Uruguay 3150, Posadas, Misiones",
+        "(0376) 443-2211", new ArrayList<>(List.of("merenderomitai@gmail.com")),
+        List.of(correoMitai), correoMitai);
+    mitai.registrarNecesidad(new Necesidad(null, true, LocalDate.now(), Periodo.MENSUAL, Map.of(Subcategoria.LECHE, 100)));
+
+    Contacto correoBariloche = new ContactoPorEmail("hogarescuelabariloche@gmail.com");
+    EntidadBeneficiaria bariloche = new EntidadBeneficiaria("Hogar Escuela Bariloche", "Onelli 1450, San Carlos de Bariloche, Río Negro",
+        "(0294) 442-8899", new ArrayList<>(List.of("hogarescuelabariloche@gmail.com")),
+        List.of(correoBariloche), correoBariloche);
+    bariloche.registrarNecesidad(new Necesidad("Invierno", false, LocalDate.now(), null, Map.of(Subcategoria.CAMPERAS, 60)));
+
+    Contacto correoChanguitos = new ContactoPorEmail("comedorloschanguitos@gmail.com");
+    EntidadBeneficiaria changuitos = new EntidadBeneficiaria("Comedor Los Changuitos", "Pasaje Güemes 210, Salta",
+        "(0387) 421-5577", new ArrayList<>(List.of("comedorloschanguitos@gmail.com")),
+        List.of(correoChanguitos), correoChanguitos);
+    changuitos.registrarNecesidad(new Necesidad(null, true, LocalDate.now(), Periodo.SEMANAL, Map.of(Subcategoria.FIDEOS, 80)));
+
+    persist(mitai);
+    persist(bariloche);
+    persist(changuitos);
+
+    Donacion bancosEntregados = new Donacion(arcos, new Bien(Subcategoria.BANCOS, 30, "unidades", "Bancos escolares", null, EstadoBien.NUEVO, null));
+    bancosEntregados.asignarA(escuela);
+    bancosEntregados.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    bancosEntregados.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    bancosEntregados.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(bancosEntregados);
+
+    Donacion sillasEntregadas = new Donacion(arcos, new Bien(Subcategoria.SILLAS, 30, "unidades", "Sillas escolares", null, EstadoBien.NUEVO, null));
+    sillasEntregadas.asignarA(escuela);
+    sillasEntregadas.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    sillasEntregadas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    sillasEntregadas.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(sillasEntregadas);
+
+    Donacion lecheEntregadaComedor = new Donacion(pastas, new Bien(Subcategoria.LECHE, 50, "litros", "Leche entera larga vida", null, null, hoy.plusMonths(1)));
+    lecheEntregadaComedor.asignarA(comedor);
+    lecheEntregadaComedor.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    lecheEntregadaComedor.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    lecheEntregadaComedor.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(lecheEntregadaComedor);
+
+    Donacion lecheEntregadaMitai = new Donacion(juan, new Bien(Subcategoria.LECHE, 60, "litros", "Leche entera", null, null, hoy.plusMonths(1)));
+    lecheEntregadaMitai.asignarA(mitai);
+    lecheEntregadaMitai.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    lecheEntregadaMitai.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    lecheEntregadaMitai.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(lecheEntregadaMitai);
+
+    Donacion camperasEntregadas = new Donacion(ana, new Bien(Subcategoria.CAMPERAS, 40, "unidades", "Camperas de abrigo", null, EstadoBien.USADO, null));
+    camperasEntregadas.asignarA(bariloche);
+    camperasEntregadas.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    camperasEntregadas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    camperasEntregadas.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(camperasEntregadas);
+
+    Donacion fideosEntregadosChanguitos = new Donacion(pastas, new Bien(Subcategoria.FIDEOS, 80, "kg", "Fideos guiseros 500 g", null, null, null));
+    fideosEntregadosChanguitos.asignarA(changuitos);
+    fideosEntregadosChanguitos.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    fideosEntregadosChanguitos.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    fideosEntregadosChanguitos.cambiarEstado(EstadoDonacion.ENTREGADA, null);
+    persist(fideosEntregadosChanguitos);
   }
 }

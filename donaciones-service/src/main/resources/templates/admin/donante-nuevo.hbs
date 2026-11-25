@@ -6,6 +6,7 @@
         <a class="tab {{#if (eq tipo "JURIDICA")}}on{{/if}}" href="/admin/donantes/nuevo?tipo=JURIDICA">Persona jurídica</a>
     </nav>
 
+    {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
     <form class="card" action="/admin/donantes" method="post">
         <input type="hidden" name="tipo" value="{{tipo}}">
 

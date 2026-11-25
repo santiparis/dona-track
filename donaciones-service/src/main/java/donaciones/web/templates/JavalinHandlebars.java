@@ -6,6 +6,7 @@ import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import io.javalin.http.Context;
 import io.javalin.rendering.FileRenderer;
 import donaciones.web.SesionUsuario;
+import donaciones.repository.NotificacionRepository;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -33,9 +34,13 @@ public class JavalinHandlebars implements FileRenderer {
       vista.remove("usuario");
       var usuario = SesionUsuario.actual(context);
       if (usuario != null) {
-        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario(), "rol", usuario.getRol().name()));
+        vista.put("usuario", Map.of("nombre", usuario.getNombreUsuario(), "rol", usuario.getRol().name(),
+            "notificacionesSinLeer", new NotificacionRepository().contarNoLeidasDelUsuario(usuario.getId())));
         vista.put("inicioUsuario", SesionUsuario.destino(usuario.getRol()));
         context.header("Cache-Control", "no-store");
+        // Aviso de la última acción (crear, editar, eliminar): lo deja el POST y se muestra una sola vez.
+        // Solo con sesión iniciada, para no crearle una sesión a quien no entró
+        vista.put("aviso", context.consumeSessionAttribute("aviso"));
       }
       return handlebars.compile(filePath).apply(vista);
     } catch (IOException e) {

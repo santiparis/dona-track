@@ -18,6 +18,10 @@
 
 {{> header}}
 
+{{#if aviso}}
+    <p class="aviso-ok" role="status">{{aviso}}<button type="button" aria-label="Cerrar" onclick="this.parentElement.remove()">✕</button></p>
+{{/if}}
+
 <main class="wrap">
     {{#if rol}}
         {{!-- Las pantallas de cada rol llevan su menú lateral; el header queda con los links públicos --}}

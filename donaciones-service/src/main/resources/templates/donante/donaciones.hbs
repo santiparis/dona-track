@@ -1,6 +1,13 @@
 {{#partial "contenido"}}
     <h1>Mis donaciones</h1>
 
+    {{#unless propias}}
+        <section class="card">
+            <h2>¡Gracias por sumarte a DonaTrack!</h2>
+            <p class="muted">Cada alimento, abrigo, frazada o mueble que dones llega a una escuela, un comedor o una organización que lo necesita. Para hacer tu primera donación, acercate al depósito de UTN Solidaria en <strong>Av. Medrano 951, CABA</strong>, de <strong>9 a 18 h</strong>.</p>
+            <p class="muted">Una persona administradora la registra a tu nombre y desde acá vas a poder seguirla: cuándo se asigna, cuándo sale en camión y cuándo la entidad la recibe.</p>
+        </section>
+    {{else}}
     <form class="card" action="/donante/donaciones" method="get" aria-label="Filtros">
         <div class="f3">
             <label>Estado
@@ -11,8 +18,9 @@
                     {{/each}}
                 </select>
             </label>
+            {{!-- Al cambiar la categoría se destildan las subcategorías de la anterior y se filtra, para mostrar las nuevas --}}
             <label>Categoría
-                <select name="categoria">
+                <select name="categoria" onchange="this.form.querySelectorAll('[name=subcategoria]').forEach(c => c.checked = false); this.form.submit()">
                     <option value="">Todas</option>
                     {{#each categorias}}
                         <option value="{{valor}}" {{#if (eq valor ../categoriaElegida)}}selected{{/if}}>{{texto}}</option>
@@ -75,6 +83,7 @@
     {{else}}
         <p class="muted">No hay donaciones con esos filtros.</p>
     {{/if}}
+    {{/unless}}
 
     {{#if historial}}
         <section id="historial" class="card">

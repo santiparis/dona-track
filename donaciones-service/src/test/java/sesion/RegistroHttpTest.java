@@ -274,7 +274,7 @@ class RegistroHttpTest {
             verificarVista("/entidad/donaciones", propio, ajeno);
             verificarVista("/entidad/necesidades", "Necesidad privada " + i, "Necesidad privada " + otro);
             verificarVista("/entidad/notificaciones", "Aviso entidad " + i, "Aviso entidad " + otro);
-            assertEquals(404, get("/entidad/necesidades?editar=" + ids[otro + 2]).statusCode());
+            assertEquals(404, get("/entidad/necesidades/nueva?editar=" + ids[otro + 2]).statusCode());
             assertEquals(200, get("/entidad/donaciones/" + ids[i] + "/recepcion").statusCode());
             assertEquals(404, get("/entidad/donaciones/" + ids[otro] + "/recepcion").statusCode());
             assertEquals(404, post("/entidad/donaciones/" + ids[otro] + "/no-recibida", Map.of()).statusCode());

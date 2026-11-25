@@ -3,6 +3,7 @@ package donaciones.domain.donante;
 import donaciones.db.TransaccionPorRequest;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +66,23 @@ public class RepositorioPersonas implements WithSimplePersistenceUnit {
         return createQuery("select distinct p from Persona p left join fetch p.usuario join fetch p.contactos "
                 + "join p.contactos c where c.valor in :emails", Persona.class)
             .setParameter("emails", emails)
+            .getResultList();
+    }
+
+    public List<Persona> buscarInactivasDesde(LocalDateTime umbral) {
+        return createQuery("from Persona p where p.ultimaInteraccion < :umbral", Persona.class)
+            .setParameter("umbral", umbral)
+            .getResultList();
+    }
+
+    // Búsqueda parcial para Registrar donación. El DNI se guarda sin puntos: se le sacan al texto buscado.
+    // De los contactos solo se miran los correos, no los teléfonos
+    public List<Persona> buscarPorNombreDocumentoOEmail(String texto) {
+        return createQuery("select distinct p from Persona p left join p.contactos c "
+                + "where lower(p.nombre) like :texto or p.documento like :documento "
+                + "or (type(c) = ContactoPorEmail and lower(c.valor) like :texto)", Persona.class)
+            .setParameter("texto", "%" + texto.toLowerCase() + "%")
+            .setParameter("documento", "%" + texto.replace(".", "") + "%")
             .getResultList();
     }
 }

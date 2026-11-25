@@ -47,10 +47,19 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/donaciones
       AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
       AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
+      DONACIONES_URL: ${DONACIONES_URL:-http://localhost:8081}
+      # Los contenedores corren en UTC: Java toma la zona de acá (historial, notificaciones, crons)
+      TZ: America/Argentina/Buenos_Aires
 
     depends_on:
       mysql:
         condition: service_healthy
+    # Claves de SendGrid y Twilio (fuera de git); sin los archivos, el envío queda simulado
+    env_file:
+      - path: sendgrid.env
+        required: false
+      - path: twilio.env
+        required: false
 
   logistica-api:
     build:
@@ -64,6 +73,7 @@ services:
       PLANIFICADOR_URL: http://mock-planificador:9092/
       DONACIONES_GRPC_HOST: donaciones-api
       DB_URL: jdbc:postgresql://postgres:5432/logistica
+      TZ: America/Argentina/Buenos_Aires
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,6 +85,7 @@ services:
       target: planificador
     environment:
       LOGISTICA_URL: http://logistica-api:7070
+      TZ: America/Argentina/Buenos_Aires
     depends_on:
       - logistica-api
     restart: "no"
@@ -86,6 +97,7 @@ services:
       target: mock-gps
     environment:
       LOGISTICA_URL: http://logistica-api:7070/
+      TZ: America/Argentina/Buenos_Aires
     depends_on:
       - logistica-api
     restart: unless-stopped
@@ -97,6 +109,7 @@ services:
       target: mock-planificador
     environment:
       LOGISTICA_URL: http://logistica-api:7070/
+      TZ: America/Argentina/Buenos_Aires
     depends_on:
       - logistica-api
     restart: unless-stopped

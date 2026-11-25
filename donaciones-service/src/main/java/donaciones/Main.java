@@ -72,7 +72,7 @@ public class Main {
     // Servidor gRPC propio de donaciones-service (puerto 9091)
     try {
       Server gRpcServer = ServerBuilder.forPort(9091)
-          .addService(new DonacionesServiceImpl(donacionesRepository))
+          .addService(new DonacionesServiceImpl(donacionesRepository, notificador, administradorasRepo))
           .build();
       gRpcServer.start();
       System.out.println("Servidor gRPC escuchando en puerto 9091...");

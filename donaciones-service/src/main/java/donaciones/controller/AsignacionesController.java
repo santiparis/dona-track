@@ -236,9 +236,6 @@ public class AsignacionesController {
     model.put("sugerencias", sugerenciaRepository.obtenerTodas().stream()
         .map(AsignacionesController::sugerenciaParaVista)
         .toList());
-    // Después de ejecutar los algoritmos se vuelve con ?ejecutado, y después de confirmar un destino con ?asignada={id}
-    model.put("ejecutado", ctx.queryParam("ejecutado") != null);
-    model.put("asignada", ctx.queryParam("asignada"));
     return model;
   }
 
@@ -310,13 +307,15 @@ public class AsignacionesController {
   public void confirmarDestino(Context ctx) {
     // Lo mismo que PATCH /api/sugerencias/{id}/asignaciones
     asignar(Long.valueOf(ctx.pathParam("id")), ctx.formParamAsClass("entidad", Long.class).get(), null, ctx);
-    ctx.redirect("/admin/asignaciones?asignada=" + ctx.pathParam("id"));
+    ctx.sessionAttribute("aviso", "Se confirmó el destino de la donación #" + ctx.pathParam("id") + ".");
+    ctx.redirect("/admin/asignaciones");
   }
 
   public void ejecutarAlgoritmosAhora(Context ctx) {
     // Lo mismo que POST /api/sugerencias
     this.limpiarSugerencias();
     this.procesarDonacionesEnDeposito();
-    ctx.redirect("/admin/asignaciones?ejecutado");
+    ctx.sessionAttribute("aviso", "Se ejecutaron los algoritmos de asignación sobre las donaciones en depósito.");
+    ctx.redirect("/admin/asignaciones");
   }
 }

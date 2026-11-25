@@ -73,6 +73,8 @@ public class Router {
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante(ctx)));
     app.get("/donante/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoDonante(ctx)));
+    app.post("/donante/notificaciones/leidas", notificacionesController::marcarTodasLeidasDonante);
+    app.post("/donante/notificaciones/{id}/leida", notificacionesController::marcarLeidaDonante);
 
     app.get("/entidad/necesidades", ctx -> ctx.render("entidad/necesidades", entidadesController.necesidades(ctx)));
     app.post("/entidad/necesidades", entidadesController::registrarNecesidad);
@@ -87,6 +89,8 @@ public class Router {
     app.get("/entidad/seguimiento", ctx -> ctx.render("seguimiento", camionesController.seguimientoEntidad(ctx)));
     app.get("/entidad/necesidades/nueva", ctx -> ctx.render("entidad/necesidad-form", entidadesController.formularioNecesidad(ctx)));
     app.get("/entidad/donaciones/{id}/no-recibida", ctx -> ctx.render("entidad/no-recibida", donacionController.noRecibida(ctx)));
+    app.post("/entidad/notificaciones/leidas", notificacionesController::marcarTodasLeidasEntidad);
+    app.post("/entidad/notificaciones/{id}/leida", notificacionesController::marcarLeidaEntidad);
 
     app.get("/admin/donantes/nuevo", ctx -> ctx.render("admin/donante-nuevo", donanteController.donanteNuevo(ctx)));
     app.post("/admin/donantes", donanteController::registrarDonante);
@@ -105,6 +109,9 @@ public class Router {
     app.post("/admin/camiones/{id}/eliminar", camionesController::eliminarCamion);
     app.get("/admin/importacion", ctx -> ctx.render("admin/importacion", donanteController.importacion(ctx)));
     app.post("/admin/importacion", donanteController::importar);
+    app.get("/admin/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesAdmin(ctx)));
+    app.post("/admin/notificaciones/leidas", notificacionesController::marcarTodasLeidasAdmin);
+    app.post("/admin/notificaciones/{id}/leida", notificacionesController::marcarLeidaAdmin);
 
     // API REST
 

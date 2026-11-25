@@ -156,19 +156,19 @@ public class DonacionController {
     }
   }
 
-  // Logistica informa el nuevo estado; datosAdicionales depende del estado (url del mapa, patente o motivo)
+  // Logistica informa el nuevo estado; datosAdicionales depende del estado (patente o motivo)
   private void cambiarEstado(Donacion donacion, DonacionPatchDTO dto) {
     switch (EstadoDonacion.valueOf(dto.estado())) {
-      case EN_TRASLADO -> this.marcarEnTraslado(donacion, dto.datosAdicionales());
+      case EN_TRASLADO -> this.marcarEnTraslado(donacion);
       case ENTREGADA -> this.confirmarEntrega(donacion, dto.datosAdicionales());
       case ENTREGA_FALLIDA -> this.registrarEntregaFallida(donacion, dto.datosAdicionales());
       default -> throw new IllegalArgumentException("Estado no soportado: " + dto.estado());
     }
   }
 
-  private void marcarEnTraslado(Donacion donacion, String urlMapa) {
+  private void marcarEnTraslado(Donacion donacion) {
     donacion.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
-    notificador.inicioDeTraslado(donacion, urlMapa);
+    notificador.inicioDeTraslado(donacion);
   }
 
   private void confirmarEntrega(Donacion donacion, String patenteCamion) {
@@ -432,17 +432,16 @@ public class DonacionController {
     model.put("rol", "admin");
     model.put("seccion", "donacion-nueva");
 
-    // Paso 1: el donante se busca con un form GET aparte (?donante=documento o correo)
-    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "");
+    // Paso 1: el donante se busca con un form GET aparte (?donante=parte del nombre, documento o correo)
+    // y se elige de los resultados (?elegido={id})
+    String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "").strip();
     model.put("busqueda", busqueda);
     if (!busqueda.isEmpty()) {
-      personasRepository.buscarPorDocumento(busqueda)
-          .or(() -> personasRepository.buscarPorEmail(busqueda))
-          .ifPresent(d -> model.put("donante", Map.of(
-              "id", d.getId().toString(),
-              "nombre", d.getNombre(),
-              "documento", d.getDocumento(),
-              "email", d.getEmail())));
+      model.put("resultados", personasRepository.buscarPorNombreDocumentoOEmail(busqueda));
+    }
+    String elegido = ctx.queryParam("elegido");
+    if (elegido != null) {
+      personasRepository.buscarPorId(Long.valueOf(elegido)).ifPresent(d -> model.put("donante", d));
     }
 
     // Paso 2: los bienes se cargan de a uno en el navegador (donacion-nueva.js). Cada subcategoría avisa
@@ -477,6 +476,7 @@ public class DonacionController {
           null));
     }
     crearDonacion(new DonacionRequestDTO(Long.valueOf(ctx.formParam("donante")), ctx.formParam("descripcion"), bienes));
+    ctx.sessionAttribute("aviso", "Donación registrada.");
     ctx.redirect("/admin/donaciones");
   }
 
@@ -485,8 +485,8 @@ public class DonacionController {
   }
 
   public Map<String, Object> deposito(Context ctx) {
-    // Los filtros viajan en la URL: ?categoria=...&vence=VENCIDA
-    String categoria = Objects.requireNonNullElse(ctx.queryParam("categoria"), "");
+    // Los filtros viajan en la URL: ?subcategoria=...&vence=VENCIDA
+    String subcategoria = Objects.requireNonNullElse(ctx.queryParam("subcategoria"), "");
     String vence = Objects.requireNonNullElse(ctx.queryParam("vence"), "");
 
     Map<String, Object> model = new HashMap<>();
@@ -498,7 +498,7 @@ public class DonacionController {
     model.put("donaciones", donacionesRepository.obtenerTodas().stream()
         // Las vencidas siguen en el depósito, marcadas: las marca a mano la administradora
         .filter(d -> d.getEstado() == EstadoDonacion.EN_DEPOSITO || d.getEstado() == EstadoDonacion.VENCIDA)
-        .filter(d -> categoria.isEmpty() || categoria.equals(d.getBien().getSubcategoria().getCategoria().name()))
+        .filter(d -> subcategoria.isEmpty() || subcategoria.equals(d.getBien().getSubcategoria().name()))
         .filter(d -> vence.isEmpty() || d.getEstado() == EstadoDonacion.VENCIDA)
         .map(d -> Map.of(
             "id", d.getId().toString(),
@@ -511,21 +511,17 @@ public class DonacionController {
             "vencimiento", d.getEstado() == EstadoDonacion.VENCIDA ? "VENCIDA"
                 : d.getBien().getVencimiento() == null ? "NO_APLICA" : ""))
         .toList());
+    // Como en Registrar donación: cada categoría con sus subcategorías
     model.put("categorias", Arrays.stream(Categoria.values())
-        .map(c -> Map.of("valor", c.name(), "texto", c.nombre()))
+        .map(c -> Map.of(
+            "texto", c.nombre(),
+            "subcategorias", Arrays.stream(Subcategoria.values())
+                .filter(s -> s.getCategoria() == c)
+                .map(s -> Map.of("valor", s.name(), "texto", s.nombre()))
+                .toList()))
         .toList());
-    model.put("categoriaElegida", categoria);
+    model.put("subcategoriaElegida", subcategoria);
     model.put("venceElegido", vence);
-
-    // Después de marcar una como vencida se vuelve con ?vencida={id} para mostrar el aviso
-    String idVencida = ctx.queryParam("vencida");
-    if (idVencida != null) {
-      donacionesRepository.buscarPorId(Long.parseLong(idVencida))
-          .ifPresent(d -> model.put("marcadaVencida", Map.of(
-              "id", idVencida,
-              "bien", d.getBien().getSubcategoria().nombre(),
-              "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad())));
-    }
     return model;
   }
 
@@ -533,7 +529,9 @@ public class DonacionController {
     Donacion donacion = donacionesRepository.buscarPorId(Long.parseLong(ctx.pathParam("id")))
         .orElseThrow(NotFoundResponse::new);
     donacion.cambiarEstado(EstadoDonacion.VENCIDA, null);
-    ctx.redirect("/admin/donaciones?vencida=" + ctx.pathParam("id"));
+    ctx.sessionAttribute("aviso", "La donación #" + donacion.getId() + " (" + donacion.getBien().getSubcategoria().nombre()
+        + " · " + donacion.getBien().getCantidad() + " " + donacion.getBien().getUnidad() + ") se marcó como vencida.");
+    ctx.redirect("/admin/donaciones");
   }
 
   public Map<String, Object> misDonaciones(Context ctx) {
@@ -556,6 +554,8 @@ public class DonacionController {
         .toList();
     model.put("donaciones", donaciones);
     model.put("total", donaciones.size());
+    // Sin ninguna donación propia, la vista muestra el cartel de bienvenida
+    model.put("propias", propias);
 
     model.put("estados", Arrays.stream(EstadoDonacion.values())
         .map(e -> Map.of("valor", e.name(), "texto", e.nombre()))
@@ -672,7 +672,9 @@ public class DonacionController {
       TransaccionPorRequest.despuesDelCommit(() -> {
         try {
           ReportarEntregaResponse response = logisticaGrpcClient.reportarEntrega(donacionId, true, comentario);
-          if (!response.getExito()) {
+          if (response.getExito()) {
+            ctx.sessionAttribute("aviso", "Recepción confirmada.");
+          } else {
             ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
           }
         } catch (RuntimeException e) {
@@ -747,6 +749,7 @@ public class DonacionController {
         return;
       }
 
+      ctx.sessionAttribute("aviso", "Registramos que no recibiste la donación.");
       ctx.redirect("/entidad/donaciones");
     } catch (Exception e) {
       ctx.status(500).result("Error al procesar el rechazo: " + e.getMessage());
@@ -801,8 +804,8 @@ public class DonacionController {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Donaciones entregadas");
     model.put("seccion", "entregadas");
-    // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
-    model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    // MOCK: las coordenadas de la entidad y la foto todavía salen de DatosMock
+    model.put("entregas", DatosMock.donacionesEntregadas(donacionesRepository.buscarPorEstado(EstadoDonacion.ENTREGADA)));
     return model;
   }
 
