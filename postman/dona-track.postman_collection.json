@@ -84,7 +84,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donacion de prueba para integracion\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"unidad\": \"kg\",\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}"
+              "raw": "{\n  \"idDonante\": 1,\n  \"descripcion\": \"Donacion de prueba para integracion\",\n  \"bienes\": [\n    {\n      \"requiereEstado\": false,\n      \"requiereVencimiento\": false,\n      \"nombreSubcategoria\": \"ARROZ\",\n      \"cantidad\": 10,\n      \"descripcion\": \"Bolsas de arroz\",\n      \"estado\": null,\n      \"vencimiento\": null,\n      \"foto\": null\n    }\n  ]\n}"
             },
             "url": "http://localhost:8081/api/donaciones"
           },
