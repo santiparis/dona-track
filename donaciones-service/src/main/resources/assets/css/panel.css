@@ -165,3 +165,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
     .notificacion { flex-wrap: wrap; }
     .notificacion form { flex-basis: 100%; padding-left: 26px; box-sizing: border-box; }
 }
+
+/* "Mi panel" arriba del menú lateral, como el botón del header: más grande que los títulos de cada grupo */
+.menu-lateral .menu-titulo { margin: 6px 10px 2px; font-size: 17px; letter-spacing: normal; text-transform: none; }
