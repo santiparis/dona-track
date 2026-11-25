@@ -797,8 +797,8 @@ public class DonacionController {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Donaciones entregadas");
     model.put("seccion", "entregadas");
-    // List<Donacion> entregadas = donacionesRepository.obtenerTodas().stream().filter(d -> d.getEstado() == EstadoDonacion.ENTREGADA).toList();
-    model.put("entregas", DatosMock.donacionesEntregadas());   // MOCK
+    // MOCK: las coordenadas de la entidad y la foto todavía salen de DatosMock
+    model.put("entregas", DatosMock.donacionesEntregadas(donacionesRepository.buscarPorEstado(EstadoDonacion.ENTREGADA)));
     return model;
   }
 
