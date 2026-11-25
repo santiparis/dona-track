@@ -554,6 +554,8 @@ public class DonacionController {
         .toList();
     model.put("donaciones", donaciones);
     model.put("total", donaciones.size());
+    // Sin ninguna donación propia, la vista muestra el cartel de bienvenida
+    model.put("propias", propias);
 
     model.put("estados", Arrays.stream(EstadoDonacion.values())
         .map(e -> Map.of("valor", e.name(), "texto", e.nombre()))
