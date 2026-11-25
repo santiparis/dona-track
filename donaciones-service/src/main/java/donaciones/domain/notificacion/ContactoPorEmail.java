@@ -29,14 +29,13 @@ public class ContactoPorEmail extends Contacto {
         String apiKey = System.getenv("SENDGRID_API_KEY");
 
         // Modo simulado: sin credenciales se registra el envío y se retorna éxito, para no
-        // consumir cuota externa ni exigir configuración al correr mvn test o la importación masiva.
+        // consumir cuota externa ni exigir configuración al correr mvn test.
         if (estaSinConfigurar(remitente) || estaSinConfigurar(apiKey)) {
             logger.info("[SIMULADO] Email a {}: {}", getValor(), mensaje);
             return true;
         }
 
-        // Para enviar mails realmente hay que tener la apikey cargada en el sengrind.env
-        // Y correr este comando en la terminal: source sendgrid.env 
+        // Cómo cargar las claves: documentacion/entrega4/notificaciones.md
         Email from = new Email(remitente);
         String subject = "Notificación del sistema DonaTrack";
         Email to = new Email(getValor());

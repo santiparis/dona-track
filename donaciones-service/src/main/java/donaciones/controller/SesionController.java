@@ -51,6 +51,8 @@ public class SesionController {
     }
 
     SesionUsuario.iniciar(ctx, usuario);
+    // Solo los donantes tienen Persona: cuenta para el aviso de inactividad
+    new RepositorioPersonas().buscarPorUsuario(usuario.getId()).ifPresent(Persona::registrarInteraccion);
     ctx.redirect(SesionUsuario.destino(usuario.getRol()), HttpStatus.SEE_OTHER);
   }
 
@@ -121,15 +123,11 @@ public class SesionController {
     Contacto correo = new ContactoPorEmail(email);
     contactos.add(correo);
     String telefono = campo(ctx, "telefono");
-    String whatsapp = campo(ctx, "whatsapp");
     Contacto sms = telefono.isEmpty() ? null : new ContactoPorSMS(telefono);
-    Contacto wa = whatsapp.isEmpty() ? null : new ContactoPorWhatsApp(whatsapp);
     if (sms != null) contactos.add(sms);
-    if (wa != null) contactos.add(wa);
     Contacto preferido = switch (campo(ctx, "medio")) {
       case "EMAIL" -> correo;
       case "SMS" -> sms;
-      case "WHATSAPP" -> wa;
       default -> throw new IllegalArgumentException("Elegí un medio de contacto válido.");
     };
     if (preferido == null) {
@@ -145,7 +143,7 @@ public class SesionController {
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("La edad debe ser un número entero.");
         }
-        if (edad < 0 || edad > 150) throw new IllegalArgumentException("La edad debe estar entre 0 y 150.");
+        if (edad < 0 || edad > 100) throw new IllegalArgumentException("La edad debe estar entre 0 y 100.");
       }
       if (!"DNI".equals(campo(ctx, "tipoDoc"))) throw new IllegalArgumentException("El tipo de documento debe ser DNI.");
       Genero genero = opcion(Genero.class, campo(ctx, "genero"), "Elegí un género válido.");
@@ -180,7 +178,7 @@ public class SesionController {
     Map<String, Object> model = registro(ctx);
     // Se conservan los datos del formulario, nunca las contraseñas.
     for (String campo : List.of("nombre", "apellido", "documento", "edad", "genero", "direccion",
-        "razonSocial", "tipoJuridica", "rubro", "email", "telefono", "whatsapp", "medio", "correos")) {
+        "razonSocial", "tipoJuridica", "rubro", "email", "telefono", "medio", "correos")) {
       model.put(campo, Objects.requireNonNullElse(ctx.formParam(campo), ""));
     }
     String tipo = ctx.formParam("tipo");

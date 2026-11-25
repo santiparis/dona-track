@@ -3,6 +3,7 @@ package donaciones.domain.donante;
 import donaciones.db.TransaccionPorRequest;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +66,12 @@ public class RepositorioPersonas implements WithSimplePersistenceUnit {
         return createQuery("select distinct p from Persona p left join fetch p.usuario join fetch p.contactos "
                 + "join p.contactos c where c.valor in :emails", Persona.class)
             .setParameter("emails", emails)
+            .getResultList();
+    }
+
+    public List<Persona> buscarInactivasDesde(LocalDateTime umbral) {
+        return createQuery("from Persona p where p.ultimaInteraccion < :umbral", Persona.class)
+            .setParameter("umbral", umbral)
             .getResultList();
     }
 }

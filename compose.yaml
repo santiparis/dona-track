@@ -47,10 +47,17 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/donaciones
       AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
       AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
+      DONACIONES_URL: ${DONACIONES_URL:-http://localhost:8081}
 
     depends_on:
       mysql:
         condition: service_healthy
+    # Claves de SendGrid y Twilio (fuera de git); sin los archivos, el envío queda simulado
+    env_file:
+      - path: sendgrid.env
+        required: false
+      - path: twilio.env
+        required: false
 
   logistica-api:
     build:

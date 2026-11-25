@@ -24,6 +24,8 @@ public class Notificacion {
     private EstadoNotificacion estado;
     @Column(nullable = false)
     private LocalDateTime fecha;
+    @Column(nullable = false)
+    private boolean leida;
 
     protected Notificacion() { }
 
@@ -71,5 +73,11 @@ public class Notificacion {
 
     public void marcarComoFallida() {
         this.estado = EstadoNotificacion.FALLIDA;
+    }
+
+    public boolean isLeida() { return leida; }
+
+    public void marcarComoLeida() {
+        this.leida = true;
     }
 }

@@ -1,3 +1,5 @@
+package notificaciones;
+
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
@@ -13,12 +15,14 @@ import java.util.List;
  * Para ejecutar este envío real desde la terminal:
  * 1. Carga las variables de entorno de SendGrid:
  *    source sendgrid.env
- * 2. Ejecuta esta clase desde tu IDE o con Maven:
- *    mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="EnvioNotificacionEmailReal" -Dexec.classpathScope="test"
+ * 2. Ejecuta esta clase desde tu IDE o con Maven, parado en la raíz del repo:
+ *    mvn test-compile exec:java -pl donaciones-service -Dexec.mainClass="notificaciones.EnvioNotificacionEmailReal" -Dexec.classpathScope="test"
  * -
  * Para ejecutarlo desde el intelliJ:
  * 1. Editar la Run Configuration
  * 2. Agregar el path al sendgrid.env
+ * -
+ * Guía completa: documentacion/entrega4/notificaciones.md
  */
 public class EnvioNotificacionEmailReal {
 
@@ -35,6 +39,8 @@ public class EnvioNotificacionEmailReal {
             Notificacion notifEmail = destinatario.notificar("¡Hola! Esta es una prueba REAL por Email desde DonaTrack.");
             if (notifEmail != null && notifEmail.getEstado() == EstadoNotificacion.COMPLETADA) {
                 System.out.println(" -> Envío Email finalizado con éxito.");
+            } else {
+                System.err.println(" -> El envío de Email falló: revisar el error de SendGrid en el log.");
             }
         } catch (Exception ex) {
             System.err.println(" -> Error o falta de credenciales al intentar enviar Email: " + ex.getMessage());

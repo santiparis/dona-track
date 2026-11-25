@@ -136,10 +136,11 @@ class AccesoHttpTest {
         for (String ruta : new String[]{"/donante/donaciones", "/", "/legal"}) {
             var respuesta = get(ruta);
             assertEquals(200, respuesta.statusCode());
-            assertTrue(respuesta.body().contains("<span>donante</span>"));
+            assertTrue(respuesta.body().contains("<summary>donante<"));
             assertFalse(respuesta.body().contains("Usuario de ejemplo"));
             assertTrue(respuesta.body().contains("action=\"/logout\" method=\"post\""));
-            assertTrue(respuesta.body().contains("href=\"/donante/donaciones\">Mi cuenta"));
+            assertTrue(respuesta.body().contains("href=\"/donante/donaciones\""));
+            assertTrue(respuesta.body().contains(">Mi panel</a>"));
             assertEquals("no-store", respuesta.headers().firstValue("Cache-Control").orElseThrow());
         }
     }

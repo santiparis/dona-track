@@ -1,4 +1,11 @@
+package notificaciones;
+
+import donaciones.controller.Notificador;
+import donaciones.domain.Bien;
+import donaciones.domain.Donacion;
 import donaciones.domain.EntidadBeneficiaria;
+import donaciones.domain.PersonaAdministradora;
+import donaciones.domain.Subcategoria;
 import donaciones.domain.donante.Genero;
 import donaciones.domain.donante.PersonaHumana;
 import donaciones.domain.donante.TipoDoc;
@@ -6,6 +13,7 @@ import donaciones.domain.notificacion.Contacto;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.domain.notificacion.EstadoNotificacion;
 import donaciones.domain.notificacion.Notificacion;
+import donaciones.repository.NotificacionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +22,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -125,5 +136,76 @@ public class NotificacionTest {
         Notificacion notificacion = persona.notificar(mensaje);
 
         assertEquals(mensaje, notificacion.getMensaje());
+    }
+
+    // Avisos del Notificador: el repositorio y el contacto de la entidad son mocks, así que no se envía ni se guarda nada
+
+    private final NotificacionRepository repositorio = mock(NotificacionRepository.class);
+    private final Notificador notificador = new Notificador(repositorio);
+    private final Contacto contactoEntidad = mock(Contacto.class);
+
+    // Ana (avisa por contactoQueEnvia) dona 100 paquetes de fideos al comedor
+    private Donacion donacionAlComedor() {
+        Donacion donacion = new Donacion(personaCon(List.of(contactoQueEnvia), contactoQueEnvia),
+            new Bien(Subcategoria.FIDEOS, 100, "paquetes", null, null, null, null));
+        donacion.asignarA(new EntidadBeneficiaria("Comedor Escobar Sonrisas", "Av. Tapia de Cruz 1200, Escobar",
+            "112233", List.of("comedor@example.org"), List.of(contactoEntidad), contactoEntidad));
+        return donacion;
+    }
+
+    @Test
+    public void testLaDonacionAsignadaSeAvisaAlDonanteYALaEntidad() {
+        notificador.donacionAsignada(donacionAlComedor());
+
+        verify(contactoQueEnvia).enviar(contains("Comedor Escobar Sonrisas"));
+        verify(contactoEntidad).enviar(anyString());
+        verify(repositorio, times(2)).guardar(any(Notificacion.class));
+    }
+
+    @Test
+    public void testElInicioDeTrasladoLlevaElLinkAlSeguimientoDeCadaUno() {
+        notificador.inicioDeTraslado(donacionAlComedor());
+
+        verify(contactoQueEnvia).enviar(contains("/donante/seguimiento"));
+        verify(contactoEntidad).enviar(contains("/entidad/seguimiento"));
+    }
+
+    @Test
+    public void testLaEntregaExitosaDetallaLoEntregadoYElComprobante() {
+        notificador.entregaConfirmada(donacionAlComedor(), "ENT-2, 24/11/2026 02:32, AE456FG");
+
+        verify(contactoQueEnvia).enviar(contains("100 paquetes de Fideos"));
+        verify(contactoEntidad).enviar(contains("ENT-2, 24/11/2026 02:32, AE456FG"));
+    }
+
+    @Test
+    public void testLaEntregaFallidaSeAvisaTambienALasAdministradoras() {
+        Contacto contactoAdministradora = mock(Contacto.class);
+        String motivo = "Tocamos timbre pero nadie respondió";
+
+        notificador.entregaFallida(donacionAlComedor(), motivo,
+            List.of(new PersonaAdministradora("Laura Méndez", List.of(contactoAdministradora), contactoAdministradora)));
+
+        verify(contactoAdministradora).enviar(contains(motivo));
+        verify(repositorio, times(3)).guardar(any(Notificacion.class));
+    }
+
+    @Test
+    public void testElAvisoSeGuardaConElResultadoDelEnvio() {
+        notificador.ausencia(personaCon(List.of(contactoQueEnvia), contactoQueEnvia), 20);
+        notificador.ausencia(personaCon(List.of(contactoQueFalla), contactoQueFalla), 20);
+
+        verify(repositorio).guardar(argThat(n -> n.getEstado() == EstadoNotificacion.COMPLETADA));
+        verify(repositorio).guardar(argThat(n -> n.getEstado() == EstadoNotificacion.FALLIDA));
+    }
+
+    @Test
+    public void testSinContactosNoSeGuardaElAvisoDeEseReceptor() {
+        Donacion donacion = donacionAlComedor();
+        donacion.asignarA(new EntidadBeneficiaria("Escuela Rural N°10", "Ruta 8 km 60", "445566", List.of("escuela@example.org")));
+
+        notificador.donacionAsignada(donacion);
+
+        verify(repositorio, times(1)).guardar(any(Notificacion.class));
     }
 }
