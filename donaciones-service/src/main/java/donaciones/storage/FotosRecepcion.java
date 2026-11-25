@@ -86,7 +86,13 @@ public class FotosRecepcion {
         .header("If-None-Match", "*")
         .PUT(HttpRequest.BodyPublishers.ofByteArray(foto.bytes())).build(),
         HttpResponse.BodyHandlers.discarding());
-    if (respuesta.statusCode() != 201) throw new IllegalStateException("No se pudo guardar la foto.");
+    if (respuesta.statusCode() != 201) {
+      String codigoAzure = respuesta.headers().firstValue("x-ms-error-code")
+          .filter(codigo -> codigo.matches("[A-Za-z][A-Za-z0-9]{0,79}"))
+          .map(codigo -> ", Azure " + codigo)
+          .orElse("");
+      throw new IllegalStateException("No se pudo guardar la foto (HTTP " + respuesta.statusCode() + codigoAzure + ").");
+    }
   }
 
   public byte[] leer(String id) {
