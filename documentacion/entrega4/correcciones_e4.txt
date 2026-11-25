@@ -11,7 +11,7 @@ Actualmente el boton de "Mi cuenta" no redirige a ningun lado. Pensar como arreg
 Las pantallas/menu del admin no es consistente con el donante/entidad beneficiaria.
 Los formularios deben tener validaciones de formato de entrada de texto en español. Formato de mail, telefono, password, DNI, CUIT.
 Regla general de botones, tienen que funcionar, no pueden estar ahi si no llevan a ningun lado.
-Agregar foto opcional al momento de registrar donaciones.
+Agregar foto opcional al momento de registrar donaciones. **Completado:** carga en Azure Blob y visualización para administradora, donante y entidad.
 No hay subcategoria en Electrodomesticos, ver como arreglar esto.
 Arreglar pantalla registrar donacion.
 Fecha de vencimiento tiene que ser mas dinamico.

@@ -72,6 +72,10 @@
                 </label>
                 <label id="campo-vencimiento">Vencimiento<input id="bien-vencimiento" type="date"></label>
             </div>
+            <label>Foto del bien (opcional)
+                <input id="bien-foto" type="file" accept="image/jpeg,image/png">
+            </label>
+            <p class="hint">JPG o PNG, hasta 5 MB. Se guarda en Azure Blob Storage.</p>
             <p class="error-form" id="bien-error" role="alert" hidden></p>
             <div class="row">
                 <button class="btn" type="button" id="agregar-bien">Agregar a la lista</button>
@@ -86,6 +90,7 @@
                         <th scope="col">Subcategoría</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Detalle</th>
+                        <th scope="col">Foto</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>

@@ -16,6 +16,7 @@ function abrir(titulo) {
 
 function cerrar() {
     datos.forEach(dato => campo("bien-" + dato).value = "");
+    campo("bien-foto").value = "";
     campo("bien-error").hidden = true;
     campo("bien").hidden = true;
     editando = null;
@@ -27,6 +28,8 @@ function validar(bien, opcion) {
     if (!(bien.cantidad > 0)) return "Ingresá una cantidad mayor a 0.";
     if (opcion.dataset.estado && !bien.estado) return "Elegí si es nuevo o usado.";
     if (opcion.dataset.vence && !bien.vencimiento) return "Este bien es perecedero: ingresá el vencimiento.";
+    if (bien.foto && !["image/jpeg", "image/png"].includes(bien.foto.type)) return "La foto debe ser JPG o PNG.";
+    if (bien.foto && bien.foto.size > 5 * 1024 * 1024) return "La foto puede pesar hasta 5 MB.";
     return "";
 }
 
@@ -34,6 +37,8 @@ function agregarBien() {
     const opcion = campo("bien-subcategoria").selectedOptions[0];
     const bien = { nombre: opcion.textContent };
     datos.forEach(dato => bien[dato] = campo("bien-" + dato).value);
+    const fotoNueva = campo("bien-foto").files[0];
+    bien.foto = fotoNueva || (editando === null ? null : bienes[editando].foto);
 
     const error = validar(bien, opcion);
     campo("bien-error").textContent = error;
@@ -65,10 +70,12 @@ function quitarBien(posicion) {
 function fila(bien, posicion) {
     const ocultos = datos.map(dato => `<input type="hidden" name="bienes[${posicion}].${dato}" value="${escapar(bien[dato])}">`);
     const detalle = [bien.estado, bien.vencimiento, bien.descripcion].filter(Boolean).join(" · ") || "—";
+    const nombreFoto = bien.foto ? escapar(bien.foto.name) : "—";
     return `<tr>
         <td>${escapar(bien.nombre)}</td>
         <td>${escapar(bien.cantidad + " " + bien.unidad)}</td>
         <td>${escapar(detalle)}</td>
+        <td>${nombreFoto}<input id="foto-bien-${posicion}" type="file" name="bienes[${posicion}].foto" accept="image/jpeg,image/png" hidden></td>
         <td>
             <div class="acciones-tabla">
                 <button class="btn2 chico" type="button" onclick="editarBien(${posicion})">Editar</button>
@@ -81,6 +88,12 @@ function fila(bien, posicion) {
 
 function dibujarTabla() {
     campo("bienes").innerHTML = bienes.map(fila).join("");
+    bienes.forEach((bien, posicion) => {
+        if (!bien.foto) return;
+        const transferencia = new DataTransfer();
+        transferencia.items.add(bien.foto);
+        campo("foto-bien-" + posicion).files = transferencia.files;
+    });
     campo("bienes-titulo").textContent = "2. Bienes (" + bienes.length + ")";
     campo("sin-bienes").hidden = bienes.length > 0;
     campo("registrar").disabled = bienes.length === 0;

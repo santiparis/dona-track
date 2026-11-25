@@ -46,6 +46,7 @@ import java.util.Optional;
 
 public class DonacionController {
   private static final Logger logger = LoggerFactory.getLogger(DonacionController.class);
+  private static final String PREFIJO_FOTO_BLOB = "blob:";
 
   private final DonacionRepository donacionesRepository;
   private final RepositorioPersonas personasRepository;
@@ -199,7 +200,7 @@ public class DonacionController {
     return new DonacionResponseDTO(
         donacion.getId(),
         toDonanteResponseDTO(donacion.getDonante()),
-        toBienResponseDTO(donacion.getBien()),
+        toBienResponseDTO(donacion),
         donacion.getEstado() == null ? null : donacion.getEstado().name(),
         donacion.getFecha() == null ? null : donacion.getFecha().toString(),
         donacion.getHistorialEstados().stream()
@@ -250,7 +251,8 @@ public class DonacionController {
     );
   }
 
-  private static BienResponseDTO toBienResponseDTO(Bien bien) {
+  private static BienResponseDTO toBienResponseDTO(Donacion donacion) {
+    Bien bien = donacion.getBien();
     if (bien == null) {
       return null;
     }
@@ -262,8 +264,14 @@ public class DonacionController {
         bien.getEstado() == null ? null : bien.getEstado().name(),
         bien.getVencimiento() == null ? null : bien.getVencimiento().toString(),
         bien.getDescripcion(),
-        bien.getFoto()
+        fotoBienApi(donacion)
     );
+  }
+
+  private static String fotoBienApi(Donacion donacion) {
+    String foto = donacion.getBien() == null ? null : donacion.getBien().getFoto();
+    if (foto == null || !foto.startsWith(PREFIJO_FOTO_BLOB)) return foto;
+    return "/donaciones-entregadas/" + donacion.getId() + "/foto-bien";
   }
 
   private static RegistroCambioEstadoDTO toRegistroDTO(RegistroCambioEstado registro) {
@@ -417,9 +425,13 @@ public class DonacionController {
     if (donacionOpt.isPresent()) {
       Donacion donacion = donacionOpt.get();
       var idsFotos = donacion.getFotosRecepcion().keySet();
+      String referenciaFotoBien = donacion.getBien() == null ? null : donacion.getBien().getFoto();
       donacionesRepository.eliminar(donacion);
       if (!idsFotos.isEmpty()) {
         TransaccionPorRequest.despuesDelCommit(() -> idsFotos.forEach(this::retirarFoto));
+      }
+      if (esFotoBlob(referenciaFotoBien)) {
+        TransaccionPorRequest.despuesDelCommit(() -> retirarFoto(idFotoBlob(referenciaFotoBien)));
       }
     } else {
       throw new IllegalArgumentException("No se encontró la donación");
@@ -432,8 +444,7 @@ public class DonacionController {
     model.put("rol", "admin");
     model.put("seccion", "donacion-nueva");
 
-    // Paso 1: el donante se busca con un form GET aparte (?donante=parte del nombre, documento o correo)
-    // y se elige de los resultados (?elegido={id})
+    // Paso 1: buscar por nombre, documento o correo y elegir de los resultados.
     String busqueda = Objects.requireNonNullElse(ctx.queryParam("donante"), "").strip();
     model.put("busqueda", busqueda);
     if (!busqueda.isEmpty()) {
@@ -460,12 +471,40 @@ public class DonacionController {
   }
 
   public void registrarDonacion(Context ctx) {
+    if (!ctx.isMultipartFormData()) {
+      ctx.status(HttpStatus.BAD_REQUEST).result("El formulario de donación debe enviarse como multipart/form-data.");
+      return;
+    }
+    if (ctx.req().getContentLengthLong() > 16L * 1024 * 1024) {
+      ctx.status(413).result("La carga completa supera el límite de 16 MB.");
+      return;
+    }
+    ctx.req().setAttribute("org.eclipse.jetty.multipartConfig", new jakarta.servlet.MultipartConfigElement(
+        System.getProperty("java.io.tmpdir"), FotosRecepcion.MAX_BYTES, 16L * 1024 * 1024, 0));
+
     // Una fila del form por bien; las filas sin subcategoría quedaron vacías
     List<BienDTO> bienes = new ArrayList<>();
+    List<FotosRecepcion.Foto> fotos = new ArrayList<>();
     for (int i = 0; ctx.formParam("bienes[" + i + "].subcategoria") != null; i++) {
       String fila = "bienes[" + i + "].";
       if (ctx.formParam(fila + "subcategoria").isBlank()) {
         continue;
+      }
+      var archivo = ctx.uploadedFile(fila + "foto");
+      String referenciaFoto = null;
+      if (archivo != null && archivo.size() > 0) {
+        if (!fotosRecepcion.configurado()) {
+          ctx.status(HttpStatus.SERVICE_UNAVAILABLE).result("El almacenamiento de fotos no está disponible.");
+          return;
+        }
+        try {
+          var foto = fotosRecepcion.validarUna(archivo);
+          fotos.add(foto);
+          referenciaFoto = referenciaFoto(foto);
+        } catch (IllegalArgumentException e) {
+          ctx.status(HttpStatus.BAD_REQUEST).result(e.getMessage());
+          return;
+        }
       }
       bienes.add(new BienDTO(false, false,
           ctx.formParam(fila + "subcategoria"),
@@ -473,11 +512,23 @@ public class DonacionController {
           ctx.formParam(fila + "descripcion"),
           vacioANull(ctx.formParam(fila + "estado")),
           vacioANull(ctx.formParam(fila + "vencimiento")),
-          null));
+          referenciaFoto));
     }
-    crearDonacion(new DonacionRequestDTO(Long.valueOf(ctx.formParam("donante")), ctx.formParam("descripcion"), bienes));
-    ctx.sessionAttribute("aviso", "Donación registrada.");
-    ctx.redirect("/admin/donaciones");
+
+    try {
+      for (var foto : fotos) {
+        TransaccionPorRequest.despuesDelRollback(() -> retirarFoto(foto.id()));
+        fotosRecepcion.guardar(foto);
+      }
+      crearDonacion(new DonacionRequestDTO(Long.valueOf(ctx.formParam("donante")), ctx.formParam("descripcion"), bienes));
+      ctx.sessionAttribute("aviso", "Donación registrada.");
+      ctx.redirect("/admin/donaciones");
+    } catch (IllegalArgumentException e) {
+      ctx.status(HttpStatus.BAD_REQUEST).result("No se pudo registrar la donación: " + e.getMessage());
+    } catch (RuntimeException e) {
+      logger.error("No se pudo guardar la donación con sus fotos", e);
+      ctx.status(HttpStatus.BAD_GATEWAY).result("No se pudo guardar la donación. Revisá el almacenamiento e intentá de nuevo.");
+    }
   }
 
   private static String vacioANull(String valor) {
@@ -503,6 +554,7 @@ public class DonacionController {
         .map(d -> Map.of(
             "id", d.getId().toString(),
             "bien", d.getBien().getSubcategoria().nombre(),
+            "fotoBienUrl", esFotoBlob(d.getBien().getFoto()) ? "/admin/donaciones/" + d.getId() + "/foto-bien" : Objects.toString(d.getBien().getFoto(), ""),
             "cantidad", d.getBien().getCantidad() + " " + d.getBien().getUnidad(),
             "donante", d.getDonante().getNombre(),
             "ingreso", d.getFecha().format(formatoFecha),
@@ -511,7 +563,6 @@ public class DonacionController {
             "vencimiento", d.getEstado() == EstadoDonacion.VENCIDA ? "VENCIDA"
                 : d.getBien().getVencimiento() == null ? "NO_APLICA" : ""))
         .toList());
-    // Como en Registrar donación: cada categoría con sus subcategorías
     model.put("categorias", Arrays.stream(Categoria.values())
         .map(c -> Map.of(
             "texto", c.nombre(),
@@ -522,6 +573,7 @@ public class DonacionController {
         .toList());
     model.put("subcategoriaElegida", subcategoria);
     model.put("venceElegido", vence);
+
     return model;
   }
 
@@ -547,14 +599,13 @@ public class DonacionController {
 
     List<Donacion> propias = donacionesRepository.buscarPorUsuarioDonante(ctx.sessionAttribute(SesionUsuario.USUARIO_ID));
     List<Map<String, String>> donaciones = propias.stream()
-        .map(this::donacionParaVista)
+        .map(d -> donacionParaVista(d, "donante"))
         .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
         .filter(d -> categoria.isEmpty() || categoria.equals(d.get("categoria")))
         .filter(d -> subcategorias.isEmpty() || subcategorias.contains(d.get("subcategoria")))
         .toList();
     model.put("donaciones", donaciones);
     model.put("total", donaciones.size());
-    // Sin ninguna donación propia, la vista muestra el cartel de bienvenida
     model.put("propias", propias);
 
     model.put("estados", Arrays.stream(EstadoDonacion.values())
@@ -599,7 +650,7 @@ public class DonacionController {
     model.put("seccion", "donaciones");
 
     model.put("donaciones", donacionesRepository.buscarPorUsuarioEntidad(ctx.sessionAttribute(SesionUsuario.USUARIO_ID)).stream()
-        .map(this::donacionParaVista)
+        .map(d -> donacionParaVista(d, "entidad"))
         .filter(d -> estado.isEmpty() || estado.equals(d.get("estado")))
         .toList());
     model.put("estadoElegido", estado);
@@ -618,7 +669,7 @@ public class DonacionController {
     model.put("seccion", "donaciones");
 
     Donacion donacion = donacionDeLaEntidad(ctx);
-    model.put("donacion", donacionParaVista(donacion));
+    model.put("donacion", donacionParaVista(donacion, "entidad"));
     model.put("fotos", enlacesFotos(donacion, "entidad"));
     model.put("puedeConfirmar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
     return model;
@@ -668,6 +719,7 @@ public class DonacionController {
       }
       // El estado lo cambia logística (como en No la recibí); se le avisa después del commit para no quedar trabados con el lock
       Long donacionId = donacion.getId();
+      List<FotosRecepcion.Foto> fotosConfirmadas = fotos;
       String comentario = ctx.formParam("comentario");
       TransaccionPorRequest.despuesDelCommit(() -> {
         try {
@@ -675,10 +727,12 @@ public class DonacionController {
           if (response.getExito()) {
             ctx.sessionAttribute("aviso", "Recepción confirmada.");
           } else {
+            retirarFotosRecepcion(donacionId, fotosConfirmadas);
             ctx.status(502).result("Logística no pudo confirmar la recepción. Volvé a intentarlo.");
           }
         } catch (RuntimeException e) {
           logger.warn("Falló el aviso a logística de la recepción {} ({})", donacionId, e.getClass().getSimpleName());
+          retirarFotosRecepcion(donacionId, fotosConfirmadas);
           ctx.status(502).result("No se pudo avisar a logística. Volvé a intentarlo.");
         }
       });
@@ -704,8 +758,76 @@ public class DonacionController {
     }
   }
 
+  private void retirarFotosRecepcion(Long donacionId, List<FotosRecepcion.Foto> fotos) {
+    TransaccionPorRequest transaccion = new TransaccionPorRequest();
+    try {
+      transaccion.withTransaction(() -> donacionesRepository.buscarPorIdParaActualizar(donacionId)
+          .ifPresent(donacion -> fotos.forEach(foto -> donacion.quitarFotoRecepcion(foto.id()))));
+    } catch (RuntimeException e) {
+      logger.warn("No se pudo retirar la referencia de fotos de la donación {}", donacionId);
+    } finally {
+      if (transaccion.perThreadEntityManagerAccess().isAttached()) {
+        transaccion.perThreadEntityManagerAccess().dispose();
+      }
+    }
+    fotos.forEach(foto -> retirarFoto(foto.id()));
+  }
+
   public void fotoEntidad(Context ctx) {
     mostrarFoto(ctx, donacionDeLaEntidad(ctx));
+  }
+
+  public void fotoBienAdmin(Context ctx) {
+    mostrarFotoBien(ctx, buscarDonacionDeRuta(ctx), false);
+  }
+
+  public void fotoBienDonante(Context ctx) {
+    Long usuarioId = ctx.sessionAttribute(SesionUsuario.USUARIO_ID);
+    Donacion donacion = buscarDonacionDeRuta(ctx);
+    var usuario = donacion.getDonante().getUsuario();
+    if (usuario == null || !usuario.getId().equals(usuarioId)) throw new NotFoundResponse();
+    mostrarFotoBien(ctx, donacion, false);
+  }
+
+  public void fotoBienEntidad(Context ctx) {
+    mostrarFotoBien(ctx, donacionDeLaEntidad(ctx), false);
+  }
+
+  public void fotoBienPublica(Context ctx) {
+    Donacion donacion = buscarDonacionDeRuta(ctx);
+    if (donacion.getEstado() != EstadoDonacion.ENTREGADA) throw new NotFoundResponse();
+    mostrarFotoBien(ctx, donacion, true);
+  }
+
+  private void mostrarFotoBien(Context ctx, Donacion donacion, boolean publica) {
+    String referencia = donacion.getBien() == null ? null : donacion.getBien().getFoto();
+    if (referencia == null || referencia.isBlank()) throw new NotFoundResponse();
+    if (!esFotoBlob(referencia)) throw new NotFoundResponse();
+    var partes = referencia.substring(PREFIJO_FOTO_BLOB.length()).split(":", 2);
+    if (partes.length != 2 || !(partes[1].equals("image/jpeg") || partes[1].equals("image/png"))) {
+      throw new NotFoundResponse();
+    }
+    try {
+      byte[] bytes = fotosRecepcion.leer(partes[0]);
+      if (bytes == null) throw new NotFoundResponse();
+      ctx.header("Cache-Control", publica ? "public, max-age=3600" : "no-store");
+      ctx.header("X-Content-Type-Options", "nosniff");
+      ctx.contentType(partes[1]).result(bytes);
+    } catch (IllegalStateException e) {
+      ctx.status(502).result("La foto no está disponible por el momento.");
+    }
+  }
+
+  private static String referenciaFoto(FotosRecepcion.Foto foto) {
+    return PREFIJO_FOTO_BLOB + foto.id() + ":" + foto.tipo();
+  }
+
+  private static boolean esFotoBlob(String referencia) {
+    return referencia != null && referencia.startsWith(PREFIJO_FOTO_BLOB);
+  }
+
+  private static String idFotoBlob(String referencia) {
+    return referencia.substring(PREFIJO_FOTO_BLOB.length()).split(":", 2)[0];
   }
 
   public void fotoDonante(Context ctx) {
@@ -775,7 +897,7 @@ public class DonacionController {
     }
   }
 
-  private Map<String, String> donacionParaVista(Donacion donacion) {
+  private Map<String, String> donacionParaVista(Donacion donacion, String rol) {
     Bien bien = donacion.getBien();
     Map<String, String> fila = new HashMap<>();
     fila.put("id", donacion.getId().toString());
@@ -786,6 +908,11 @@ public class DonacionController {
         .map(RegistroCambioEstado::fecha).filter(Objects::nonNull).max(java.time.LocalDateTime::compareTo)
         .map(fecha -> fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).orElse(fila.get("fecha")));
     fila.put("estado", donacion.getEstado().name());
+    if (bien.getFoto() != null) {
+      fila.put("fotoBienUrl", esFotoBlob(bien.getFoto())
+          ? "/" + rol + "/donaciones/" + donacion.getId() + "/foto-bien"
+          : bien.getFoto());
+    }
     if (!donacion.getFotosRecepcion().isEmpty()) fila.put("tieneFotos", "true");
     fila.put("estadoTexto", textoEstado(donacion.getEstado()));
     fila.put("categoria", bien.getSubcategoria().getCategoria().name());
@@ -804,7 +931,7 @@ public class DonacionController {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Donaciones entregadas");
     model.put("seccion", "entregadas");
-    // MOCK: las coordenadas de la entidad y la foto todavía salen de DatosMock
+    // Las coordenadas y la foto de esta vista todavía salen de DatosMock.
     model.put("entregas", DatosMock.donacionesEntregadas(donacionesRepository.buscarPorEstado(EstadoDonacion.ENTREGADA)));
     return model;
   }
@@ -816,7 +943,7 @@ public class DonacionController {
     model.put("seccion", "donaciones");
 
     Donacion donacion = donacionDeLaEntidad(ctx);
-    model.put("donacion", donacionParaVista(donacion));
+    model.put("donacion", donacionParaVista(donacion, "entidad"));
     model.put("puedeInformar", donacion.getEstado() == EstadoDonacion.EN_TRASLADO);
     return model;
   }

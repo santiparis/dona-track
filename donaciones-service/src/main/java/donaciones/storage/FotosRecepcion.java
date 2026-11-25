@@ -47,6 +47,11 @@ public class FotosRecepcion {
     return archivos.stream().map(this::validarFoto).toList();
   }
 
+  /** Valida una foto individual, por ejemplo la foto opcional de un bien. */
+  public Foto validarUna(UploadedFile archivo) {
+    return validarFoto(archivo);
+  }
+
   private Foto validarFoto(UploadedFile archivo) {
     try (var contenido = archivo.content()) {
       byte[] bytes = contenido.readNBytes(MAX_BYTES + 1);

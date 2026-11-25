@@ -11,12 +11,18 @@ import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
 import java.util.List;
 
 public class ProcesarAsignaciones {
 
   public static void main(String[] args) {
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null && !dbUrl.isBlank()) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
+
     DonacionRepository donacionRepository = new DonacionRepository();
     EntidadBeneficiariaRepository entidadRepository = new EntidadBeneficiariaRepository();
     SugerenciaAsignacionRepository sugerenciaRepository = new SugerenciaAsignacionRepository();
@@ -25,7 +31,8 @@ public class ProcesarAsignaciones {
     );
 
     // Instanciar el cliente gRPC conectando al puerto de logistica-service (9090)
-    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient(
+        System.getenv().getOrDefault("LOGISTICA_GRPC_HOST", "localhost"), 9090);
 
     AsignacionesController controller = new AsignacionesController(
         donacionRepository,

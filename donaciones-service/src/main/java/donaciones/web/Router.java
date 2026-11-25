@@ -47,6 +47,7 @@ public class Router {
     app.get("/", ctx -> ctx.render("publico/inicio", publicoController.inicio()));
     app.get("/legal", ctx -> ctx.render("publico/legal", publicoController.legal()));
     app.get("/donaciones-entregadas", ctx -> ctx.render("publico/entregadas", donacionController.entregadas()));
+    app.get("/donaciones-entregadas/{id}/foto-bien", donacionController::fotoBienPublica);
     app.error(404, "html", ctx -> ctx.render("publico/404", publicoController.noEncontrada()));
 
     app.get("/login", ctx -> {
@@ -69,6 +70,7 @@ public class Router {
 
     app.get("/donante/donaciones", ctx -> ctx.render("donante/donaciones", donacionController.misDonaciones(ctx)));
     app.get("/donante/donaciones/{id}/fotos/{foto}", donacionController::fotoDonante);
+    app.get("/donante/donaciones/{id}/foto-bien", donacionController::fotoBienDonante);
     app.get("/donante/entidades", ctx -> ctx.render("donante/entidades", entidadesController.entidades(ctx)));
     app.get("/donante/entidades/{id}", ctx -> ctx.render("donante/entidad", entidadesController.entidad(ctx)));
     app.get("/donante/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesDonante(ctx)));
@@ -83,6 +85,7 @@ public class Router {
     app.get("/entidad/donaciones", ctx -> ctx.render("entidad/donaciones", donacionController.asignadasAEntidad(ctx)));
     app.get("/entidad/donaciones/{id}/recepcion", ctx -> ctx.render("entidad/recepcion", donacionController.recepcion(ctx)));
     app.get("/entidad/donaciones/{id}/fotos/{foto}", donacionController::fotoEntidad);
+    app.get("/entidad/donaciones/{id}/foto-bien", donacionController::fotoBienEntidad);
     app.post("/entidad/donaciones/{id}/recepcion", donacionController::confirmarRecepcion);
     app.post("/entidad/donaciones/{id}/no-recibida", donacionController::informarNoRecibida);
     app.get("/entidad/notificaciones", ctx -> ctx.render("notificaciones", notificacionesController.notificacionesEntidad(ctx)));
@@ -97,6 +100,7 @@ public class Router {
     app.get("/admin/donaciones/nueva", ctx -> ctx.render("admin/donacion-nueva", donacionController.donacionNueva(ctx)));
     app.post("/admin/donaciones", donacionController::registrarDonacion);
     app.get("/admin/donaciones", ctx -> ctx.render("admin/deposito", donacionController.deposito(ctx)));
+    app.get("/admin/donaciones/{id}/foto-bien", donacionController::fotoBienAdmin);
     app.post("/admin/donaciones/{id}/vencida", donacionController::marcarVencida);
     app.get("/admin/asignaciones", ctx -> ctx.render("admin/asignaciones", asignacionesController.asignaciones(ctx)));
     app.post("/admin/asignaciones/ejecutar", asignacionesController::ejecutarAlgoritmosAhora);

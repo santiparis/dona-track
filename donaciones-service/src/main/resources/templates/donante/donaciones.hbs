@@ -54,6 +54,7 @@
                     <tr>
                         <th scope="col">Fecha</th>
                         <th scope="col">Bien</th>
+                        <th scope="col">Foto</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Entidad asignada</th>
@@ -65,6 +66,7 @@
                         <tr>
                             <td>{{fecha}}</td>
                             <td>{{bien}}</td>
+                            <td>{{#if fotoBienUrl}}<img class="foto-mini" src="{{fotoBienUrl}}" alt="Foto de {{bien}}" loading="lazy">{{else}}—{{/if}}</td>
                             <td>{{cantidad}}</td>
                             {{!-- La clase del chip es el nombre del estado (EstadoDonacion) --}}
                             <td><span class="chip {{estado}}">{{estadoTexto}}</span></td>
