@@ -343,5 +343,12 @@ public class Seed implements WithSimplePersistenceUnit {
     fideosEntregadosChanguitos.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
     fideosEntregadosChanguitos.cambiarEstado(EstadoDonacion.ENTREGADA, null);
     persist(fideosEntregadosChanguitos);
+
+    // Segunda en traslado para la Escuela (id 19, también en SeedCamiones): una se confirma y la otra se marca no recibida
+    Donacion camperasEnTraslado = new Donacion(juan, new Bien(Subcategoria.CAMPERAS, 10, "unidades", "Camperas de abrigo talle S", null, EstadoBien.USADO, null));
+    camperasEnTraslado.asignarA(escuela);
+    camperasEnTraslado.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
+    camperasEnTraslado.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
+    persist(camperasEnTraslado);
   }
 }
