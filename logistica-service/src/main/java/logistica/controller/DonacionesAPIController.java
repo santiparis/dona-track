@@ -18,6 +18,15 @@ public class DonacionesAPIController {
 
   public record ErrorResponse(String mensaje) { }
 
+  public record DonacionPendiente(Long donacionID, int cantidadBienes, String unidad) { }
+
+  public void listarPendientes(Context ctx) {
+    ctx.json(donacionesRepository.obtenerTodas().stream()
+        .map(donacion -> new DonacionPendiente(
+            donacion.getDonacionID(), donacion.getCantidadBienes(), donacion.getUnidad()))
+        .toList());
+  }
+
   public void obtenerDonaciones(Context ctx) {
     //se usa TypeReference para ayudar a Jackson a deserealizar la lista
     List<DonacionEncolada> donaciones =

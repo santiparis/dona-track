@@ -94,6 +94,7 @@ public class Main {
       config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
+      config.routes.get("/api/donaciones", donacionesController::listarPendientes);
       config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);
 
       //dispara la planificacion (lo llama el cron via HTTP, o a demanda)
