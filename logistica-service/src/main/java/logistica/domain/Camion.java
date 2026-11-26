@@ -122,6 +122,7 @@ public class Camion {
     return this.patente;
   }
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @JsonSerialize(using = ToStringSerializer.class)
   public LocalDateTime getUltimaActualizacion() {
     return ultimaActualizacion;

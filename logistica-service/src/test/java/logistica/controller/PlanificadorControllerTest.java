@@ -86,6 +86,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     controller.planificar(ctx);
 
     assertEquals(1, donacionesRepository.obtenerTodas().size());
+    verify(ctx).status(502);
   }
 
   @Test
