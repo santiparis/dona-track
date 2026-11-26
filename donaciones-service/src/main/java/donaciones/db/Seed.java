@@ -83,7 +83,8 @@ public class Seed implements WithSimplePersistenceUnit {
     // Donante con 25 días sin actividad: lo avisa el cron NotificarPersonasInactivas
     Contacto correoCarlos = new ContactoPorEmail("juanignaciopereyra01@gmail.com");
     PersonaHumana carlos = new PersonaHumana("Carlos Inactivo", "Pérez", 45, TipoDoc.DNI, "11111111",
-        Genero.MASCULINO, "Av. Siempre Viva 742", List.of(correoCarlos), correoCarlos, null);
+        Genero.MASCULINO, "Av. Siempre Viva 742", List.of(correoCarlos), correoCarlos,
+        new Usuario("juanignaciopereyra01@gmail.com", "carlos123", Rol.DONANTE));
     carlos.setUltimaInteraccion(LocalDateTime.now().minusDays(25));
     persist(carlos);
 
