@@ -55,15 +55,4 @@ public class DatosMock {
     return Map.of("nombre", "Escuela Rural N°10",
         "direccion", "Ruta 5 km 32, San Andrés de Giles", "latitud", -34.4705, "longitud", -59.4890);
   }
-
-  public static List<Map<String, String>> camiones() {
-    return List.of(
-        Map.of("id", "1", "patente", "AB123CD", "volumen", "18", "altura", "3.2", "cargaMax", "3500",
-            "estado", "EN_RUTA", "estadoTexto", "En ruta"),
-        Map.of("id", "2", "patente", "AE456FG", "volumen", "12", "altura", "2.8", "cargaMax", "2000",
-            "estado", "DISPONIBLE", "estadoTexto", "Disponible"),
-        Map.of("id", "3", "patente", "AC789HI", "volumen", "25", "altura", "3.8", "cargaMax", "6000",
-            "estado", "NO_DISPONIBLE", "estadoTexto", "No disponible")
-    );
-  }
 }
