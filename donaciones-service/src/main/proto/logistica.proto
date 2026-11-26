@@ -16,6 +16,11 @@ service LogisticaService {
   rpc TrazarRuta (TrazarRutaRequest) returns (TrazarRutaResponse);
   rpc ObtenerUbicacionCamiones (UbicacionCamionesRequest) returns (UbicacionCamionesResponse);
   rpc ReportarEntrega (ReportarEntregaRequest) returns (ReportarEntregaResponse);
+  rpc ObtenerCamiones (CamionesRequest) returns (CamionesResponse);
+  rpc ObtenerCamion (CamionRequest) returns (DatosCamion);
+  rpc CrearCamion (DatosCamion) returns (CamionResponse);
+  rpc ModificarCamion (DatosCamion) returns (CamionResponse);
+  rpc EliminarCamion (CamionRequest) returns (CamionResponse);
 }
 
 // Servicio que expone donaciones-service (servidor) y consume logistica-service (cliente)
@@ -91,6 +96,33 @@ message ReportarEntregaRequest {
 }
 
 message ReportarEntregaResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+// Mensajes del CRUD de camiones que usa la pantalla del admin
+message DatosCamion {
+  int64 id = 1;            // 0 al crear: el id lo genera la base de Logística
+  string patente = 2;
+  double volumen = 3;
+  double altura = 4;
+  double cargaMax = 5;
+  string estado = 6;
+  string estadoTexto = 7;  // como se muestra el estado en la tabla
+}
+
+message CamionesRequest {
+}
+
+message CamionesResponse {
+  repeated DatosCamion camiones = 1;
+}
+
+message CamionRequest {
+  int64 id = 1;
+}
+
+message CamionResponse {
   bool exito = 1;
   string mensaje = 2;
 }

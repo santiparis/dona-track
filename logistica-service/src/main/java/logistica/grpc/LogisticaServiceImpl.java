@@ -2,10 +2,12 @@ package logistica.grpc;
 
 import io.grpc.stub.StreamObserver;
 import java.util.List;
+import logistica.domain.Camion;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.db.TransaccionPorRequest;
 import logistica.notificacion.NotificadorEntregas;
+import logistica.repository.CamionesRepository;
 import logistica.repository.RutasRepository;
 
 import java.time.LocalDateTime;
@@ -19,11 +21,14 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
   private final RutasRepository rutasRepository;
   private final NotificadorEntregas notificadorEntregas;
   private final TransaccionPorRequest transaccion;
+  private final CamionesRepository camionesRepository;
 
-  public LogisticaServiceImpl(RutasRepository rutasRepo, NotificadorEntregas notificadorEntregas, TransaccionPorRequest transaccion) {
+  public LogisticaServiceImpl(RutasRepository rutasRepo, NotificadorEntregas notificadorEntregas, TransaccionPorRequest transaccion,
+                              CamionesRepository camionesRepository) {
     this.rutasRepository = rutasRepo;
     this.notificadorEntregas = notificadorEntregas;
     this.transaccion = transaccion;
+    this.camionesRepository = camionesRepository;
   }
 
   // Los métodos son void porque devolvemos interactuando con el StreamObserver envíandole
@@ -167,5 +172,95 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
         rutasRepository.perThreadEntityManagerAccess().dispose();
       }
     }
+  }
+
+  // CRUD de camiones de la pantalla del admin. Como en reportarEntrega, cada llamada
+  // cierra su EntityManager: si no, el hilo de gRPC seguiría leyendo datos viejos
+  @Override
+  public void obtenerCamiones(CamionesRequest request, StreamObserver<CamionesResponse> responseObserver) {
+    try {
+      List<DatosCamion> camiones = camionesRepository.obtenerTodos().stream()
+          .map(LogisticaServiceImpl::datosCamion)
+          .toList();
+      responseObserver.onNext(CamionesResponse.newBuilder().addAllCamiones(camiones).build());
+      responseObserver.onCompleted();
+    } finally {
+      camionesRepository.perThreadEntityManagerAccess().dispose();
+    }
+  }
+
+  @Override
+  public void obtenerCamion(CamionRequest request, StreamObserver<DatosCamion> responseObserver) {
+    try {
+      Camion camion = camionesRepository.buscarPorId(request.getId())
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"));
+      responseObserver.onNext(datosCamion(camion));
+      responseObserver.onCompleted();
+    } catch (NoSuchElementException e) {
+      responseObserver.onError(io.grpc.Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
+    } finally {
+      camionesRepository.perThreadEntityManagerAccess().dispose();
+    }
+  }
+
+  @Override
+  public void crearCamion(DatosCamion request, StreamObserver<CamionResponse> responseObserver) {
+    try {
+      transaccion.withTransaction(() -> camionesRepository.agregar(
+          new Camion(request.getPatente(), request.getVolumen(), request.getAltura(), request.getCargaMax())));
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(true)
+          .setMensaje("Se agregó el camión " + request.getPatente() + ".").build());
+    } catch (Exception e) {
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(false)
+          .setMensaje("No se pudo agregar el camión: la patente " + request.getPatente() + " ya está cargada.").build());
+    } finally {
+      camionesRepository.perThreadEntityManagerAccess().dispose();
+    }
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void modificarCamion(DatosCamion request, StreamObserver<CamionResponse> responseObserver) {
+    try {
+      transaccion.withTransaction(() -> camionesRepository.buscarPorId(request.getId())
+          .orElseThrow(() -> new NoSuchElementException("Camión inexistente"))
+          .actualizarDatos(request.getPatente(), request.getVolumen(), request.getAltura(), request.getCargaMax()));
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(true)
+          .setMensaje("Se guardaron los cambios del camión " + request.getPatente() + ".").build());
+    } catch (Exception e) {
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(false)
+          .setMensaje("No se pudieron guardar los cambios: la patente " + request.getPatente() + " ya está cargada.").build());
+    } finally {
+      camionesRepository.perThreadEntityManagerAccess().dispose();
+    }
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void eliminarCamion(CamionRequest request, StreamObserver<CamionResponse> responseObserver) {
+    try {
+      transaccion.withTransaction(() -> camionesRepository.eliminarPorId(request.getId()));
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(true)
+          .setMensaje("Se eliminó el camión.").build());
+    } catch (Exception e) {
+      responseObserver.onNext(CamionResponse.newBuilder().setExito(false)
+          .setMensaje("No se pudo eliminar el camión: ya tiene rutas registradas.").build());
+    } finally {
+      camionesRepository.perThreadEntityManagerAccess().dispose();
+    }
+    responseObserver.onCompleted();
+  }
+
+  // El camión como lo muestra la tabla del admin en donaciones
+  private static DatosCamion datosCamion(Camion camion) {
+    return DatosCamion.newBuilder()
+        .setId(camion.getId())
+        .setPatente(camion.getPatente())
+        .setVolumen(camion.getVolumen())
+        .setAltura(camion.getAltura())
+        .setCargaMax(camion.getCargaMax())
+        .setEstado(camion.getEstado().name())
+        .setEstadoTexto(camion.getEstado().texto())
+        .build();
   }
 }

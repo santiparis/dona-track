@@ -11,6 +11,7 @@ import io.javalin.http.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import logistica.grpc.CamionResponse;
 import logistica.grpc.UbicacionCamion;
 import logistica.grpc.UbicacionCamionesResponse;
 
@@ -30,30 +31,39 @@ public class CamionesController {
     model.put("rol", "admin");
     model.put("seccion", "camiones");
 
-    var camiones = DatosMock.camiones();   // MOCK
-    model.put("camiones", camiones);
+    model.put("camiones", logisticaGrpcClient.obtenerCamiones());
 
     // ?editar={id} carga ese camión en el formulario; si no, el formulario queda vacío para dar de alta
     String idEditar = ctx.queryParam("editar");
-    model.put("camion", camiones.stream()
-        .filter(c -> c.get("id").equals(idEditar))
-        .findFirst()
-        .orElse(Map.of()));
+    if (idEditar != null) {
+      model.put("camion", logisticaGrpcClient.obtenerCamion(Long.valueOf(idEditar)));
+    }
     return model;
   }
 
+  // Los camiones viven en Logística: se crean, modifican y eliminan por gRPC
   public void crearCamion(Context ctx) {
-    // Sin conexión todavía: acá va logisticaAPICalls.crearCamion(...) contra POST /api/camiones
+    CamionResponse response = logisticaGrpcClient.crearCamion(ctx.formParam("patente"),
+        ctx.formParamAsClass("volumen", Double.class).get(),
+        ctx.formParamAsClass("altura", Double.class).get(),
+        ctx.formParamAsClass("cargaMax", Double.class).get());
+    ctx.sessionAttribute("aviso", response.getMensaje());
     ctx.redirect("/admin/camiones");
   }
 
   public void modificarCamion(Context ctx) {
-    // Sin conexión todavía: acá va logisticaAPICalls.modificarCamion(id, ...) contra PUT /api/camiones/{id}
+    CamionResponse response = logisticaGrpcClient.modificarCamion(Long.valueOf(ctx.pathParam("id")),
+        ctx.formParam("patente"),
+        ctx.formParamAsClass("volumen", Double.class).get(),
+        ctx.formParamAsClass("altura", Double.class).get(),
+        ctx.formParamAsClass("cargaMax", Double.class).get());
+    ctx.sessionAttribute("aviso", response.getMensaje());
     ctx.redirect("/admin/camiones");
   }
 
   public void eliminarCamion(Context ctx) {
-    // Sin conexión todavía: acá va logisticaAPICalls.eliminarCamion(id) contra DELETE /api/camiones/{id}
+    CamionResponse response = logisticaGrpcClient.eliminarCamion(Long.valueOf(ctx.pathParam("id")));
+    ctx.sessionAttribute("aviso", response.getMensaje());
     ctx.redirect("/admin/camiones");
   }
 
