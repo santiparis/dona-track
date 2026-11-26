@@ -2,6 +2,7 @@ package logistica.planificacion;
 
 import io.javalin.Javalin;
 import logistica.domain.Camion;
+import logistica.domain.Coordenadas;
 import logistica.domain.DonacionEncolada;
 import logistica.retrofit_client.PlanificadorAPICalls;
 import logistica.retrofit_client.PlanificadorAPICalls.PlanificacionRequest;
@@ -61,9 +62,11 @@ public class ClientePlanificadorTest {
 
   @Test
   void mandaLasDonacionesYLosCamionesAlPlanificador() {
+    var camion = new Camion("AB123CD", 10, 2, 1000);
+    camion.actualizarLocalizacion(new Coordenadas(-34.5, -58.5), 30);
     boolean acepto = clientePlanificador.enviarAPlanificar(
         List.of(unaDonacion(1L), unaDonacion(2L)),
-        List.of(new Camion("AB123CD", 10, 2, 1000))
+        List.of(camion)
     );
 
     assertTrue(acepto);

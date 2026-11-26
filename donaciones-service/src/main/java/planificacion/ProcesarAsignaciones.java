@@ -11,12 +11,23 @@ import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class ProcesarAsignaciones {
 
   public static void main(String[] args) {
+    long inicio = System.nanoTime();
+    System.out.println("==== Inicio de procesamiento de asignaciones: " + OffsetDateTime.now() + " ====");
+
+    String dbUrl = System.getenv("DB_URL");
+    if (dbUrl != null && !dbUrl.isBlank()) {
+      WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+    }
+
     DonacionRepository donacionRepository = new DonacionRepository();
     EntidadBeneficiariaRepository entidadRepository = new EntidadBeneficiariaRepository();
     SugerenciaAsignacionRepository sugerenciaRepository = new SugerenciaAsignacionRepository();
@@ -25,7 +36,8 @@ public class ProcesarAsignaciones {
     );
 
     // Instanciar el cliente gRPC conectando al puerto de logistica-service (9090)
-    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient("localhost", 9090);
+    LogisticaGrpcClient logisticaGrpcClient = new LogisticaGrpcClient(
+        System.getenv().getOrDefault("LOGISTICA_GRPC_HOST", "localhost"), 9090);
 
     AsignacionesController controller = new AsignacionesController(
         donacionRepository,
@@ -44,13 +56,25 @@ public class ProcesarAsignaciones {
     }
     var sugerencias = controller.procesarDonacionesEnDepositoEnLotes(25);
 
-    System.out.println("==== Inicio de procesamiento de asignaciones ====");
     if (sugerencias.isEmpty()) {
       System.out.println("No hay donaciones en depósito para procesar.");
-      return;
     }
 
+    for (var sugerencia : sugerencias) {
+      var bien = sugerencia.getDonacion().getBien();
+      if (sugerencia.tieneCoincidencias()) {
+        var propuesta = sugerencia.getCoincidencias().get(0);
+        System.out.printf("Donación #%d – %s → %s | Algoritmos: %s%n",
+            sugerencia.getId(), bien.getSubcategoria().nombre(), propuesta.getRazonSocial(),
+            String.join(" y ", sugerencia.getEntidadesPorAlgoritmo().keySet().stream().sorted().toList()));
+      } else {
+        System.out.printf("Donación #%d – %s | Sin propuesta común. Revisar en el panel.%n",
+            sugerencia.getId(), bien.getSubcategoria().nombre());
+      }
+    }
+
+    long duracion = Duration.ofNanos(System.nanoTime() - inicio).toSeconds();
     System.out.println("Total de sugerencias guardadas: " + sugerencias.size());
-    System.out.println("==== Fin de procesamiento de asignaciones ====");
+    System.out.println("==== Fin de procesamiento de asignaciones (" + duracion + " s) ====");
   }
 }

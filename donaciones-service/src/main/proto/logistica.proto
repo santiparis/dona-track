@@ -68,6 +68,9 @@ message TrazarRutaRequest {
   string idDonacion = 1;
   string idEntidadOrigen = 2;
   string idEntidadDestino = 3;
+  int32 cantidadBienes = 4;
+  string unidad = 5;
+  string entidadNombre = 6;
 }
 
 // Respuesta al trazar el envío

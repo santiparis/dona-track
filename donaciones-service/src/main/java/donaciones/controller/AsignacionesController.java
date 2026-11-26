@@ -161,7 +161,6 @@ public class AsignacionesController {
 
     this.sugerenciaRepository.eliminar(sugerencia);
 
-    // TODO: Pegarle al endpoint de logistica para que guarde la donacion para futura entrega
   }
 
   /** Orquestación de caso de uso: repositorios, integración externa y respuesta HTTP pertenecen al controller MVC. */
@@ -203,16 +202,9 @@ public class AsignacionesController {
 
   private void enviarAsignacionALogistica(DonacionLogisticaDTO dto) {
     try {
-      // Origen predetermindo.
-      String origen = "DEPOSITO_CENTRAL";
-
-      TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(
-          String.valueOf(dto.donacionID()),
-          origen,
-          dto.destino()
-      );
+      TrazarRutaResponse response = logisticaGrpcClient.trazarRuta(dto, "DEPOSITO_CENTRAL");
       if (!response.getExito()) {
-        throw new IllegalStateException("Error reportado por gRPC");
+        throw new IllegalStateException(response.getMensaje());
       }
     } catch (Exception e) {
       throw new IllegalStateException("No se pudo informar la asignación a logística vía gRPC", e);

@@ -3,11 +3,13 @@ package logistica.grpc;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import logistica.domain.Camion;
+import logistica.domain.DonacionEncolada;
 import logistica.domain.Entrega;
 import logistica.domain.Ruta;
 import logistica.db.TransaccionPorRequest;
 import logistica.notificacion.NotificadorEntregas;
 import logistica.repository.CamionesRepository;
+import logistica.repository.DonacionesRepository;
 import logistica.repository.RutasRepository;
 
 import java.time.LocalDateTime;
@@ -19,13 +21,16 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
   private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
   private final RutasRepository rutasRepository;
+  private final DonacionesRepository donacionesRepository;
   private final NotificadorEntregas notificadorEntregas;
   private final TransaccionPorRequest transaccion;
   private final CamionesRepository camionesRepository;
 
-  public LogisticaServiceImpl(RutasRepository rutasRepo, NotificadorEntregas notificadorEntregas, TransaccionPorRequest transaccion,
-                              CamionesRepository camionesRepository) {
+  public LogisticaServiceImpl(RutasRepository rutasRepo, DonacionesRepository donacionesRepository,
+                             NotificadorEntregas notificadorEntregas, TransaccionPorRequest transaccion,
+                             CamionesRepository camionesRepository) {
     this.rutasRepository = rutasRepo;
+    this.donacionesRepository = donacionesRepository;
     this.notificadorEntregas = notificadorEntregas;
     this.transaccion = transaccion;
     this.camionesRepository = camionesRepository;
@@ -82,25 +87,33 @@ public class LogisticaServiceImpl extends LogisticaServiceGrpc.LogisticaServiceI
 
   @Override
   public void trazarRuta(TrazarRutaRequest request, StreamObserver<TrazarRutaResponse> responseObserver) {
+    TrazarRutaResponse response;
     try {
-      TrazarRutaResponse response = TrazarRutaResponse.newBuilder()
-          .setIdRuta("RUTA-" + request.getIdDonacion())
+      long idDonacion = Long.parseLong(request.getIdDonacion());
+      if (idDonacion <= 0 || request.getCantidadBienes() <= 0 || request.getIdEntidadDestino().isBlank()) {
+        throw new IllegalArgumentException("Se requiere un ID, una cantidad positiva y un destino");
+      }
+      var donacion = new DonacionEncolada(
+          idDonacion, request.getCantidadBienes(), request.getUnidad(),
+          request.getIdEntidadDestino(), request.getEntidadNombre());
+      transaccion.withTransaction(() -> donacionesRepository.agregarSiNoExiste(donacion));
+
+      response = TrazarRutaResponse.newBuilder()
           .setExito(true)
-          .setMensaje("Trazado registrado correctamente para la donación " + request.getIdDonacion())
+          .setMensaje("Donación " + idDonacion + " registrada para planificación")
           .build();
-
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
     } catch (Exception e) {
-      TrazarRutaResponse response = TrazarRutaResponse.newBuilder()
-          .setIdRuta("")
+      response = TrazarRutaResponse.newBuilder()
           .setExito(false)
-          .setMensaje("Error al trazar ruta: " + e.getMessage())
+          .setMensaje("No se pudo encolar la donación: " + e.getMessage())
           .build();
-
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
+    } finally {
+      if (transaccion.perThreadEntityManagerAccess().isAttached()) {
+        transaccion.perThreadEntityManagerAccess().dispose();
+      }
     }
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   // La request contiene una lista de ids de Donación.

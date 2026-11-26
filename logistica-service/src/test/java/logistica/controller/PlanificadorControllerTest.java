@@ -86,6 +86,7 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     controller.planificar(ctx);
 
     assertEquals(1, donacionesRepository.obtenerTodas().size());
+    verify(ctx).status(502);
   }
 
   @Test
@@ -137,6 +138,8 @@ public class PlanificadorControllerTest implements SimplePersistenceTest {
     assertEquals(1, guardadas.size());
     assertEquals("AB123CD", guardadas.get(0).getCamion().getPatente());
     assertEquals(1, guardadas.get(0).getEntregas().size());
+    verify(notificadorEntregas).avisarListaParaEntregar(guardadas.get(0).getEntregas());
+    verify(notificadorEntregas, never()).avisarEnTraslado(anyList());
     verify(ctx).status(201);
   }
 

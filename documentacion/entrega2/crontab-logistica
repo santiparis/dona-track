@@ -1,0 +1,8 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+DONA_TRACK_ROOT=/home/azureuser/dona-track
+LOG_DIR=/home/azureuser/dona-track/logs
+
+# Dispara el planificador de rutas cada 10 minutos desde un contenedor efimero.
+*/10 * * * * cd "$DONA_TRACK_ROOT" && mkdir -p "$LOG_DIR" && flock -n "$LOG_DIR/planificacion-rutas.lock" docker compose -f compose.yaml -f docker-compose.azure.yaml run --rm --no-deps planificador >> "$LOG_DIR/planificacion-rutas.log" 2>&1

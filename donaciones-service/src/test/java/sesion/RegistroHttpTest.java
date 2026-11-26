@@ -9,18 +9,21 @@ import donaciones.db.TransaccionPorRequest;
 import donaciones.domain.*;
 import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.Notificacion;
+import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.storage.FotosRecepcion;
 import logistica.grpc.ReportarEntregaResponse;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
 import donaciones.repository.NotificacionRepository;
+import donaciones.repository.PersonasAdministradorasRepository;
 import donaciones.repository.UsuarioRepository;
 import donaciones.web.Router;
 import donaciones.web.SesionUsuario;
 import donaciones.web.templates.JavalinHandlebars;
 import io.javalin.Javalin;
 import org.junit.jupiter.api.*;
+import donaciones.domain.PersonaAdministradora;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -100,6 +103,11 @@ class RegistroHttpTest {
         cliente = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
                 .followRedirects(HttpClient.Redirect.NEVER).build();
+    }
+
+    @BeforeEach
+    void limpiarBlobDePrueba() {
+        archivos.clear();
     }
 
     @Test
@@ -283,6 +291,73 @@ class RegistroHttpTest {
         verificarFotosRecepcion(emails, ids);
     }
 
+    @Test
+    void registraFotoDelBienEnBlobYLaMuestraSoloASusCuentas() throws Exception {
+        Map<String, String> formularioDonante = formulario("HUMANA");
+        String emailDonante = formularioDonante.get("email");
+        assertRegistroExitoso(post("/usuarios", formularioDonante));
+        var usuarioDonante = usuarios.buscarPorNombreUsuario(emailDonante).orElseThrow();
+        var donante = new RepositorioPersonas().buscarPorUsuario(usuarioDonante.getId()).orElseThrow();
+
+        String emailAdmin = UUID.randomUUID() + "@admin.example.org";
+        var contactoAdmin = new ContactoPorEmail(emailAdmin);
+        usuarios.withTransaction(() -> new PersonasAdministradorasRepository().guardar(
+                new PersonaAdministradora("Admin de prueba", List.of(contactoAdmin), contactoAdmin,
+                        new Usuario(emailAdmin, "clave-segura", Rol.ADMINISTRADORA))));
+
+        clienteNuevo();
+        assertEquals(303, post("/login", Map.of("usuario", emailAdmin, "password", "clave-segura")).statusCode());
+        var busqueda = get("/admin/donaciones/nueva?donante=" + URLEncoder.encode(emailDonante, StandardCharsets.UTF_8));
+        assertEquals(200, busqueda.statusCode());
+        assertTrue(busqueda.body().contains("?elegido=" + donante.getId() + "\""));
+        var formularioElegido = get("/admin/donaciones/nueva?elegido=" + donante.getId());
+        assertEquals(200, formularioElegido.statusCode());
+        assertTrue(formularioElegido.body().contains("name=\"donante\" value=\"" + donante.getId() + "\""));
+        var salida = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(2, 2,
+                java.awt.image.BufferedImage.TYPE_INT_RGB), "png", salida);
+        byte[] png = salida.toByteArray();
+        var alta = cliente.send(HttpRequest.newBuilder(uri("/admin/donaciones"))
+                .header("Content-Type", "multipart/form-data; boundary=alta")
+                .POST(HttpRequest.BodyPublishers.concat(
+                        campoMultipart("alta", "donante", donante.getId().toString()),
+                        campoMultipart("alta", "descripcion", "Donación con foto"),
+                        campoMultipart("alta", "bienes[0].subcategoria", "FIDEOS"),
+                        campoMultipart("alta", "bienes[0].cantidad", "4"),
+                        campoMultipart("alta", "bienes[0].descripcion", "Paquetes de prueba"),
+                        HttpRequest.BodyPublishers.ofString("--alta\r\nContent-Disposition: form-data; name=\"bienes[0].foto\"; filename=\"bien.png\"\r\nContent-Type: image/png\r\n\r\n"),
+                        HttpRequest.BodyPublishers.ofByteArray(png),
+                        HttpRequest.BodyPublishers.ofString("\r\n--alta--\r\n")))
+                .build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(302, alta.statusCode());
+
+        var donacion = new DonacionRepository().buscarPorUsuarioDonante(usuarioDonante.getId()).stream()
+                .filter(d -> d.getBien().getDescripcion().equals("Paquetes de prueba"))
+                .findFirst().orElseThrow();
+        String urlAdmin = "/admin/donaciones/" + donacion.getId() + "/foto-bien";
+        assertTrue(get("/admin/donaciones?subcategoria=FIDEOS").body().contains(urlAdmin));
+        assertFalse(get("/admin/donaciones?subcategoria=ARROZ").body().contains(urlAdmin));
+        var fotoAdmin = cliente.send(HttpRequest.newBuilder(uri(urlAdmin)).GET().build(),
+                HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, fotoAdmin.statusCode());
+        assertEquals("image/png", fotoAdmin.headers().firstValue("Content-Type").orElseThrow());
+        assertArrayEquals(png, fotoAdmin.body());
+
+        clienteNuevo();
+        assertEquals(303, post("/login", Map.of("usuario", emailDonante, "password", "clave-segura")).statusCode());
+        var fotoDonante = cliente.send(HttpRequest.newBuilder(uri(
+                        "/donante/donaciones/" + donacion.getId() + "/foto-bien")).GET().build(),
+                HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, fotoDonante.statusCode());
+        assertArrayEquals(png, fotoDonante.body());
+    }
+
+    private HttpRequest.BodyPublisher campoMultipart(String boundary, String nombre, String valor) {
+        return HttpRequest.BodyPublishers.ofString("--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"" + nombre + "\"\r\n\r\n"
+                + valor + "\r\n");
+    }
+
     private void verificarFotosRecepcion(String[] emails, long[] ids) throws Exception {
         String recepcion = "/entidad/donaciones/" + ids[0] + "/recepcion";
         clienteNuevo();
@@ -301,6 +376,9 @@ class RegistroHttpTest {
         assertEquals(502, subirFoto(recepcion, png).statusCode());
         assertTrue(archivos.isEmpty(), "El rechazo de Logística debe retirar el archivo de Blob.");
         assertEquals(303, subirFoto(recepcion, png).statusCode());
+        var donaciones = new DonacionRepository();
+        donaciones.withTransaction(() -> donaciones.buscarPorIdParaActualizar(ids[0]).orElseThrow()
+                .cambiarEstado(EstadoDonacion.ENTREGADA, null));
         assertEquals(409, subirFoto(recepcion, png).statusCode());
         assertEquals(1, archivos.size());
 
