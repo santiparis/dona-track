@@ -12,7 +12,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/logistica
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DONACIONES_URL: http://donaciones-api:8081/
+      DONACIONES_URL_PRIVADA: http://donaciones-api:8081/
       PLANIFICADOR_URL: http://planificador-api:9090/
     depends_on:
       postgres:
