@@ -79,8 +79,7 @@ public class PlanificadorController {
       rutas.forEach(rutasRepository::agregar);
       donacionesRepository.agregarTodos(body.donacionesNoAsignadas());
 
-      // Recorremos las rutas recién planificadas y notificamos sus entregas a donaciones-service
-      rutas.forEach(ruta -> notificadorEntregas.avisarEnTraslado(ruta.getEntregas()));
+      rutas.forEach(ruta -> notificadorEntregas.avisarListaParaEntregar(ruta.getEntregas()));
 
       ctx.status(201).json(rutas);
     } catch (IllegalArgumentException e) {

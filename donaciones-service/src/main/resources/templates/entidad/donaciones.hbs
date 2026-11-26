@@ -43,11 +43,10 @@
                                     <div class="row">
                                         <a class="btn chico" href="/entidad/donaciones/{{id}}/recepcion">Confirmar recepción</a>
                                         <a class="btn2 chico peligro" href="/entidad/donaciones/{{id}}/no-recibida">No la recibí</a>
+                                        <a class="btn2 chico" href="/entidad/seguimiento">Ver seguimiento</a>
                                     </div>
                                 {{else if tieneFotos}}
                                     <a class="btn2 chico" href="/entidad/donaciones/{{id}}/recepcion">Ver fotos</a>
-                                {{else if (eq estado "LISTA_PARA_ENTREGAR")}}
-                                    <a class="btn2 chico" href="/entidad/seguimiento">Ver seguimiento</a>
                                 {{else if (eq estado "ENTREGA_FALLIDA")}}
                                     <span class="muted">Vuelve al depósito</span>
                                 {{/if}}
