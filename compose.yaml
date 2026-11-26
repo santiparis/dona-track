@@ -50,7 +50,7 @@ services:
       DONACIONES_URL_PRIVADA: ${DONACIONES_URL_PRIVADA:-http://localhost:8081}
       # Los contenedores corren en UTC: Java toma la zona de acá (historial, notificaciones, crons)
       TZ: America/Argentina/Buenos_Aires
-
+      DONACIONES_URL_PUBLICA: ${DONACIONES_URL_PUBLICA:-http://localhost:8081}
     depends_on:
       mysql:
         condition: service_healthy
