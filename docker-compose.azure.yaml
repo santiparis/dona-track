@@ -1,6 +1,8 @@
 
 services:
   donaciones-api:
+    ports:
+      - "${DONACIONES_IP}:9091:9091"
     environment:
       LOGISTICA_URL: http://${LOGISTICA_IP}:7070/
       LOGISTICA_GRPC_HOST: ${LOGISTICA_IP}

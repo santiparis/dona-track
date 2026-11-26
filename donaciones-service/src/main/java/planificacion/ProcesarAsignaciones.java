@@ -62,11 +62,14 @@ public class ProcesarAsignaciones {
 
     for (var sugerencia : sugerencias) {
       var bien = sugerencia.getDonacion().getBien();
-      for (var ranking : sugerencia.getEntidadesPorAlgoritmo().entrySet()) {
-        for (var entidad : ranking.getValue()) {
-          System.out.printf("Donación #%d – %s → %s | Algoritmo: %s%n",
-              sugerencia.getId(), bien.getSubcategoria().nombre(), entidad.getRazonSocial(), ranking.getKey());
-        }
+      if (sugerencia.tieneCoincidencias()) {
+        var propuesta = sugerencia.getCoincidencias().get(0);
+        System.out.printf("Donación #%d – %s → %s | Algoritmos: %s%n",
+            sugerencia.getId(), bien.getSubcategoria().nombre(), propuesta.getRazonSocial(),
+            String.join(" y ", sugerencia.getEntidadesPorAlgoritmo().keySet().stream().sorted().toList()));
+      } else {
+        System.out.printf("Donación #%d – %s | Sin propuesta común. Revisar en el panel.%n",
+            sugerencia.getId(), bien.getSubcategoria().nombre());
       }
     }
 
