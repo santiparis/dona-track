@@ -392,7 +392,8 @@ public class EntidadesBeneficiariasController {
         Map.entry("porcentaje", Long.toString(cantidad > 0 ? Math.min(100, Math.round(100.0 * suplida / cantidad)) : 0)),
         // Para el formulario de edición: la fecha cargada y la cantidad mínima (no menos de lo ya recibido)
         Map.entry("fechaInicio", Objects.toString(necesidad.getFechaInicio(), "")),
-        Map.entry("minimo", Integer.toString(Math.max(1, suplida))));
+        Map.entry("minimo", Integer.toString(Math.max(1, suplida))),
+        Map.entry("cubierta", Boolean.toString(necesidad.estaSatisfecha())));
   }
 
   // Registrar necesidad, separada de Mis necesidades. Con ?editar={id} el formulario edita esa necesidad

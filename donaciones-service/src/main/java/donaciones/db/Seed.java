@@ -99,8 +99,8 @@ public class Seed implements WithSimplePersistenceUnit {
         new Usuario("direccion@escuelarural10.edu.ar", "escuela123", Rol.ENTIDAD));
     Necesidad bancosEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.BANCOS, 30));
     bancosEscuela.registrarSuplido(new Bien(Subcategoria.BANCOS, 10, "unidades", null, null, EstadoBien.NUEVO, null));
+    // Lo recibido de sillas sale de la entrega de 24 del mapa público: queda 24 de 30 y la completan las 6 de Ana al confirmarlas
     Necesidad sillasEscuela = new Necesidad("Reposición tras inundación", false, LocalDate.now(), null, Map.of(Subcategoria.SILLAS, 30));
-    sillasEscuela.registrarSuplido(new Bien(Subcategoria.SILLAS, 6, "unidades", null, null, EstadoBien.USADO, null));
     Necesidad mesasEscuela = new Necesidad(null, false, LocalDate.now(), null, Map.of(Subcategoria.MESAS, 10));
     Necesidad lecheEscuela = new Necesidad("Desayuno escolar",
         true, LocalDate.now(), Periodo.MENSUAL, Map.of(Subcategoria.LECHE, 50));
@@ -309,7 +309,7 @@ public class Seed implements WithSimplePersistenceUnit {
     bancosEntregados.cambiarEstado(EstadoDonacion.ENTREGADA, null);
     persist(bancosEntregados);
 
-    Donacion sillasEntregadas = new Donacion(arcos, new Bien(Subcategoria.SILLAS, 30, "unidades", "Sillas escolares", null, EstadoBien.NUEVO, null));
+    Donacion sillasEntregadas = new Donacion(arcos, new Bien(Subcategoria.SILLAS, 24, "unidades", "Sillas escolares", null, EstadoBien.NUEVO, null));
     sillasEntregadas.asignarA(escuela);
     sillasEntregadas.cambiarEstado(EstadoDonacion.LISTA_PARA_ENTREGAR, null);
     sillasEntregadas.cambiarEstado(EstadoDonacion.EN_TRASLADO, null);
