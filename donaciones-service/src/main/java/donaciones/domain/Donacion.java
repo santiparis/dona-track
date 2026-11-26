@@ -68,6 +68,10 @@ public class Donacion {
     public void cambiarEstado(EstadoDonacion nuevo, String justificacion) {
         if (this.estado != nuevo) {
             this.historialEstados.add(new RegistroCambioEstado(this.estado, nuevo, LocalDateTime.now(), justificacion));
+            // Al entregarse, lo recibido suma a la necesidad de la entidad (una sola vez, por estar dentro del if)
+            if (nuevo == EstadoDonacion.ENTREGADA) {
+                this.entidadBeneficiaria.recibir(this.bien);
+            }
         }
         this.estado = nuevo;
     }

@@ -4,6 +4,7 @@ import donaciones.domain.Donacion;
 import javax.persistence.*;
 import donaciones.domain.EntidadBeneficiaria;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,4 +80,7 @@ public class SugerenciaAsignacion {
         .flatMap(List::stream)
         .anyMatch(entidad -> entidad.getId() != null && entidad.getId().equals(entidadId));
   }
+
+  // Cuándo la generaron los algoritmos: la más nueva es la última ejecución
+  private LocalDateTime fecha = LocalDateTime.now();
 }

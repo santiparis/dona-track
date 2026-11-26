@@ -4,6 +4,7 @@ import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.db.TransaccionPorRequest;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,5 +35,10 @@ public class SugerenciaAsignacionRepository implements WithSimplePersistenceUnit
   public Optional<SugerenciaAsignacion> buscarPorIDParaActualizar(Long id) {
     TransaccionPorRequest.iniciarSiEsNecesario();
     return Optional.ofNullable(find(SugerenciaAsignacion.class, id));
+  }
+
+  // null si todavía no hay sugerencias
+  public LocalDateTime fechaUltimaEjecucion() {
+    return createQuery("select max(s.fecha) from SugerenciaAsignacion s", LocalDateTime.class).getSingleResult();
   }
 }

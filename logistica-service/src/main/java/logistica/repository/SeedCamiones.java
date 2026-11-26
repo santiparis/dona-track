@@ -22,12 +22,17 @@ public class SeedCamiones {
     );
   }
 
-  // Rutas en curso con las donaciones en traslado del seed de donaciones-service (ids 8 y 9).
+  // Rutas en curso con las donaciones en traslado del seed de donaciones-service (ids 8, 9 y 19).
   // Los ids coinciden solo si las dos bases arrancan vacías.
+  // La 8 y la 19 van en entregas separadas, así la Escuela puede confirmar una y marcar la otra como no recibida
   public static List<Ruta> rutas(List<Camion> camiones) {
-    Ruta sillas = new Ruta(camiones.get(0), new ArrayList<>(List.of(new Entrega(
-        new ArrayList<>(List.of(new DonacionEncolada(8L, 6, "unidades", "-34.4705,-59.4890", "Escuela Rural N°10"))),
-        "-34.4705,-59.4890", "Escuela Rural N°10"))));
+    Ruta sillas = new Ruta(camiones.get(0), new ArrayList<>(List.of(
+        new Entrega(
+            new ArrayList<>(List.of(new DonacionEncolada(8L, 6, "unidades", "-34.4705,-59.4890", "Escuela Rural N°10"))),
+            "-34.4705,-59.4890", "Escuela Rural N°10"),
+        new Entrega(
+            new ArrayList<>(List.of(new DonacionEncolada(19L, 10, "unidades", "-34.4705,-59.4890", "Escuela Rural N°10"))),
+            "-34.4705,-59.4890", "Escuela Rural N°10"))));
     Ruta fideos = new Ruta(camiones.get(2), new ArrayList<>(List.of(new Entrega(
         new ArrayList<>(List.of(new DonacionEncolada(9L, 100, "kg", "-34.3467,-58.7920", "Comedor Escobar Sonrisas"))),
         "-34.3467,-58.7920", "Comedor Escobar Sonrisas"))));

@@ -141,4 +141,8 @@ public class Camion {
   public void inhabilitar() {
     this.estado = EstadoCamion.NO_DISPONIBLE;
   }
+
+  public EstadoCamion getEstado() {
+    return estado;
+  }
 }

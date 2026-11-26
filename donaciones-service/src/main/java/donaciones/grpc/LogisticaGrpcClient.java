@@ -4,6 +4,10 @@ import donaciones.dto.DonacionLogisticaDTO;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.List;
+import logistica.grpc.CamionRequest;
+import logistica.grpc.CamionResponse;
+import logistica.grpc.CamionesRequest;
+import logistica.grpc.DatosCamion;
 import logistica.grpc.LogisticaServiceGrpc;
 import logistica.grpc.ReportarEntregaRequest;
 import logistica.grpc.ReportarEntregaResponse;
@@ -67,5 +71,39 @@ public class LogisticaGrpcClient {
         .setJustificacion(justificacion != null ? justificacion : "")
         .build();
     return blockingStub.withDeadlineAfter(10, java.util.concurrent.TimeUnit.SECONDS).reportarEntrega(request);
+  }
+
+  // CRUD de camiones de la pantalla del admin
+  public List<DatosCamion> obtenerCamiones() {
+    return blockingStub.obtenerCamiones(CamionesRequest.newBuilder().build()).getCamionesList();
+  }
+
+  public DatosCamion obtenerCamion(Long id) {
+    return blockingStub.obtenerCamion(CamionRequest.newBuilder().setId(id).build());
+  }
+
+  public CamionResponse crearCamion(String patente, double volumen, double altura, double cargaMax) {
+    DatosCamion camion = DatosCamion.newBuilder()
+        .setPatente(patente)
+        .setVolumen(volumen)
+        .setAltura(altura)
+        .setCargaMax(cargaMax)
+        .build();
+    return blockingStub.crearCamion(camion);
+  }
+
+  public CamionResponse modificarCamion(Long id, String patente, double volumen, double altura, double cargaMax) {
+    DatosCamion camion = DatosCamion.newBuilder()
+        .setId(id)
+        .setPatente(patente)
+        .setVolumen(volumen)
+        .setAltura(altura)
+        .setCargaMax(cargaMax)
+        .build();
+    return blockingStub.modificarCamion(camion);
+  }
+
+  public CamionResponse eliminarCamion(Long id) {
+    return blockingStub.eliminarCamion(CamionRequest.newBuilder().setId(id).build());
   }
 }

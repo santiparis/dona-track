@@ -199,4 +199,12 @@ public class EntidadBeneficiaria implements Notificable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    // Lo entregado se suma a la primera necesidad sin cubrir de esa subcategoría
+    public void recibir(Bien bien) {
+        this.necesidades.stream()
+                .filter(necesidad -> necesidad.seSatisfaceCon(bien) && !necesidad.estaSatisfecha())
+                .findFirst()
+                .ifPresent(necesidad -> necesidad.registrarSuplido(bien));
+    }
 }

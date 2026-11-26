@@ -22,6 +22,7 @@ import logistica.grpc.TrazarRutaResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -224,7 +225,9 @@ public class AsignacionesController {
     model.put("titulo", "Asignaciones pendientes");
     model.put("rol", "admin");
     model.put("seccion", "asignaciones");
-    model.put("ultimaEjecucion", "-");   // La fecha de la última ejecución todavía no se guarda (A8)
+    // La fecha de la última ejecución es la de la sugerencia más nueva
+    LocalDateTime ultimaEjecucion = sugerenciaRepository.fechaUltimaEjecucion();
+    model.put("ultimaEjecucion", ultimaEjecucion == null ? "-" : ultimaEjecucion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
     model.put("sugerencias", sugerenciaRepository.obtenerTodas().stream()
         .map(AsignacionesController::sugerenciaParaVista)
         .toList());

@@ -20,7 +20,7 @@ class LogisticaServiceImplTest implements SimplePersistenceTest {
   void recibeLaAsignacionPorGrpcYLaDejaPendienteUnaSolaVez() {
     var donaciones = new DonacionesRepository();
     var servicio = new LogisticaServiceImpl(
-        new RutasRepository(), donaciones, null, new TransaccionPorRequest());
+        new RutasRepository(), donaciones, null, new TransaccionPorRequest(), null);
     var solicitud = TrazarRutaRequest.newBuilder()
         .setIdDonacion("90123")
         .setIdEntidadDestino("Av. Mitre 300")
