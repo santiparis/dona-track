@@ -13,11 +13,16 @@ import donaciones.repository.NotificacionRepository;
 import donaciones.repository.SugerenciaAsignacionRepository;
 import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class ProcesarAsignaciones {
 
   public static void main(String[] args) {
+    long inicio = System.nanoTime();
+    System.out.println("==== Inicio de procesamiento de asignaciones: " + OffsetDateTime.now() + " ====");
+
     String dbUrl = System.getenv("DB_URL");
     if (dbUrl != null && !dbUrl.isBlank()) {
       WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
@@ -51,13 +56,22 @@ public class ProcesarAsignaciones {
     }
     var sugerencias = controller.procesarDonacionesEnDepositoEnLotes(25);
 
-    System.out.println("==== Inicio de procesamiento de asignaciones ====");
     if (sugerencias.isEmpty()) {
       System.out.println("No hay donaciones en depósito para procesar.");
-      return;
     }
 
+    for (var sugerencia : sugerencias) {
+      var bien = sugerencia.getDonacion().getBien();
+      for (var ranking : sugerencia.getEntidadesPorAlgoritmo().entrySet()) {
+        for (var entidad : ranking.getValue()) {
+          System.out.printf("Donación #%d – %s → %s | Algoritmo: %s%n",
+              sugerencia.getId(), bien.getSubcategoria().nombre(), entidad.getRazonSocial(), ranking.getKey());
+        }
+      }
+    }
+
+    long duracion = Duration.ofNanos(System.nanoTime() - inicio).toSeconds();
     System.out.println("Total de sugerencias guardadas: " + sugerencias.size());
-    System.out.println("==== Fin de procesamiento de asignaciones ====");
+    System.out.println("==== Fin de procesamiento de asignaciones (" + duracion + " s) ====");
   }
 }

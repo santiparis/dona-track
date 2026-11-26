@@ -6,6 +6,8 @@ services:
       LOGISTICA_GRPC_HOST: ${LOGISTICA_IP}
 
   logistica-api:
+    ports:
+      - "${LOGISTICA_IP}:9090:9090"
     environment:
       DONACIONES_URL_PRIVADA: http://${DONACIONES_IP}:8081/
       DONACIONES_GRPC_HOST: ${DONACIONES_IP}
