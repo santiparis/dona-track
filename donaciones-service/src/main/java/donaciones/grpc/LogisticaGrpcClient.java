@@ -1,5 +1,6 @@
 package donaciones.grpc;
 
+import donaciones.dto.DonacionLogisticaDTO;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.List;
@@ -26,14 +27,17 @@ public class LogisticaGrpcClient {
     this.blockingStub = LogisticaServiceGrpc.newBlockingStub(channel);
   }
 
-  public TrazarRutaResponse trazarRuta(String idDonacion, String origen, String destino) {
+  public TrazarRutaResponse trazarRuta(DonacionLogisticaDTO donacion, String origen) {
     TrazarRutaRequest request = TrazarRutaRequest.newBuilder()
-        .setIdDonacion(idDonacion)
+        .setIdDonacion(donacion.donacionID().toString())
         .setIdEntidadOrigen(origen != null ? origen : "")
-        .setIdEntidadDestino(destino != null ? destino : "")
+        .setIdEntidadDestino(donacion.destino() != null ? donacion.destino() : "")
+        .setCantidadBienes(donacion.cantidadBienes())
+        .setUnidad(donacion.unidad() != null ? donacion.unidad() : "")
+        .setEntidadNombre(donacion.entidadNombre() != null ? donacion.entidadNombre() : "")
         .build();
 
-    return blockingStub.trazarRuta(request);
+    return blockingStub.withDeadlineAfter(10, java.util.concurrent.TimeUnit.SECONDS).trazarRuta(request);
   }
 
   public RutaResponse consultarEstadoRuta(String idRuta) {

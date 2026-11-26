@@ -10,6 +10,7 @@ import donaciones.domain.algoritmos.SugerenciaAsignacion;
 import donaciones.domain.donante.*;
 import donaciones.domain.notificacion.ContactoPorEmail;
 import donaciones.dto.AsignacionRequestDTO;
+import donaciones.dto.DonacionLogisticaDTO;
 import donaciones.grpc.LogisticaGrpcClient;
 import donaciones.repository.DonacionRepository;
 import donaciones.repository.EntidadBeneficiariaRepository;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -64,7 +66,7 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
         .setMensaje("OK")
         .build();
 
-    when(logisticaGrpcClient.trazarRuta(anyString(), anyString(), anyString()))
+    when(logisticaGrpcClient.trazarRuta(any(DonacionLogisticaDTO.class), anyString()))
         .thenReturn(respuestaExitosa);
 
     controller = new AsignacionesController(
@@ -215,7 +217,10 @@ public class AsignacionesControllerTest implements SimplePersistenceTest {
     assertEquals(entidadCoincidente.getId(), donacionEnDeposito.getEntidadBeneficiaria().getId());
     assertTrue(controller.obtenerSugerenciasGuardadas().isEmpty());
     verify(notificador).donacionAsignada(donacionEnDeposito);
-    verify(logisticaGrpcClient).trazarRuta(anyString(), anyString(), anyString());
+    verify(logisticaGrpcClient).trazarRuta(new DonacionLogisticaDTO(
+        donacionEnDeposito.getId(), donacionEnDeposito.getBien().getCantidad(),
+        donacionEnDeposito.getBien().getUnidad(), entidadCoincidente.getDireccion(), "Colegio Rural"),
+        "DEPOSITO_CENTRAL");
   }
 
   @Test
