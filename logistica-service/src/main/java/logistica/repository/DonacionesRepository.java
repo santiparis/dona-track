@@ -15,6 +15,12 @@ public class DonacionesRepository implements WithSimplePersistenceUnit {
     nuevas.forEach(this::agregar);
   }
 
+  public void agregarSiNoExiste(DonacionEncolada donacion) {
+    if (find(DonacionEncolada.class, donacion.getDonacionID()) == null) {
+      agregar(donacion);
+    }
+  }
+
   // la tabla tambien guarda las donaciones que ya van en una entrega (cascade desde Ruta)
   // pendientes son solo las que todavia no entraron en ninguna
   public List<DonacionEncolada> obtenerTodas() {

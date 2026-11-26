@@ -52,7 +52,7 @@ public class Main {
     // 2. Servidor gRPC propio de logistica-service (puerto 9090)
     try {
       Server gRpcServer = ServerBuilder.forPort(9090)
-          .addService(new LogisticaServiceImpl(repositorioRutas, notificadorEntregas, transaccion))
+          .addService(new LogisticaServiceImpl(repositorioRutas, repositorioDonaciones, notificadorEntregas, transaccion))
           .build();
       gRpcServer.start();
       System.out.println("Servidor gRPC de logistica-service escuchando en el puerto 9090...");
@@ -94,6 +94,7 @@ public class Main {
       config.routes.patch("/api/camiones/{patente}/localizacion", camionesController::actualizarLocalizacion);
 
       // endpoints consumidos por el microservicio donaciones
+      config.routes.get("/api/donaciones", donacionesController::listarPendientes);
       config.routes.post("/api/donaciones", donacionesController::obtenerDonaciones);
 
       //dispara la planificacion (lo llama el cron via HTTP, o a demanda)

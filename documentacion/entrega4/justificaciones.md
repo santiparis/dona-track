@@ -76,6 +76,14 @@ Si falla la carga o Logística rechaza la confirmación, Donaciones revierte la 
 
 La prueba automatizada usa HTTP y MySQL se sustituye por HSQLDB en memoria. Las respuestas de Blob Storage y Logística se simulan localmente. Se ejecuta con `mvn -pl donaciones-service "-Dtest=RegistroHttpTest" test`.
 
+## Foto opcional del bien al registrar una donación
+
+El formulario administrativo permite adjuntar una foto JPG o PNG de hasta 5 MB a cada bien. El servidor valida los bytes de la imagen y los sube al mismo contenedor privado de Azure Blob Storage que usa para las fotos de recepción. MySQL guarda en `bien.foto` una referencia interna (`blob:<id>:<tipo>`), nunca la credencial del contenedor.
+
+La administradora, el donante y la entidad pueden ver la foto desde sus pantallas de donaciones mediante DonaTrack. Los endpoints comprueban el rol y la pertenencia antes de leer una foto privada. Existe además una ruta pública que solo entrega fotos de donaciones ya marcadas como entregadas. Las fotos se borran de Blob Storage después de eliminar una donación; si falla el guardado de la donación, se intenta retirar el archivo subido.
+
+El mapa público de entregas todavía se alimenta de `DatosMock`; la foto registrada ya se ve en el depósito, en las donaciones del donante y en las de la entidad. Integrar las donaciones reales en ese mapa requiere resolver las coordenadas de las entidades, que siguen pendientes.
+
 ## Menú del celular: cuenta arriba, Cerrar sesión abajo
 
 En el celular, el menú hamburguesa junta el menú del rol, los links públicos y la sesión. El nombre de la cuenta va arriba de todo, para que se vea enseguida con qué cuenta se está operando: es el encabezado de cuenta que propone Material Design para el menú lateral. «Cerrar sesión» va abajo de todo y separado del resto, porque se usa poco y no se puede deshacer: lejos de los links que se tocan seguido, se evita apretarlo sin querer. Es el mismo orden que usan apps conocidas como Gmail o Mercado Libre.
@@ -88,4 +96,4 @@ La administradora carga los bienes de a uno: «+ Agregar bien» abre un recuadro
 
 La donación se sigue registrando en una única operación, como pide el enunciado: la tabla no guarda nada en el servidor. Cada fila lleva sus datos en inputs ocultos (`bienes[0].subcategoria`, `bienes[0].cantidad`, ...) y «Registrar donación» es el submit normal del formulario, que manda todos los bienes juntos para que el sistema arme una donación por subcategoría. Por eso no hay rutas nuevas y el controller lee los bienes igual que antes.
 
-Es el segundo lugar con JavaScript propio (`donacion-nueva.js`), porque agregar filas sin recargar la página no se puede hacer solo con HTML: sin JS, cada bien nuevo sería un pedido al servidor y se perdería lo ya escrito. El archivo solo maneja la tabla: lee el recuadro, valida los datos y dibuja las filas. Mostrar estado o vencimiento según lo que pida la subcategoría elegida lo resuelve el CSS (`:has`), sin JS. La foto del bien se suma cuando se implemente su guardado (C11).
+Es el segundo lugar con JavaScript propio (`donacion-nueva.js`), porque agregar filas sin recargar la página no se puede hacer solo con HTML: sin JS, cada bien nuevo sería un pedido al servidor y se perdería lo ya escrito. El archivo maneja la tabla y conserva los archivos de foto seleccionados al editar una fila. Mostrar estado o vencimiento según lo que pida la subcategoría elegida lo resuelve el CSS (`:has`), sin JS.

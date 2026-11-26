@@ -35,6 +35,10 @@ public class Donacion {
         fotosRecepcion.put(id, tipo);
     }
 
+    public void quitarFotoRecepcion(String id) {
+        fotosRecepcion.remove(id);
+    }
+
     protected Donacion() { }
 
     public Donacion(

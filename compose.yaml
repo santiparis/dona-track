@@ -47,10 +47,10 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/donaciones
       AZURE_STORAGE_CONTAINER_URL: ${AZURE_STORAGE_CONTAINER_URL:-}
       AZURE_STORAGE_SAS: ${AZURE_STORAGE_SAS:-}
-      DONACIONES_URL: ${DONACIONES_URL:-http://localhost:8081}
+      DONACIONES_URL_PRIVADA: ${DONACIONES_URL_PRIVADA:-http://localhost:8081}
       # Los contenedores corren en UTC: Java toma la zona de acá (historial, notificaciones, crons)
       TZ: America/Argentina/Buenos_Aires
-
+      DONACIONES_URL_PUBLICA: ${DONACIONES_URL_PUBLICA:-http://localhost:8081}
     depends_on:
       mysql:
         condition: service_healthy
@@ -69,7 +69,7 @@ services:
     ports:
       - "7070:7070"
     environment:
-      DONACIONES_URL: http://donaciones-api:8081/
+      DONACIONES_URL_PRIVADA: http://donaciones-api:8081/
       PLANIFICADOR_URL: http://mock-planificador:9092/
       DONACIONES_GRPC_HOST: donaciones-api
       DB_URL: jdbc:postgresql://postgres:5432/logistica

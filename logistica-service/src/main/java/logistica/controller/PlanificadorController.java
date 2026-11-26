@@ -57,12 +57,12 @@ public class PlanificadorController {
       List<DonacionEncolada> batch = pendientes.stream().limit(TAMANIO_MAXIMO_BATCH).toList();
       List<Camion> disponibles = camionesRepository.obtenerDisponibles();
 
-      // solo se sacan del pool si el planificador confirmo que las recibio;
-      // las que sobran del batch quedan para la proxima corrida
-      if (clientePlanificador.enviarAPlanificar(batch, disponibles)) {
-        donacionesRepository.remover(batch);
+      if (!clientePlanificador.enviarAPlanificar(batch, disponibles)) {
+        ctx.status(502).json(new MensajeResponse("El planificador rechazó el pedido"));
+        return;
       }
 
+      donacionesRepository.remover(batch);
       ctx.status(202).json(new MensajeResponse("Planificacion disparada"));
     } catch (IllegalStateException e) {
       logger.warn("No se pudo contactar al planificador: {}", e.getMessage());
@@ -79,8 +79,7 @@ public class PlanificadorController {
       rutas.forEach(rutasRepository::agregar);
       donacionesRepository.agregarTodos(body.donacionesNoAsignadas());
 
-      // Recorremos las rutas recién planificadas y notificamos sus entregas a donaciones-service
-      rutas.forEach(ruta -> notificadorEntregas.avisarEnTraslado(ruta.getEntregas()));
+      rutas.forEach(ruta -> notificadorEntregas.avisarListaParaEntregar(ruta.getEntregas()));
 
       ctx.status(201).json(rutas);
     } catch (IllegalArgumentException e) {

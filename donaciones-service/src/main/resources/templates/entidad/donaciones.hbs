@@ -20,6 +20,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Bien</th>
+                        <th scope="col">Foto</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Donante</th>
                         <th scope="col">Estado</th>
@@ -31,6 +32,7 @@
                     {{#each donaciones}}
                         <tr>
                             <td>{{bien}}</td>
+                            <td>{{#if fotoBienUrl}}<img class="foto-mini" src="{{fotoBienUrl}}" alt="Foto de {{bien}}" loading="lazy">{{else}}—{{/if}}</td>
                             <td>{{cantidad}}</td>
                             <td>{{donante}}</td>
                             <td><span class="chip {{estado}}">{{estadoTexto}}</span></td>
@@ -41,11 +43,10 @@
                                     <div class="row">
                                         <a class="btn chico" href="/entidad/donaciones/{{id}}/recepcion">Confirmar recepción</a>
                                         <a class="btn2 chico peligro" href="/entidad/donaciones/{{id}}/no-recibida">No la recibí</a>
+                                        <a class="btn2 chico" href="/entidad/seguimiento">Ver seguimiento</a>
                                     </div>
                                 {{else if tieneFotos}}
                                     <a class="btn2 chico" href="/entidad/donaciones/{{id}}/recepcion">Ver fotos</a>
-                                {{else if (eq estado "LISTA_PARA_ENTREGAR")}}
-                                    <a class="btn2 chico" href="/entidad/seguimiento">Ver seguimiento</a>
                                 {{else if (eq estado "ENTREGA_FALLIDA")}}
                                     <span class="muted">Vuelve al depósito</span>
                                 {{/if}}

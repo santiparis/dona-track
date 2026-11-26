@@ -10,6 +10,7 @@ import logistica.grpc.CambiarEstadoResponse;
 // Traduce los hechos de logística a los estados que entiende el servicio de donaciones mediante gRPC.
 public class NotificadorEntregas {
 
+  private static final String LISTA_PARA_ENTREGAR = "LISTA_PARA_ENTREGAR";
   private static final String EN_TRASLADO = "EN_TRASLADO";
   private static final String ENTREGADA = "ENTREGADA";
   private static final String ENTREGA_FALLIDA = "ENTREGA_FALLIDA";
@@ -20,7 +21,10 @@ public class NotificadorEntregas {
     this.donacionesGrpcClient = donacionesGrpcClient;
   }
 
-  // TODO: Modificar el string de estos 3 métodos según corresponda
+  public void avisarListaParaEntregar(List<Entrega> entregas) {
+    entregas.forEach(entrega -> this.notificarEstado(entrega, LISTA_PARA_ENTREGAR, null));
+  }
+
   public void avisarEnTraslado(List<Entrega> entregas) {
     entregas.forEach(entrega -> this.notificarEstado(entrega, EN_TRASLADO, "https://miratuenvio.com/ABC123"));
   }
