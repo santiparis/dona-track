@@ -84,4 +84,9 @@ public class Bien {
     public String getFoto() {
         return foto;
     }
+
+    // Vence en los próximos 7 días o ya venció; se calcula, no se guarda
+    public boolean proximoAVencer() {
+        return this.vencimiento != null && !this.vencimiento.isAfter(LocalDate.now().plusDays(7));
+    }
 }

@@ -509,7 +509,9 @@ public class DonacionController {
             "vence", d.getBien().getVencimiento() == null ? "—" : d.getBien().getVencimiento().format(formatoFecha),
             // VENCIDA: ya marcada; NO_APLICA: no es perecedero; vacío: se puede marcar
             "vencimiento", d.getEstado() == EstadoDonacion.VENCIDA ? "VENCIDA"
-                : d.getBien().getVencimiento() == null ? "NO_APLICA" : ""))
+                : d.getBien().getVencimiento() == null ? "NO_APLICA" : "",
+            // Aviso hasta que la administradora la marque
+            "proximo", d.getEstado() != EstadoDonacion.VENCIDA && d.getBien().proximoAVencer()))
         .toList());
     // Como en Registrar donación: cada categoría con sus subcategorías
     model.put("categorias", Arrays.stream(Categoria.values())

@@ -53,6 +53,8 @@
                             <td>
                                 {{#if (eq vencimiento "VENCIDA")}}
                                     <span class="vencida">{{vence}} · vencida</span>
+                                {{else if proximo}}
+                                    <span class="vencida">{{vence}}</span><br><span class="vencida">Próxima a vencer</span>
                                 {{else}}
                                     {{vence}}
                                 {{/if}}
