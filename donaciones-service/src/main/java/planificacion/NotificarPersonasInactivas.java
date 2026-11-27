@@ -5,6 +5,7 @@ import donaciones.domain.donante.Persona;
 import donaciones.domain.donante.RepositorioPersonas;
 import donaciones.db.TransaccionPorRequest;
 import donaciones.repository.NotificacionRepository;
+import io.github.flbulgarelli.jpa.extras.simple.WithSimplePersistenceUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,10 @@ public class NotificarPersonasInactivas {
     logger.info("Iniciando notificación de personas inactivas");
 
     try {
+      String dbUrl = System.getenv("DB_URL");
+      if (dbUrl != null) {
+        WithSimplePersistenceUnit.configure(properties -> properties.set("hibernate.connection.url", dbUrl));
+      }
       RepositorioPersonas repositorio = new RepositorioPersonas();
       Notificador notificador = new Notificador(new NotificacionRepository());
       new TransaccionPorRequest().withTransaction(() -> {
