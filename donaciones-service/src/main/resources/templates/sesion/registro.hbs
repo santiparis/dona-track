@@ -4,12 +4,8 @@
         <p class="muted">¿Ya tenés cuenta? <a href="/login">Iniciá sesión</a></p>
     </div>
 
-    <nav class="tabs" aria-label="Tipo de cuenta">
-        <a class="tab {{#if (eq tipo "HUMANA")}}on{{/if}}" href="/usuarios/nuevo?tipo=HUMANA">Persona humana</a>
-        <a class="tab {{#if (eq tipo "JURIDICA")}}on{{/if}}" href="/usuarios/nuevo?tipo=JURIDICA">Persona jurídica</a>
-        <a class="tab {{#if (eq tipo "ENTIDAD")}}on{{/if}}" href="/usuarios/nuevo?tipo=ENTIDAD">Entidad beneficiaria</a>
-    </nav>
-
+    {{#if tipo}}
+    <div><a class="volver-registro" href="/usuarios/nuevo{{#unless (eq tipo "ENTIDAD")}}?perfil=donante{{/unless}}">Volver al paso anterior</a></div>
     <form class="card" action="/usuarios" method="post">
         <input type="hidden" name="tipo" value="{{tipo}}">
         {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
@@ -21,7 +17,7 @@
                 <label>Dirección completa<input name="direccion" value="{{direccion}}" maxlength="255" required></label>
                 <label>Correo electrónico de la cuenta<input name="email" type="email" value="{{email}}" autocomplete="username" maxlength="254" required></label>
                 <label>Teléfono<input name="telefono" type="tel" value="{{telefono}}" maxlength="20" placeholder="+54 9 11 5555-5555" pattern="\+54 ?9[\d \-]{10,15}" title="Con código de país y 9, sin 0 ni 15. Ej: +54 9 11 5555-5555"></label>
-                <label>Correos de representantes (opcional)<textarea name="correos" maxlength="5000">{{correos}}</textarea><span class="hint">Uno por línea.</span></label>
+                <label>Correos de representantes (opcional)<textarea name="correos" maxlength="5000">{{correos}}</textarea><span class="hint">Podés dejar este campo vacío o separar los correos con comas, punto y coma o saltos de línea.</span></label>
             </div>
         {{else}}
             {{> form-donante}}
@@ -42,6 +38,25 @@
             <button class="btn" type="submit">Crear cuenta</button>
         </div>
     </form>
+    {{else}}
+    <section class="card">
+        {{#if error}}<p class="error-form" role="alert">{{error}}</p>{{/if}}
+        {{#if eligeDonante}}
+            <h2>¿Donás como persona humana o jurídica?</h2>
+            <div class="row">
+                <a class="btn" href="/usuarios/nuevo?tipo=HUMANA">Persona humana</a>
+                <a class="btn" href="/usuarios/nuevo?tipo=JURIDICA">Persona jurídica</a>
+            </div>
+            <div><a class="volver-registro" href="/usuarios/nuevo">Volver al paso anterior</a></div>
+        {{else}}
+            <h2>¿Cómo querés participar?</h2>
+            <div class="row">
+                <a class="btn" href="/usuarios/nuevo?perfil=donante">Soy donante</a>
+                <a class="btn" href="/usuarios/nuevo?tipo=ENTIDAD">Quiero recibir donaciones</a>
+            </div>
+        {{/if}}
+    </section>
+    {{/if}}
 {{/partial}}
 
 {{> layout}}

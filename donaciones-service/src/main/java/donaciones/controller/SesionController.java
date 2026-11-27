@@ -60,9 +60,9 @@ public class SesionController {
     Map<String, Object> model = new HashMap<>();
     model.put("titulo", "Registro");
     model.put("seccion", "registro");
-    // La pestaña elegida viaja en la URL: /usuarios/nuevo?tipo=HUMANA|JURIDICA|ENTIDAD
-    String tipo = Objects.requireNonNullElse(ctx.queryParam("tipo"), "HUMANA");
-    model.put("tipo", List.of("HUMANA", "JURIDICA", "ENTIDAD").contains(tipo) ? tipo : "HUMANA");
+    String tipo = Objects.requireNonNullElse(ctx.queryParam("tipo"), "");
+    if (List.of("HUMANA", "JURIDICA", "ENTIDAD").contains(tipo)) model.put("tipo", tipo);
+    model.put("eligeDonante", "donante".equals(ctx.queryParam("perfil")));
     model.put("medio", "EMAIL");
     return model;
   }
@@ -162,9 +162,9 @@ public class SesionController {
     List<String> correos = new ArrayList<>();
     String representantes = Objects.requireNonNullElse(ctx.formParam("correos"), "");
     if (representantes.length() > 5000) throw new IllegalArgumentException("La lista de correos es demasiado larga.");
-    for (String correo : representantes.split("\\R")) {
+    for (String correo : representantes.split("\\R|[,;]")) {
       if (!correo.isBlank()) {
-        correos.add(validarEmail(correo.trim(), "Revisá los correos de representantes. Ingresá uno válido por línea."));
+        correos.add(validarEmail(correo.trim(), "Revisá los correos de representantes. La dirección «" + correo.trim() + "» no es válida."));
       }
     }
     Contacto contacto = new ContactoPorEmail(email);

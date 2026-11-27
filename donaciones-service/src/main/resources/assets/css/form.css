@@ -171,3 +171,4 @@ form:has(input[name="tipo"][value="EXTRAORDINARIA"]:checked) .solo-recurrente { 
 .ojo svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ojo .ojo-tachado, .ojo[aria-pressed="true"] .ojo-abierto { display: none; }
 .ojo[aria-pressed="true"] .ojo-tachado { display: block; }
+.volver-registro { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }

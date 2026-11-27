@@ -47,6 +47,7 @@ h3 { font-size: 17px; margin: 0; color: var(--color-principal-oscuro); }
 p { margin: 0; line-height: 1.5; }
 .muted { color: var(--color-texto-suave); }
 .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.enlace-registro { align-self: flex-start; }
 
 /* Contenedores que apilan su contenido en columna; cada uno define después su separación (gap) */
 label, .bloque, fieldset, .carga-archivo, body, .wrap, .encabezado, .seccion, .card, .banner-texto,

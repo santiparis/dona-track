@@ -3,12 +3,7 @@
         <div class="hero-texto">
             <h1>Tu donación, de punta a punta</h1>
             <p class="muted">DonaTrack gestiona las donaciones que llegan al depósito y las asigna a escuelas, comedores y organizaciones que las necesitan. Cada donación se puede seguir desde que se recibe hasta que se entrega.</p>
-            <div class="row">
-                {{!-- Cada botón abre el registro en su pestaña; el «Registrarme» del header abre en la primera --}}
-                {{!-- Con sesión iniciada llevan a Mi panel en vez de a un registro nuevo --}}
-                <a class="btn" href="{{#if usuario}}{{inicioUsuario}}{{else}}/usuarios/nuevo?tipo=HUMANA{{/if}}">Quiero donar</a>
-                <a class="btn2" href="{{#if usuario}}{{inicioUsuario}}{{else}}/usuarios/nuevo?tipo=ENTIDAD{{/if}}">Registrar mi entidad</a>
-            </div>
+            <a class="btn enlace-registro" href="{{#if usuario}}{{inicioUsuario}}{{else}}/usuarios/nuevo{{/if}}">{{#if usuario}}Ir a mi cuenta{{else}}Quiero formar parte{{/if}}</a>
         </div>
         <img class="hero-foto" src="/assets/img/home.jpg" alt="Voluntarios armando bolsas con alimentos donados">
     </section>
